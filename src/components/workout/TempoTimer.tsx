@@ -21,7 +21,7 @@ interface TempoTimerProps {
 export function TempoTimer({ tempo, isActive, onPhaseComplete }: TempoTimerProps) {
   const colors = useColors();
 
-  const phases = parseTempo(tempo);
+  const phases = parseTempo(tempo, colors.accent.DEFAULT);
   const progress = useSharedValue(0);
 
   useEffect(() => {

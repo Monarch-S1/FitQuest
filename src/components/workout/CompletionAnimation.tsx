@@ -66,7 +66,7 @@ export function CompletionAnimation({
         duration: 1200 + Math.random() * 1500,
         left: `${5 + Math.random() * 90}%`,
         size: 3 + Math.random() * 8,
-        color: [colors.accent.DEFAULT, colors.success, "#A855F7", "#06B6D4", colors.accent.light][i % 5],
+        color: [colors.accent.DEFAULT, colors.success, colors.accent.dark, colors.accent.light, colors.warning][i % 5],
         rotation: Math.random() * 360,
       })),
     [],

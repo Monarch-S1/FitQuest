@@ -9,6 +9,7 @@ import { SegmentedPanel } from "../../src/components/ui/SegmentedPanel";
 import { XpBar } from "../../src/components/ui/XpBar";
 import { ThemeSwitcher } from "../../src/components/ui/ThemeSwitcher";
 import { GlossyOverlay } from "../../src/components/ui/GlossyOverlay";
+import { SyncIndicator } from "../../src/components/ui/SyncIndicator";
 import { useUserStore, FitnessGoal, FitnessLevel } from "../../src/stores/useUserStore";
 import { getProgressionSummary } from "../../src/utils/progression";
 import { signOut as supabaseSignOut } from "../../src/services/supabase";
@@ -244,7 +245,8 @@ export default function ProfileScreen() {
         }}
       >
         {/* Header */}
-        <View style={{ marginBottom: spacing[4] }}>
+        <View style={{ marginBottom: spacing[4], position: "relative" }}>
+          <SyncIndicator />
           <Text
             style={{
               ...typography.label,

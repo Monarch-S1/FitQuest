@@ -13,6 +13,7 @@ import {
 } from "../../src/components/workout/WorkoutChart";
 import { useUserStore } from "../../src/stores/useUserStore";
 import { GlossyOverlay } from "../../src/components/ui/GlossyOverlay";
+import { SyncIndicator } from "../../src/components/ui/SyncIndicator";
 import {
   getVolumeData,
   getXpData,
@@ -84,7 +85,8 @@ export default function HistoryScreen() {
         }}
       >
         {/* Header */}
-        <View style={{ marginBottom: spacing[4] }}>
+        <View style={{ marginBottom: spacing[4], position: "relative" }}>
+          <SyncIndicator />
           <Text
             style={{
               ...typography.label,

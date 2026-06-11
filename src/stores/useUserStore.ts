@@ -5,6 +5,8 @@ import { getLevel, getProgressToNextLevel } from "../utils/level";
 import { calculateStreak, StreakData } from "../utils/streak";
 import { getLocalToday, parseLocalDate } from "../utils/date";
 import type { ThemeMode, AccentKey } from "../tokens/themes";
+import { pushProfile, incrementalSync, fullSync } from "../services/cloudSync";
+import { isSupabaseConfigured } from "../services/supabase";
 
 export interface WorkoutSession {
   id: string;
@@ -169,6 +171,47 @@ export const useUserStore = create<UserState>()(
       // Auth actions
       setAuth: (userId, email) => {
         set({ isAuthenticated: true, userId, email });
+        // Trigger full sync from cloud after login
+        const state = get();
+        fullSync(userId, {
+          displayName: state.displayName,
+          fitnessGoal: state.fitnessGoal,
+          fitnessLevel: state.fitnessLevel,
+          avatarUri: state.avatarUri,
+          themeMode: state.themeMode,
+          accentColor: state.accentColor,
+          onboardingComplete: state.onboardingComplete,
+          workoutHistory: state.workoutHistory,
+          totalXp: state.totalXp,
+          streakData: state.streakData,
+          totalWorkouts: state.totalWorkouts,
+        }).then(({ mergedProfile, mergedWorkouts, error }) => {
+          if (error) {
+            console.warn("Initial sync failed:", error);
+            return;
+          }
+          if (mergedProfile || mergedWorkouts.length > 0) {
+            const updates: Partial<UserState> = {};
+            if (mergedProfile) {
+              updates.displayName = mergedProfile.displayName;
+              updates.fitnessGoal = mergedProfile.fitnessGoal;
+              updates.fitnessLevel = mergedProfile.fitnessLevel;
+              updates.avatarUri = mergedProfile.avatarUri;
+              updates.themeMode = mergedProfile.themeMode as ThemeMode;
+              updates.accentColor = mergedProfile.accentColor as AccentKey;
+              updates.onboardingComplete = mergedProfile.onboardingComplete;
+            }
+            if (mergedWorkouts.length > 0) {
+              updates.workoutHistory = mergedWorkouts;
+              const newTotalXp = mergedWorkouts.reduce((sum, s) => sum + s.xpEarned, 0);
+              updates.totalXp = newTotalXp;
+              const workoutDates = mergedWorkouts.map((s) => s.date);
+              updates.streakData = calculateStreak(workoutDates);
+              Object.assign(updates, computeDerived(newTotalXp, mergedWorkouts));
+            }
+            set(updates);
+          }
+        }).catch((e) => console.warn("Initial sync merge failed:", e));
       },
 
       clearAuth: () => {
@@ -188,10 +231,36 @@ export const useUserStore = create<UserState>()(
           fitnessGoal: goal,
           fitnessLevel: level,
         });
+        // Push profile to cloud after onboarding
+        const state = get();
+        if (state.isAuthenticated && isSupabaseConfigured()) {
+          pushProfile(state.userId, {
+            displayName: name,
+            fitnessGoal: goal,
+            fitnessLevel: level,
+            avatarUri: state.avatarUri,
+            themeMode: state.themeMode,
+            accentColor: state.accentColor,
+            onboardingComplete: true,
+          }).catch((e) => console.warn("Onboarding sync failed:", e));
+        }
       },
 
       updateProfile: (updates) => {
         set(updates);
+        // Push profile changes to cloud
+        const state = get();
+        if (state.isAuthenticated && isSupabaseConfigured()) {
+          pushProfile(state.userId, {
+            displayName: state.displayName,
+            fitnessGoal: state.fitnessGoal,
+            fitnessLevel: state.fitnessLevel,
+            avatarUri: state.avatarUri,
+            themeMode: state.themeMode,
+            accentColor: state.accentColor,
+            onboardingComplete: state.onboardingComplete,
+          }).catch((e) => console.warn("Profile sync failed:", e));
+        }
       },
 
       // Theme actions
@@ -218,6 +287,17 @@ export const useUserStore = create<UserState>()(
           recoveryStatus,
           ...computeDerived(newTotalXp, updatedHistory),
         });
+
+        // Incremental sync to cloud after workout
+        if (state.isAuthenticated && isSupabaseConfigured()) {
+          incrementalSync(state.userId, session, {
+            totalXp: newTotalXp,
+            currentStreak: streakData.currentStreak,
+            longestStreak: streakData.longestStreak,
+            lastWorkoutDate: streakData.lastWorkoutDate,
+            totalWorkouts: updatedHistory.length,
+          }).catch((e) => console.warn("Workout sync failed:", e));
+        }
       },
 
       recalculate: () => {

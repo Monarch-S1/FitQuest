@@ -21,16 +21,17 @@ export interface TempoPhase {
   color: string;
 }
 
-export function parseTempo(tempo: Tempo | "isometric"): TempoPhase[] {
+export function parseTempo(tempo: Tempo | "isometric", accentColor?: string): TempoPhase[] {
+  const accent = accentColor ?? "#F59E0B";
   if (tempo === "isometric") {
-    return [{ label: "HOLD", duration: 0, color: "#F59E0B" }];
+    return [{ label: "HOLD", duration: 0, color: accent }];
   }
   const [eccentric, pause1, concentric, pause2] = tempo.split("-").map(Number);
   return [
     { label: "LOWER", duration: eccentric, color: "#EF4444" },
-    { label: "PAUSE", duration: pause1, color: "#F59E0B" },
+    { label: "PAUSE", duration: pause1, color: accent },
     { label: "PRESS", duration: concentric, color: "#10B981" },
-    { label: "SQUEEZE", duration: pause2, color: "#F59E0B" },
+    { label: "SQUEEZE", duration: pause2, color: accent },
   ];
 }
 

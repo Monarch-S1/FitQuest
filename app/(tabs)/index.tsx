@@ -12,6 +12,7 @@ import { DailyMission } from "../../src/components/home/DailyMission";
 import { StreakDisplay } from "../../src/components/home/StreakDisplay";
 import { RecoveryStatus } from "../../src/components/home/RecoveryStatus";
 import { GlossyOverlay } from "../../src/components/ui/GlossyOverlay";
+import { SyncIndicator } from "../../src/components/ui/SyncIndicator";
 import { useUserStore } from "../../src/stores/useUserStore";
 import { getWorkoutsForGoal } from "../../src/data/workouts";
 import { getTrainingInsights, getRecommendation } from "../../src/utils/recommendations";
@@ -118,8 +119,10 @@ export default function HomeScreen() {
             justifyContent: "space-between",
             alignItems: "flex-start",
             marginBottom: spacing[5],
+            position: "relative",
           }}
         >
+          <SyncIndicator />
           <View style={{ flex: 1, marginRight: spacing[3] }}>
             <Text
               style={{
