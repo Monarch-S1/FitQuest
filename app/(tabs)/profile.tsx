@@ -2,6 +2,7 @@ import { useMemo, useCallback, useState, useEffect, useRef } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Alert, TextInput, Image, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
+import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useColors, typography, spacing, fonts } from "../../src/tokens";
 import { StatModule } from "../../src/components/ui/StatModule";
@@ -10,9 +11,11 @@ import { XpBar } from "../../src/components/ui/XpBar";
 import { ThemeSwitcher } from "../../src/components/ui/ThemeSwitcher";
 import { GlossyOverlay } from "../../src/components/ui/GlossyOverlay";
 import { SyncIndicator } from "../../src/components/ui/SyncIndicator";
+import { FeedbackSheet } from "../../src/components/ui/FeedbackSheet";
 import { useUserStore, FitnessGoal, FitnessLevel } from "../../src/stores/useUserStore";
 import { getProgressionSummary } from "../../src/utils/progression";
 import { signOut as supabaseSignOut } from "../../src/services/supabase";
+import { videoCache } from "../../src/services/videoCache";
 
 const GOAL_LABELS: Record<FitnessGoal, string> = {
   strength: "Strength",
@@ -37,6 +40,13 @@ interface Achievement {
   description: string;
   icon: string;
   unlocked: boolean;
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0)} ${units[i]}`;
 }
 
 function getAchievements(
@@ -117,6 +127,9 @@ export default function ProfileScreen() {
   } = useUserStore();
   const [showEditName, setShowEditName] = useState(false);
   const [editName, setEditName] = useState(displayName);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [cachedVideoCount, setCachedVideoCount] = useState(0);
+  const [cachedVideoSize, setCachedVideoSize] = useState(0);
 
   // Sync editName when displayName changes externally (e.g., onboarding completion)
   const prevDisplayNameRef = useRef(displayName);
@@ -203,18 +216,42 @@ export default function ProfileScreen() {
     ], { cancelable: true });
   }, [updateProfile]);
 
-  const handleSendFeedback = useCallback(() => {
-    Alert.alert("Send Feedback", "Choose how to send your feedback:", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "EMAIL",
-        onPress: () => {
-          const subject = encodeURIComponent("[ARCH Beta] Feedback");
-          const body = encodeURIComponent(`\n\n---\nDevice: ${Platform.OS} ${Platform.Version}\nApp Version: 1.0.0`);
-          Linking.openURL(`mailto:chamber.enterprise.1@gmail.com?subject=${subject}&body=${body}`);
+  // Load cache info on mount with unmount guard
+  const cacheMountedRef = useRef(true);
+  useEffect(() => {
+    cacheMountedRef.current = true;
+    videoCache.getCachedIds().then((ids) => {
+      if (cacheMountedRef.current) setCachedVideoCount(ids.length);
+    });
+    videoCache.getCacheSize().then((size) => {
+      if (cacheMountedRef.current) setCachedVideoSize(size);
+    });
+    return () => {
+      cacheMountedRef.current = false;
+    };
+  }, []);
+
+  const handleClearCache = useCallback(() => {
+    Alert.alert(
+      "Clear Video Cache",
+      `Remove ${cachedVideoCount} cached video(s) (${formatBytes(cachedVideoSize)})? You can re-download them later.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "CLEAR",
+          style: "destructive",
+          onPress: async () => {
+            await videoCache.clearAll();
+            setCachedVideoCount(0);
+            setCachedVideoSize(0);
+          },
         },
-      },
-    ], { cancelable: true });
+      ],
+    );
+  }, [cachedVideoCount, cachedVideoSize]);
+
+  const handleOpenFeedback = useCallback(() => {
+    setShowFeedback(true);
   }, []);
 
   const handleSignOut = useCallback(() => {
@@ -234,6 +271,8 @@ export default function ProfileScreen() {
       ],
     );
   }, [clearAuth]);
+
+  const router = useRouter();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
@@ -781,7 +820,7 @@ export default function ProfileScreen() {
         {/* Feedback */}
         <SegmentedPanel title="SUPPORT" accent="amber" style={{ marginTop: spacing[4] }}>
           <TouchableOpacity
-            onPress={handleSendFeedback}
+            onPress={handleOpenFeedback}
             activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityLabel="Send feedback or report a bug"
@@ -813,14 +852,79 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </SegmentedPanel>
 
+        {/* Feedback Modal */}
+        <FeedbackSheet visible={showFeedback} onClose={() => setShowFeedback(false)} />
+
+        {/* Storage */}
+        <SegmentedPanel title="STORAGE" accent="none" style={{ marginTop: spacing[2] }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingVertical: spacing[2],
+            }}
+          >
+            <View>
+              <Text
+                style={{
+                  ...typography.bodySmall,
+                  color: colors.text.primary,
+                  fontSize: 12,
+                }}
+              >
+                Cached Videos
+              </Text>
+              <Text
+                style={{
+                  ...typography.bodySmall,
+                  color: colors.text.secondary,
+                  fontSize: 9,
+                  marginTop: 2,
+                }}
+              >
+                {cachedVideoCount} video{cachedVideoCount !== 1 ? "s" : ""} · {formatBytes(cachedVideoSize)}
+              </Text>
+            </View>
+            {cachedVideoCount > 0 ? (
+              <TouchableOpacity
+                onPress={handleClearCache}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Clear all cached videos"
+              >
+                <Text
+                  style={{
+                    ...typography.label,
+                    color: colors.error,
+                    fontSize: 9,
+                  }}
+                >
+                  CLEAR
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <Text
+                style={{
+                  ...typography.label,
+                  color: colors.text.tertiary,
+                  fontSize: 8,
+                }}
+              >
+                NONE CACHED
+              </Text>
+            )}
+          </View>
+        </SegmentedPanel>
+
         {/* Legal */}
         <SegmentedPanel title="LEGAL" accent="none" style={{ marginTop: spacing[2] }}>
           <TouchableOpacity
-            onPress={() => Linking.openURL("https://<your-github-username>.github.io/arch/")}
+            onPress={() => router.push("/privacy-policy")}
             activeOpacity={0.7}
-            accessibilityRole="link"
+            accessibilityRole="button"
             accessibilityLabel="Privacy Policy"
-            accessibilityHint="Opens privacy policy in browser"
+            accessibilityHint="Opens privacy policy"
             style={{
               flexDirection: "row",
               justifyContent: "space-between",

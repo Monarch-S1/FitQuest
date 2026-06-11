@@ -1,8 +1,12 @@
-import { useState, useCallback, useMemo } from "react";
-import { View, Text, TouchableOpacity, Linking, Alert, ScrollView } from "react-native";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { View, Text, TouchableOpacity, Linking, Alert, ActivityIndicator } from "react-native";
 import { MotiView } from "moti";
+import { Video, ResizeMode } from "expo-av";
+import YoutubePlayer from "react-native-youtube-iframe";
 import { useColors, typography, spacing } from "../../tokens";
 import { Exercise } from "../../data/exercises";
+import { exerciseVideoIds, exerciseMp4Urls, hasMp4Source } from "../../data/exerciseVideos";
+import { videoCache } from "../../services/videoCache";
 
 interface ExerciseDemoProps {
   exercise: Exercise;
@@ -38,17 +42,68 @@ export function ExerciseDemo({ exercise }: ExerciseDemoProps) {
     ];
   }, [exercise]);
 
-  const handleWatchVideo = useCallback(async () => {
-    const query = encodeURIComponent(`${exercise.name} calisthenics exercise form`);
-    const url = `https://m.youtube.com/results?search_query=${query}`;
+  const videoId = exerciseVideoIds[exercise.id];
+  const mp4Url = exerciseMp4Urls[exercise.id];
+  const [showVideo, setShowVideo] = useState(false);
+  const [cachedUri, setCachedUri] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const isMountedRef = useRef(true);
 
-    const supported = await Linking.canOpenURL(url);
-    if (supported) {
-      await Linking.openURL(url);
-    } else {
-      Alert.alert("Unable to open browser", "Please check your device settings.");
+  // Check cache status on mount with unmount guard
+  useEffect(() => {
+    isMountedRef.current = true;
+    if (mp4Url) {
+      videoCache.isCached(exercise.id).then((cached) => {
+        if (!isMountedRef.current) return;
+        if (cached) {
+          videoCache.getCachedUri(exercise.id).then((uri) => {
+            if (isMountedRef.current) setCachedUri(uri);
+          });
+        }
+      });
     }
-  }, [exercise.name]);
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [exercise.id, mp4Url]);
+
+  const handleDownload = useCallback(async () => {
+    if (!mp4Url) return;
+    setIsDownloading(true);
+    setDownloadProgress(0);
+
+    const uri = await videoCache.download(exercise.id, mp4Url, (p) => {
+      setDownloadProgress(p);
+    });
+
+    if (uri) {
+      setCachedUri(uri);
+    }
+    setIsDownloading(false);
+  }, [exercise.id, mp4Url]);
+
+  const handleRemoveCache = useCallback(async () => {
+    await videoCache.remove(exercise.id);
+    setCachedUri(null);
+  }, [exercise.id]);
+
+  const handleWatchVideo = useCallback(() => {
+    if (videoId) {
+      setShowVideo(true);
+    } else {
+      // Fallback: open YouTube search in browser
+      const query = encodeURIComponent(`${exercise.name} calisthenics exercise form`);
+      const url = `https://m.youtube.com/results?search_query=${query}`;
+      Linking.canOpenURL(url).then((supported) => {
+        if (supported) {
+          Linking.openURL(url);
+        } else {
+          Alert.alert("Unable to open browser", "Please check your device settings.");
+        }
+      });
+    }
+  }, [exercise.id, exercise.name, videoId]);
 
   return (
     <View
@@ -278,28 +333,174 @@ export function ExerciseDemo({ exercise }: ExerciseDemoProps) {
             </Text>
           </View>
 
-          {/* Video tutorial link */}
-          <TouchableOpacity
-            onPress={handleWatchVideo}
-            activeOpacity={0.7}
-            style={{
-              marginTop: spacing[2],
-              paddingVertical: spacing[2],
-              alignItems: "center",
-              borderTopWidth: 1,
-              borderTopColor: colors.border.subtle,
-            }}
-          >
-            <Text
+          {/* Embedded video player */}
+          {showVideo && (cachedUri || videoId) ? (
+            <View
               style={{
-                ...typography.label,
-                color: colors.accent.DEFAULT,
-                fontSize: 9,
+                marginTop: spacing[2],
+                borderTopWidth: 1,
+                borderTopColor: colors.border.subtle,
+                paddingTop: spacing[2],
               }}
             >
-              WATCH VIDEO DEMO ↗
-            </Text>
-          </TouchableOpacity>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: spacing[1],
+                }}
+              >
+                <Text
+                  style={{
+                    ...typography.label,
+                    color: colors.accent.DEFAULT,
+                    fontSize: 8,
+                  }}
+                >
+                  VIDEO DEMO {cachedUri ? "(OFFLINE)" : ""}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowVideo(false)}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={{
+                      ...typography.label,
+                      color: colors.text.secondary,
+                      fontSize: 8,
+                    }}
+                  >
+                    CLOSE ✕
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              {cachedUri ? (
+                <Video
+                  source={{ uri: cachedUri }}
+                  style={{ width: "100%", height: 200, borderRadius: 4 }}
+                  resizeMode={ResizeMode.CONTAIN}
+                  useNativeControls
+                  shouldPlay={false}
+                />
+              ) : (
+                <YoutubePlayer
+                  height={200}
+                  videoId={videoId}
+                  play={false}
+                  style={{ borderRadius: 4, overflow: "hidden" }}
+                />
+              )}
+            </View>
+          ) : (
+            <View
+              style={{
+                marginTop: spacing[2],
+                borderTopWidth: 1,
+                borderTopColor: colors.border.subtle,
+                paddingTop: spacing[2],
+                gap: spacing[1],
+              }}
+            >
+              {/* Watch online button */}
+              <TouchableOpacity
+                onPress={handleWatchVideo}
+                activeOpacity={0.7}
+                style={{
+                  paddingVertical: spacing[2],
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    ...typography.label,
+                    color: colors.accent.DEFAULT,
+                    fontSize: 9,
+                  }}
+                >
+                  {videoId ? "▶ WATCH VIDEO DEMO" : "WATCH VIDEO DEMO ↗"}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Download for offline button (only if MP4 source exists) */}
+              {hasMp4Source(exercise.id) && (
+                <View>
+                  {isDownloading ? (
+                    <View
+                      style={{
+                        alignItems: "center",
+                        paddingVertical: spacing[1],
+                      }}
+                    >
+                      <ActivityIndicator size="small" color={colors.accent.DEFAULT} />
+                      <Text
+                        style={{
+                          ...typography.label,
+                          color: colors.text.secondary,
+                          fontSize: 7,
+                          marginTop: 4,
+                        }}
+                      >
+                        DOWNLOADING {Math.round(downloadProgress * 100)}%
+                      </Text>
+                    </View>
+                  ) : cachedUri ? (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: spacing[2],
+                      }}
+                    >
+                      <Text
+                        style={{
+                          ...typography.label,
+                          color: colors.success,
+                          fontSize: 8,
+                        }}
+                      >
+                        ✓ SAVED OFFLINE
+                      </Text>
+                      <TouchableOpacity
+                        onPress={handleRemoveCache}
+                        activeOpacity={0.7}
+                      >
+                        <Text
+                          style={{
+                            ...typography.label,
+                            color: colors.error,
+                            fontSize: 7,
+                          }}
+                        >
+                          REMOVE
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={handleDownload}
+                      activeOpacity={0.7}
+                      style={{
+                        paddingVertical: spacing[1],
+                        alignItems: "center",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          ...typography.label,
+                          color: colors.text.secondary,
+                          fontSize: 8,
+                        }}
+                      >
+                        ↓ DOWNLOAD FOR OFFLINE
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
+            </View>
+          )}
         </MotiView>
       )}
     </View>

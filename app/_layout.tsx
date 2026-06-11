@@ -120,6 +120,14 @@ export default function RootLayout() {
               presentation: "fullScreenModal",
             }}
           />
+          {/* Privacy Policy */}
+          <Stack.Screen
+            name="privacy-policy"
+            options={{
+              animation: "slide_from_right",
+              presentation: "fullScreenModal",
+            }}
+          />
         </Stack>
       </ErrorBoundary>
     </>
