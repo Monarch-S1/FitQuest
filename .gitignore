@@ -52,6 +52,10 @@ expo-output.log
 # Windows artifacts
 nul
 
+# Private docs (contains full feature/architecture details)
+docs/
+README-FULL.md
+
 # Non-functional files (AI agents, docs, tooling configs)
 AGENTS.md
 CLAUDE.md
