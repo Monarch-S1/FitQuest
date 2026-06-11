@@ -1,7 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, Linking, Alert, ActivityIndicator } from "react-native";
 import { MotiView } from "moti";
-import { Video, ResizeMode } from "expo-av";
 import YoutubePlayer from "react-native-youtube-iframe";
 import { useColors, typography, spacing } from "../../tokens";
 import { Exercise } from "../../data/exercises";
@@ -375,22 +374,12 @@ export function ExerciseDemo({ exercise }: ExerciseDemoProps) {
                   </Text>
                 </TouchableOpacity>
               </View>
-              {cachedUri ? (
-                <Video
-                  source={{ uri: cachedUri }}
-                  style={{ width: "100%", height: 200, borderRadius: 4 }}
-                  resizeMode={ResizeMode.CONTAIN}
-                  useNativeControls
-                  shouldPlay={false}
-                />
-              ) : (
-                <YoutubePlayer
+              <YoutubePlayer
                   height={200}
                   videoId={videoId}
                   play={false}
                   style={{ borderRadius: 4, overflow: "hidden" }}
                 />
-              )}
             </View>
           ) : (
             <View
