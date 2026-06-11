@@ -51,3 +51,19 @@ expo-output.log
 
 # Windows artifacts
 nul
+
+# Non-functional files (AI agents, docs, tooling configs)
+AGENTS.md
+CLAUDE.md
+AGENTS_LIST.md
+beta-launch-spec.md
+assets/logo-prompt.md
+agency-agents/
+scripts/
+docs/
+.github/
+.claude/
+.vscode/
+.prettierignore
+.prettierrc
+nativewind-env.d.ts

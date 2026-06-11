@@ -1,9 +1,0 @@
-/dist/*
-/web-build/*
-/node_modules/*
-/expo-env.d.ts
-/nativewind-env.d.ts
-package-lock.json
-*.config.js
-*.config.ts
-*.md
