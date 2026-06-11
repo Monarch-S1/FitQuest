@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FBBF24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D97706;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="512" height="512" rx="64" fill="#0F1115"/>
+  
+  <!-- Subtle border -->
+  <rect x="2" y="2" width="508" height="508" rx="62" fill="none" stroke="#2A2D35" stroke-width="1"/>
+  
+  <!-- Geometric figure — angular calisthenics silhouette -->
+  <!-- Head -->
+  <circle cx="256" cy="110" r="28" fill="url(#accent)"/>
+  
+  <!-- Torso — angular trapezoid -->
+  <polygon points="256,140 220,200 292,200" fill="url(#accent)"/>
+  
+  <!-- Arms — raised in muscle-up position -->
+  <line x1="220" y1="200" x2="160" y2="150" stroke="#FBBF24" stroke-width="14" stroke-linecap="round"/>
+  <line x1="292" y1="200" x2="352" y2="150" stroke="#FBBF24" stroke-width="14" stroke-linecap="round"/>
+  
+  <!-- Bar -->
+  <line x1="130" y1="148" x2="382" y2="148" stroke="#2A2D35" stroke-width="6" stroke-linecap="round"/>
+  
+  <!-- Legs — angular, dynamic -->
+  <line x1="256" y1="200" x2="230" y2="300" stroke="url(#accent)" stroke-width="14" stroke-linecap="round"/>
+  <line x1="256" y1="200" x2="282" y2="300" stroke="url(#accent)" stroke-width="14" stroke-linecap="round"/>
+  
+  <!-- Lower legs -->
+  <line x1="230" y1="300" x2="220" y2="370" stroke="url(#accent)" stroke-width="12" stroke-linecap="round"/>
+  <line x1="282" y1="300" x2="292" y2="370" stroke="url(#accent)" stroke-width="12" stroke-linecap="round"/>
+  
+  <!-- Feet -->
+  <line x1="220" y1="370" x2="200" y2="378" stroke="#FBBF24" stroke-width="10" stroke-linecap="round"/>
+  <line x1="292" y1="370" x2="312" y2="378" stroke="#FBBF24" stroke-width="10" stroke-linecap="round"/>
+  
+  <!-- ARCH text -->
+  <text x="256" y="440" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="52" font-weight="900" letter-spacing="8" fill="#F3F4F6">ARCH</text>
+  
+  <!-- Tagline -->
+  <text x="256" y="472" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" letter-spacing="4" fill="#9CA3AF">CALISTHENICS</text>
+</svg>

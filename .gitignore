@@ -30,7 +30,8 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
+# local env files with secrets (never commit!)
+.env
 .env*.local
 
 # typescript
@@ -39,3 +40,11 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# build logs
+build_log.txt
+build_log_decompressed.txt
+expo-output.log
+
+# Windows artifacts
+nul

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- White monochrome logo on transparent background for Android adaptive icons -->
+  
+  <!-- Head -->
+  <circle cx="512" cy="180" r="52" fill="white"/>
+  
+  <!-- Torso — angular -->
+  <polygon points="512,235 448,350 576,350" fill="white"/>
+  
+  <!-- Arms — raised in muscle-up position -->
+  <line x1="448" y1="350" x2="330" y2="250" stroke="white" stroke-width="24" stroke-linecap="round"/>
+  <line x1="576" y1="350" x2="694" y2="250" stroke="white" stroke-width="24" stroke-linecap="round"/>
+  
+  <!-- Bar -->
+  <line x1="270" y1="246" x2="754" y2="246" stroke="white" stroke-width="10" stroke-linecap="round" opacity="0.4"/>
+  
+  <!-- Legs — angular -->
+  <line x1="512" y1="350" x2="470" y2="530" stroke="white" stroke-width="24" stroke-linecap="round"/>
+  <line x1="512" y1="350" x2="554" y2="530" stroke="white" stroke-width="24" stroke-linecap="round"/>
+  
+  <!-- Lower legs -->
+  <line x1="470" y1="530" x2="450" y2="660" stroke="white" stroke-width="20" stroke-linecap="round"/>
+  <line x1="554" y1="530" x2="574" y2="660" stroke="white" stroke-width="20" stroke-linecap="round"/>
+  
+  <!-- Feet -->
+  <line x1="450" y1="660" x2="418" y2="674" stroke="white" stroke-width="16" stroke-linecap="round"/>
+  <line x1="574" y1="660" x2="606" y2="674" stroke="white" stroke-width="16" stroke-linecap="round"/>
+  
+  <!-- ARCH text -->
+  <text x="512" y="810" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="100" font-weight="900" letter-spacing="12" fill="white">ARCH</text>
+</svg>
