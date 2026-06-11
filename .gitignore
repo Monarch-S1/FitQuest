@@ -52,6 +52,9 @@ expo-output.log
 # Windows artifacts
 nul
 
+# Local build snapshots
+.native-deps-baseline.json
+
 # Private docs (contains full feature/architecture details)
 docs/
 README-FULL.md
