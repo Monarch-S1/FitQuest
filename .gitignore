@@ -41,6 +41,9 @@ yarn-error.*
 /ios
 /android
 
+# coverage reports
+coverage/
+
 # build logs
 build_log.txt
 build_log_decompressed.txt
