@@ -1,8 +1,8 @@
 import { useEffect, useCallback, useState, useRef } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useColors, typography, spacing } from "../../src/tokens";
+import { useColors, typography, spacing, fonts } from "../../src/tokens";
 import { Button } from "../../src/components/ui/Button";
 import { HUDModule } from "../../src/components/ui/HUDModule";
 import { CompletionAnimation } from "../../src/components/workout/CompletionAnimation";
@@ -310,8 +310,44 @@ export default function WorkoutPlayerScreen() {
   const exercise = useWorkoutStore.getState().currentExercise;
   const timeBased = exercise ? isTimeBased(exercise.tempo) : false;
 
+  // ── Next exercise preview ──
+  const nextExercise = !isLastExercise ? exerciseProgress[currentExerciseIndex + 1] : null;
+  const nextExerciseData = !isLastExercise ? useWorkoutStore.getState().exercises[currentExerciseIndex + 1] : null;
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
+      {/* ═══════ FULL-SCREEN REST TIMER ═══════ */}
+      {phase === "rest" && (
+        <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: colors.bg.primary, zIndex: 50, justifyContent: "center", alignItems: "center" }}>
+          <Text style={{ fontFamily: fonts.heading, fontSize: 10, color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 4, marginBottom: 8 }}>REST</Text>
+          <Text style={{ fontFamily: fonts.heading, fontSize: 120, color: colors.success, fontVariant: ["tabular-nums"] }}>
+            {restTimer}
+          </Text>
+          <Text style={{ fontFamily: fonts.body.regular, fontSize: 12, color: colors.text.secondary, marginBottom: 48 }}>SECONDS</Text>
+          {/* Next exercise preview */}
+          {nextExerciseData && (
+            <View style={{ backgroundColor: colors.bg.surface, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: colors.border.subtle, width: "80%" }}>
+              <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 8, color: colors.accent.DEFAULT, textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>UP NEXT</Text>
+              <Text style={{ fontFamily: fonts.heading, fontSize: 18, color: colors.text.primary }}>{nextExerciseData.name}</Text>
+              <View style={{ flexDirection: "row", gap: 4, marginTop: 6 }}>
+                {nextExerciseData.targetMuscles.map((m) => (
+                  <View key={m} style={{ backgroundColor: colors.bg.elevated, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
+                    <Text style={{ fontFamily: fonts.body.regular, fontSize: 8, color: colors.text.secondary, textTransform: "capitalize" }}>{m.replace("_", " ")}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+          <TouchableOpacity
+            onPress={() => { useWorkoutStore.setState({ phase: "exercise", restTimer: 0 }); }}
+            activeOpacity={0.8}
+            style={{ marginTop: 32, backgroundColor: colors.bg.elevated, borderWidth: 1, borderColor: colors.border.subtle, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 32 }}
+          >
+            <Text style={{ fontFamily: fonts.body.bold, fontSize: 12, color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 2 }}>SKIP REST</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Top bar */}
       <View
         style={{
@@ -372,491 +408,153 @@ export default function WorkoutPlayerScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: spacing[4], paddingBottom: spacing[12] }}>
-        {/* Exercise header */}
-        <HUDModule
-          label={`EXERCISE ${currentExerciseIndex + 1} OF ${exerciseProgress.length}`}
-          accent="amber"
-          style={{ marginBottom: spacing[4] }}
-        >
-          {exercise && currentProgress && (
-            <>
-              <Text style={{ ...typography.h2, color: colors.text.primary, fontSize: 24 }}>
-                {exercise.name}
+        {/* ═══════ EXERCISE PREVIEW CARD ═══════ */}
+        {exercise && currentProgress && (
+          <View style={{ backgroundColor: colors.bg.surface, borderRadius: 16, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: colors.border.subtle }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 9, color: colors.accent.DEFAULT, textTransform: "uppercase", letterSpacing: 2 }}>
+                EXERCISE {currentExerciseIndex + 1} / {exerciseProgress.length}
               </Text>
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: spacing[1],
-                  marginTop: spacing[2],
-                }}
-              >
-                {exercise.targetMuscles.map((muscle) => (
-                  <View
-                    key={muscle}
-                    style={{
-                      backgroundColor: colors.bg.highlight,
-                      borderWidth: 1,
-                      borderColor: colors.border.subtle,
-                      borderRadius: 4,
-                      paddingHorizontal: spacing[2],
-                      paddingVertical: spacing[0],
-                    }}
-                  >
-                    <Text
-                      style={{
-                        ...typography.bodySmall,
-                        color: colors.text.secondary,
-                        fontSize: 9,
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {muscle.replaceAll("_", " ")}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </>
-          )}
-        </HUDModule>
-
-        {/* Unilateral side indicator */}
-        {currentProgress?.isUnilateral && (
-          <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: spacing[2] }}>
-            <View
-              style={{
-                flex: 1,
-                height: 32,
-                backgroundColor:
-                  currentProgress.currentSide === "left" ? `${colors.accent.DEFAULT}20` : colors.bg.elevated,
-                borderWidth: 1.5,
-                borderColor:
-                  currentProgress.currentSide === "left" ? colors.accent.DEFAULT : colors.border.subtle,
-                borderRadius: 4,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text
-                style={{
-                  ...typography.label,
-                  color: currentProgress.currentSide === "left" ? colors.accent.DEFAULT : colors.text.secondary,
-                  fontSize: 9,
-                }}
-              >
-                ← LEFT
-              </Text>
+              {currentProgress.isUnilateral && (
+                <View style={{ backgroundColor: currentProgress.currentSide === "left" ? `${colors.accent.DEFAULT}20` : colors.bg.elevated, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 2, borderWidth: 1, borderColor: currentProgress.currentSide === "left" ? colors.accent.DEFAULT : colors.border.subtle }}>
+                  <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 8, color: currentProgress.currentSide === "left" ? colors.accent.DEFAULT : colors.text.secondary }}>
+                    {currentProgress.currentSide === "left" ? "← LEFT" : "RIGHT →"}
+                  </Text>
+                </View>
+              )}
             </View>
-            <View
-              style={{
-                flex: 1,
-                height: 32,
-                backgroundColor:
-                  currentProgress.currentSide === "right" ? `${colors.accent.DEFAULT}20` : colors.bg.elevated,
-                borderWidth: 1.5,
-                borderColor:
-                  currentProgress.currentSide === "right" ? colors.accent.DEFAULT : colors.border.subtle,
-                borderRadius: 4,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text
-                style={{
-                  ...typography.label,
-                  color: currentProgress.currentSide === "right" ? colors.accent.DEFAULT : colors.text.secondary,
-                  fontSize: 9,
-                }}
-              >
-                RIGHT →
-              </Text>
+            <Text style={{ fontFamily: fonts.heading, fontSize: 24, color: colors.text.primary, marginBottom: 8 }}>
+              {exercise.name}
+            </Text>
+            {/* Muscle tags */}
+            <View style={{ flexDirection: "row", gap: 4, marginBottom: 12 }}>
+              {exercise.targetMuscles.map((muscle) => (
+                <View key={muscle} style={{ backgroundColor: colors.bg.elevated, borderRadius: 4, paddingHorizontal: 8, paddingVertical: 3 }}>
+                  <Text style={{ fontFamily: fonts.body.regular, fontSize: 9, color: colors.text.secondary, textTransform: "capitalize" }}>
+                    {muscle.replace("_", " ")}
+                  </Text>
+                </View>
+              ))}
             </View>
+            {/* Set progress dots */}
+            <View style={{ flexDirection: "row", gap: 6 }}>
+              {Array.from({ length: currentProgress.isUnilateral ? Math.ceil(currentProgress.totalSets / 2) : currentProgress.totalSets }).map((_, i) => (
+                <View key={i} style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: i < currentProgress.currentSet ? colors.success : colors.bg.elevated }} />
+              ))}
+            </View>
+            <Text style={{ fontFamily: fonts.body.regular, fontSize: 9, color: colors.text.secondary, marginTop: 6 }}>
+              SET {Math.min(currentProgress.currentSet + 1, currentProgress.totalSets)} / {currentProgress.totalSets}
+            </Text>
           </View>
         )}
 
-        {/* Set progress — for unilateral, show per-side sets (e.g. 3) not doubled (6) */}
-        <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: spacing[4] }}>
-          {currentProgress &&
-            Array.from({
-              length: currentProgress.isUnilateral
-                ? Math.ceil(currentProgress.totalSets / 2)
-                : currentProgress.totalSets,
-            }).map((_, i) => (
-              <View
-                key={i}
-                style={{
-                  flex: 1,
-                  height: 40,
-                  backgroundColor:
-                    i < currentProgress.currentSet ? `${colors.success}30` : colors.bg.elevated,
-                  borderWidth: 1.5,
-                  borderColor:
-                    i < currentProgress.currentSet
-                      ? colors.success
-                      : i === currentProgress.currentSet
-                        ? colors.accent.DEFAULT
-                        : colors.border.subtle,
-                  borderRadius: 4,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+        {/* ═══════ MASSIVE REP COUNTER ═══════ */}
+        {!timeBased && phase === "exercise" && (
+          <View style={{ alignItems: "center", marginBottom: 20 }}>
+            <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 9, color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>REPS</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 24 }}>
+              <TouchableOpacity
+                onPress={() => setCurrentRepInput(currentRepInput - 1)}
+                activeOpacity={0.7}
+                style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.bg.elevated, borderWidth: 1, borderColor: colors.border.subtle, alignItems: "center", justifyContent: "center" }}
               >
-                <Text
-                  style={{
-                    ...typography.label,
-                    color:
-                      i < currentProgress.currentSet
-                        ? colors.success
-                        : i === currentProgress.currentSet
-                          ? colors.accent.DEFAULT
-                          : colors.text.secondary,
-                    fontSize: 10,
-                  }}
-                >
-                  SET {i + 1}
-                </Text>
-              </View>
-            ))}
-        </View>
-
-        {/* Target info — adapts for time-based exercises */}
-        {exercise && (
-          <HUDModule label="TARGET" accent="none" style={{ marginBottom: spacing[4] }}>
-            <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
-              <View style={{ alignItems: "center" }}>
-                <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 8 }}>
-                  {timeBased ? "HOLD" : "REPS"}
-                </Text>
-                <Text style={{ ...typography.h3, color: colors.accent.DEFAULT, fontSize: 20 }}>
-                  {timeBased
-                    ? `${exercise.repRange[0]}s-${exercise.repRange[1]}s`
-                    : `${exercise.repRange[0]}-${exercise.repRange[1]}`}
-                </Text>
-              </View>
-              <View style={{ alignItems: "center" }}>
-                <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 8 }}>
-                  TEMPO
-                </Text>
-                <Text style={{ ...typography.h3, color: colors.text.primary, fontSize: 20 }}>
-                  {exercise.tempo === "isometric" ? "STATIC" : exercise.tempo}
-                </Text>
-              </View>
-              <View style={{ alignItems: "center" }}>
-                <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 8 }}>
-                  REST
-                </Text>
-                <Text style={{ ...typography.h3, color: colors.text.primary, fontSize: 20 }}>
-                  {exercise.restInterval}s
-                </Text>
-              </View>
+                <Text style={{ fontFamily: fonts.heading, fontSize: 28, color: colors.text.secondary }}>−</Text>
+              </TouchableOpacity>
+              <Text style={{ fontFamily: fonts.heading, fontSize: 72, color: colors.accent.DEFAULT, fontVariant: ["tabular-nums"], minWidth: 100, textAlign: "center" }}>
+                {currentRepInput}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setCurrentRepInput(currentRepInput + 1)}
+                activeOpacity={0.7}
+                style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.bg.elevated, borderWidth: 1, borderColor: colors.border.subtle, alignItems: "center", justifyContent: "center" }}
+              >
+                <Text style={{ fontFamily: fonts.heading, fontSize: 28, color: colors.text.secondary }}>+</Text>
+              </TouchableOpacity>
             </View>
-          </HUDModule>
+            <Text style={{ fontFamily: fonts.body.regular, fontSize: 10, color: colors.text.secondary, marginTop: 4 }}>
+              TARGET: {exercise?.repRange[0]}–{exercise?.repRange[1]}
+            </Text>
+          </View>
         )}
 
-        {/* Exercise demo video link */}
-        {exercise && <ExerciseDemo exercise={exercise} />}
+        {/* ═══════ TIME-BASED HOLD COUNTER ═══════ */}
+        {timeBased && phase === "exercise" && (
+          <View style={{ alignItems: "center", marginBottom: 20 }}>
+            <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 9, color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>HOLD DURATION</Text>
+            <View style={{ width: 160, height: 160, borderRadius: 80, borderWidth: 8, borderColor: isHolding ? colors.success : colors.bg.elevated, alignItems: "center", justifyContent: "center", backgroundColor: isHolding ? `${colors.success}10` : colors.bg.surface }}>
+              <Text style={{ fontFamily: fonts.heading, fontSize: 56, color: isHolding ? colors.success : colors.accent.DEFAULT, fontVariant: ["tabular-nums"] }}>
+                {holdElapsed}
+              </Text>
+              <Text style={{ fontFamily: fonts.body.regular, fontSize: 10, color: colors.text.secondary }}>SECONDS</Text>
+            </View>
+            <Text style={{ fontFamily: fonts.body.regular, fontSize: 10, color: colors.text.secondary, marginTop: 8 }}>
+              TARGET: {exercise?.repRange[0]}s–{exercise?.repRange[1]}s
+            </Text>
+          </View>
+        )}
 
-        {/* Animated tempo timer — REMOVED for isometric exercises (no beat cycle) */}
+        {/* ═══════ AUTO REP COUNTER ═══════ */}
+        {!timeBased && phase === "exercise" && (
+          <View style={{ marginBottom: 16 }}>
+            <RepCounterPanel phase={phase} manualCount={currentRepInput} onSyncCount={(autoCount) => setCurrentRepInput(autoCount)} />
+          </View>
+        )}
+
+        {/* Exercise demo + tempo + notes */}
+        {exercise && (
+          <View style={{ marginBottom: 16 }}>
+            <ExerciseDemo exercise={exercise} />
+          </View>
+        )}
         {exercise && exercise.tempo !== "isometric" && (
-          <View style={{ marginBottom: spacing[4] }}>
+          <View style={{ marginBottom: 16 }}>
             <TempoTimer tempo={exercise.tempo} isActive={phase === "exercise"} />
           </View>
         )}
-
-        {/* Description */}
         {exercise?.description && (
-          <HUDModule label="NOTES" accent="none" style={{ marginBottom: spacing[4] }}>
-            <Text
-              style={{
-                ...typography.bodySmall,
-                color: colors.text.secondary,
-                fontSize: 12,
-                lineHeight: 18,
-              }}
-            >
-              {exercise.description}
-            </Text>
-          </HUDModule>
+          <View style={{ backgroundColor: colors.bg.surface, borderRadius: 12, padding: 12, marginBottom: 16, borderWidth: 1, borderColor: colors.border.subtle }}>
+            <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 8, color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>NOTES</Text>
+            <Text style={{ fontFamily: fonts.body.regular, fontSize: 11, color: colors.text.secondary, lineHeight: 16 }}>{exercise.description}</Text>
+          </View>
         )}
 
-        {/* Rest timer overlay */}
-        {phase === "rest" && (
-          <HUDModule label="REST" accent="green" style={{ marginBottom: spacing[4] }}>
-            <View style={{ alignItems: "center" }}>
-              <Text style={{ ...typography.h1, color: colors.success, fontSize: 48 }}>
-                {restTimer}
-              </Text>
-              <Text style={{ ...typography.label, color: colors.success, fontSize: 10 }}>
-                SECONDS
-              </Text>
-            </View>
-          </HUDModule>
+        {/* Exercise navigation */}
+        {exerciseProgress.length > 1 && (
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 16, marginBottom: 16 }}>
+            <Button title="PREV" onPress={handlePrevExercise} variant="ghost" size="sm" disabled={isFirstExercise} />
+            <Text style={{ fontFamily: fonts.body.regular, fontSize: 10, color: colors.text.secondary }}>
+              {currentExerciseIndex + 1} / {exerciseProgress.length}
+            </Text>
+            <Button title="NEXT" onPress={handleNextExercise} variant="ghost" size="sm" disabled={isLastExercise} />
+          </View>
         )}
       </ScrollView>
 
-      {/* Bottom action bar */}
-      <View
-        style={{
-          padding: spacing[4],
-          borderTopWidth: 1,
-          borderTopColor: colors.border.subtle,
-          backgroundColor: colors.bg.primary,
-          gap: spacing[2],
-        }}
-      >
-        {phase === "rest" ? (
-          <Button
-            title="SKIP REST"
-            onPress={() => {
-              useWorkoutStore.setState({ phase: "exercise", restTimer: 0 });
-            }}
-            variant="secondary"
-            fullWidth
-          />
-        ) : timeBased ? (
+      {/* ═══════ BOTTOM ACTION BAR ═══════ */}
+      <View style={{ padding: spacing[4], borderTopWidth: 1, borderTopColor: colors.border.subtle, backgroundColor: colors.bg.primary }}>
+        {timeBased ? (
           <>
-            {/* Time-based exercise interface */}
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: spacing[3],
-                marginBottom: spacing[2],
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor: colors.bg.elevated,
-                  borderWidth: 1,
-                  borderColor: colors.border.subtle,
-                  borderRadius: 4,
-                  paddingHorizontal: spacing[2],
-                  paddingVertical: spacing[0],
-                }}
-              >
-                <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 8 }}>
-                  HOLD DURATION
-                </Text>
-              </View>
-            </View>
-
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: spacing[3],
-                marginBottom: spacing[3],
-              }}
-            >
-              <View
-                style={{
-                  minWidth: 80,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: isHolding ? `${colors.success}15` : colors.bg.elevated,
-                  borderWidth: 1.5,
-                  borderColor: isHolding ? colors.success : colors.accent.DEFAULT,
-                  borderRadius: 4,
-                  paddingHorizontal: spacing[4],
-                  paddingVertical: spacing[2],
-                }}
-              >
-                <Text
-                  style={{
-                    ...typography.h1,
-                    color: isHolding ? colors.success : colors.accent.DEFAULT,
-                    fontSize: 36,
-                    fontVariant: ["tabular-nums"],
-                  }}
-                >
-                  {holdElapsed}
-                </Text>
-                <Text
-                  style={{
-                    ...typography.label,
-                    color: isHolding ? colors.success : colors.text.secondary,
-                    fontSize: 8,
-                    marginTop: -spacing[0],
-                  }}
-                >
-                  SECONDS
-                </Text>
-              </View>
-            </View>
-
-            <View style={{ flexDirection: "row", gap: spacing[2] }}>
-              {!isHolding && !holdCompleted && (
-                <Button title="START HOLD" onPress={handleStartHold} variant="primary" fullWidth />
-              )}
-              {isHolding && (
-                <Button
-                  title="COMPLETE HOLD"
-                  onPress={handleCompleteHold}
-                  variant="primary"
-                  fullWidth
-                />
-              )}
-              {holdCompleted && !currentProgress?.isComplete && (
-                <Button
-                  title="NEXT SET"
-                  onPress={() => {
-                    const store = useWorkoutStore.getState();
-                    if (store.phase !== "rest") {
-                      store.startRest();
-                    } else {
-                      setHoldCompleted(false);
-                      holdCompletedRef.current = false;
-                    }
-                  }}
-                  variant="secondary"
-                  fullWidth
-                />
-              )}
-            </View>
+            {!isHolding && !holdCompleted && (
+              <Button title="START HOLD" onPress={handleStartHold} fullWidth />
+            )}
+            {isHolding && (
+              <Button title="COMPLETE HOLD" onPress={handleCompleteHold} fullWidth />
+            )}
+            {holdCompleted && !currentProgress?.isComplete && (
+              <Button title="NEXT SET" onPress={() => { const store = useWorkoutStore.getState(); if (store.phase !== "rest") { store.startRest(); } else { setHoldCompleted(false); holdCompletedRef.current = false; } }} variant="secondary" fullWidth />
+            )}
           </>
         ) : (
-          <>
-            {/* Rep-based exercise interface */}
-            {/* Auto rep counter panel */}
-            <View style={{ marginBottom: spacing[3] }}>
-              <RepCounterPanel
-                phase={phase}
-                manualCount={currentRepInput}
-                onSyncCount={(autoCount) => setCurrentRepInput(autoCount)}
-              />
-            </View>
-
-            {/* Manual rep input label */}
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: spacing[3],
-                marginBottom: spacing[2],
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor: colors.bg.elevated,
-                  borderWidth: 1,
-                  borderColor: colors.border.subtle,
-                  borderRadius: 4,
-                  paddingHorizontal: spacing[2],
-                  paddingVertical: spacing[0],
-                }}
-              >
-                <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 8 }}>
-                  MANUAL REPS
-                </Text>
-              </View>
-            </View>
-
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: spacing[3],
-                marginBottom: spacing[3],
-              }}
-            >
-              <Button
-                title="−"
-                onPress={() => setCurrentRepInput(currentRepInput - 1)}
-                variant="secondary"
-                size="sm"
-              />
-              <View
-                style={{
-                  minWidth: 64,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: colors.bg.elevated,
-                  borderWidth: 1.5,
-                  borderColor: colors.accent.DEFAULT,
-                  borderRadius: 4,
-                  paddingHorizontal: spacing[3],
-                  paddingVertical: spacing[1],
-                }}
-              >
-                <Text style={{ ...typography.h2, color: colors.accent.DEFAULT, fontSize: 24 }}>
-                  {currentRepInput}
-                </Text>
-              </View>
-              <Button
-                title="+"
-                onPress={() => setCurrentRepInput(currentRepInput + 1)}
-                variant="secondary"
-                size="sm"
-              />
-            </View>
-
-            {/* Exercise navigation */}
-            {exerciseProgress.length > 1 && (
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: spacing[2],
-                  marginBottom: spacing[2],
-                }}
-              >
-                <View style={{ flex: 1 }}>
-                  <Button
-                    title="← PREV"
-                    onPress={handlePrevExercise}
-                    variant="ghost"
-                    size="sm"
-                    disabled={isFirstExercise}
-                  />
-                </View>
-                <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-                  <Text
-                    style={{
-                      ...typography.label,
-                      color: colors.text.secondary,
-                      fontSize: 8,
-                    }}
-                  >
-                    {currentExerciseIndex + 1} / {totalExercises}
-                  </Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Button
-                    title="NEXT →"
-                    onPress={handleNextExercise}
-                    variant="ghost"
-                    size="sm"
-                    disabled={isLastExercise}
-                  />
-                </View>
-              </View>
-            )}
-
-            <Button
-              title={
-                currentProgress?.isUnilateral
-                  ? currentProgress.currentSide === "left"
-                    ? "COMPLETE LEFT SIDE"
-                    : "COMPLETE RIGHT SIDE"
-                  : currentProgress && currentProgress.currentSet >= currentProgress.totalSets - 1
-                    ? "COMPLETE EXERCISE"
-                    : "COMPLETE SET"
-              }
-              onPress={handleCompleteSet}
-              fullWidth
-            />
-          </>
-        )}
-
-        {phase === "exercise" && (
           <Button
-            title="FINISH WORKOUT"
-            onPress={handleCompleteWorkout}
-            variant="secondary"
+            title={currentProgress?.isUnilateral ? currentProgress.currentSide === "left" ? "COMPLETE LEFT SIDE" : "COMPLETE RIGHT SIDE" : currentProgress && currentProgress.currentSet >= currentProgress.totalSets - 1 ? "COMPLETE EXERCISE" : "COMPLETE SET"}
+            onPress={handleCompleteSet}
             fullWidth
           />
+        )}
+        {phase === "exercise" && (
+          <View style={{ marginTop: 8 }}>
+            <Button title="FINISH WORKOUT" onPress={handleCompleteWorkout} variant="secondary" fullWidth />
+          </View>
         )}
       </View>
     </SafeAreaView>
