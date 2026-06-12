@@ -4,11 +4,15 @@ import { View, Text, ActivityIndicator } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as Font from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
 import * as Updates from "expo-updates";
 import { useColors, useThemeMode } from "../src/tokens";
 import { ErrorBoundary } from "../src/components/ui/ErrorBoundary";
 import { initRestNotifications } from "../src/hooks/useRestNotifications";
 import { initSentry } from "../src/services/sentry";
+
+// Keep the native splash screen visible while we load fonts and initialize
+SplashScreen.preventAutoHideAsync();
 
 // Initialize crash reporting before anything else
 initSentry();
@@ -28,10 +32,10 @@ export default function RootLayout() {
           "Inter-SemiBold": require("../assets/fonts/Inter-SemiBold.ttf"),
           "Inter-Bold": require("../assets/fonts/Inter-Bold.ttf"),
         });
-        setFontsLoaded(true);
       } catch (e) {
         console.warn("Font loading error, using system fonts:", e);
-        setFontsLoaded(true); // Still render, just with system fonts
+      } finally {
+        setFontsLoaded(true);
       }
     }
     loadFonts();
@@ -64,31 +68,16 @@ export default function RootLayout() {
     checkForUpdates();
   }, []);
 
+  // Hide the native splash screen once fonts are loaded
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  // Keep the splash screen visible while fonts load — no intermediate loading screen needed
   if (!fontsLoaded) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: colors.bg.primary,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <ActivityIndicator size="large" color={colors.accent.DEFAULT} />
-        <Text
-          style={{
-            color: colors.text.secondary,
-            marginTop: 16,
-            fontFamily: "sans-serif",
-            fontSize: 14,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-          }}
-        >
-          Loading ARCH
-        </Text>
-      </View>
-    );
+    return null;
   }
 
   return (
