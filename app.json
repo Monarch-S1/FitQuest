@@ -7,11 +7,6 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "scheme": "arch",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0F1115"
-    },
     "ios": {
       "supportsTablet": true
     },
@@ -32,7 +27,14 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-splash-screen"
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0F1115",
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain"
+        }
+      ]
     ],
     "extra": {
       "router": {},
