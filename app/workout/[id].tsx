@@ -17,6 +17,7 @@ import { useUserStore } from "../../src/stores/useUserStore";
 import { getWorkoutByIdForGoal } from "../../src/data/workouts";
 import { calculateWorkoutXp } from "../../src/utils/xp";
 import { GlossyOverlay } from "../../src/components/ui/GlossyOverlay";
+import * as Haptics from "expo-haptics";
 
 /** Get today's date in local timezone as YYYY-MM-DD */
 function getLocalDate(): string {
@@ -107,6 +108,19 @@ export default function WorkoutPlayerScreen() {
       }
     };
   }, [phase]);
+
+  // Haptic feedback at 3-2-1 countdown during rest
+  const prevRestTimerRef = useRef(Infinity);
+  useEffect(() => {
+    if (phase === "rest" && restTimer > 0 && restTimer <= 3 && prevRestTimerRef.current !== restTimer) {
+      Haptics.impactAsync(
+        restTimer === 1 ? Haptics.ImpactFeedbackStyle.Heavy :
+        restTimer === 2 ? Haptics.ImpactFeedbackStyle.Medium :
+        Haptics.ImpactFeedbackStyle.Light
+      );
+    }
+    prevRestTimerRef.current = restTimer;
+  }, [restTimer, phase]);
 
   // Hold timer interval — uses ref to avoid re-creating callback every second
   const holdElapsedRef = useRef(0);
