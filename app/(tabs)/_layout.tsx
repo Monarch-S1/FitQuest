@@ -18,8 +18,8 @@ export default function TabLayout() {
           paddingBottom: 24,
           paddingTop: 8,
         },
-        tabBarActiveTintColor: "#F59E0B",
-        tabBarInactiveTintColor: "#9CA3AF",
+        tabBarActiveTintColor: colors.accent.DEFAULT,
+        tabBarInactiveTintColor: colors.text.secondary,
         tabBarShowLabel: false,
       }}
     >
@@ -70,6 +70,7 @@ export default function TabLayout() {
 
 
 function TabItem({ icon, label, focused }: { icon: string; label: string; focused: boolean }) {
+  const colors = useColors();
   return (
     <View style={{ alignItems: "center", justifyContent: "center", width: 64 }}>
       <View
@@ -79,13 +80,13 @@ function TabItem({ icon, label, focused }: { icon: string; label: string; focuse
           alignItems: "center",
           justifyContent: "center",
           borderBottomWidth: focused ? 2 : 0,
-          borderBottomColor: focused ? "#F59E0B" : "transparent",
+          borderBottomColor: focused ? colors.accent.DEFAULT : "transparent",
         }}
       >
         <Text
           style={{
             fontSize: 16,
-            color: focused ? "#F59E0B" : "#9CA3AF",
+            color: focused ? colors.accent.DEFAULT : colors.text.secondary,
           }}
         >
           {icon}
@@ -96,7 +97,7 @@ function TabItem({ icon, label, focused }: { icon: string; label: string; focuse
         style={{
           fontFamily: fonts.body.semiBold,
           fontSize: 9,
-          color: focused ? "#F59E0B" : "#9CA3AF",
+          color: focused ? colors.accent.DEFAULT : colors.text.secondary,
           letterSpacing: 0.3,
           marginTop: 1,
         }}

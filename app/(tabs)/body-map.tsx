@@ -194,7 +194,7 @@ export default function BodyMapScreen() {
                 <Text
                   style={{
                     ...typography.h4,
-                    color: muscle.level >= 3 ? "#10B981" : colors.accent.DEFAULT,
+                    color: muscle.level >= 3 ? colors.success : colors.accent.DEFAULT,
                     fontSize: 16,
                   }}
                 >

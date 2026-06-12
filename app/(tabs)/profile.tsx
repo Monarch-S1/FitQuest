@@ -273,7 +273,7 @@ export default function ProfileScreen() {
         <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 11, fontWeight: "bold", color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 1, marginTop: 8, marginBottom: 12 }}>ACHIEVEMENTS</Text>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[2] }}>
           {achievements.map((a) => (
-            <View key={a.id} style={{ width: "31%", backgroundColor: a.unlocked ? "#10B98115" : colors.bg.surface, borderWidth: 1, borderColor: a.unlocked ? colors.success : colors.border.subtle, borderRadius: 8, padding: 8, alignItems: "center", opacity: a.unlocked ? 1 : 0.5 }}>
+            <View key={a.id} style={{ width: "31%", backgroundColor: a.unlocked ? `${colors.success}15` : colors.bg.surface, borderWidth: 1, borderColor: a.unlocked ? colors.success : colors.border.subtle, borderRadius: 8, padding: 8, alignItems: "center", opacity: a.unlocked ? 1 : 0.5 }}>
               <Text style={{ fontSize: 20, marginBottom: 4 }}>{a.unlocked ? a.icon : "○"}</Text>
               <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 7, color: a.unlocked ? colors.success : colors.text.secondary, textAlign: "center" }} numberOfLines={2}>{a.name.toUpperCase()}</Text>
             </View>
