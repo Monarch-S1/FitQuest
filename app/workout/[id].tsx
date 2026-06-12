@@ -381,6 +381,7 @@ export default function WorkoutPlayerScreen() {
               paddingVertical: 14,
               paddingHorizontal: 32,
               shadowColor: colors.accent.DEFAULT,
+              elevation: restTimer <= 3 ? 8 : 0,
             }}
           >
             <TouchableOpacity
