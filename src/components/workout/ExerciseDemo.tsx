@@ -88,12 +88,15 @@ export function ExerciseDemo({ exercise }: ExerciseDemoProps) {
 
   const handleWatchVideo = useCallback(async () => {
     const url = videoId
-      ? `https://www.youtube.com/watch?v=${videoId}`
-      : `https://m.youtube.com/results?search_query=${encodeURIComponent(
+      ? `https://www.youtube.com/embed/${videoId}?playsinline=1&autoplay=0`
+      : `https://www.youtube.com/results?search_query=${encodeURIComponent(
           `${exercise.name} calisthenics exercise form`
         )}`;
     try {
-      await WebBrowser.openBrowserAsync(url);
+      await WebBrowser.openBrowserAsync(url, {
+        toolbarColor: '#0F1115',
+        controlsColor: '#F59E0B',
+      });
     } catch {
       Alert.alert("Unable to open browser", "Please check your device settings.");
     }
