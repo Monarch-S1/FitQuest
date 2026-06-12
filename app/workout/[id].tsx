@@ -365,13 +365,32 @@ export default function WorkoutPlayerScreen() {
               </View>
             </View>
           )}
-          <TouchableOpacity
-            onPress={() => { useWorkoutStore.setState({ phase: "exercise", restTimer: 0 }); }}
-            activeOpacity={0.8}
-            style={{ marginTop: 32, backgroundColor: colors.bg.elevated, borderWidth: 1, borderColor: colors.border.subtle, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 32 }}
+          <MotiView
+            animate={{
+              scale: restTimer <= 3 ? [1, 1.04, 1] : 1,
+              borderColor: restTimer <= 3 ? colors.accent.DEFAULT : colors.border.subtle,
+              shadowOpacity: restTimer <= 3 ? [0, 0.6, 0] : 0,
+              shadowRadius: restTimer <= 3 ? [0, 12, 0] : 0,
+            }}
+            transition={{ type: "timing", duration: 800, loop: restTimer <= 3 }}
+            style={{
+              marginTop: 32,
+              backgroundColor: colors.bg.elevated,
+              borderWidth: 1,
+              borderRadius: 12,
+              paddingVertical: 14,
+              paddingHorizontal: 32,
+              shadowColor: colors.accent.DEFAULT,
+            }}
           >
-            <Text style={{ fontFamily: fonts.body.bold, fontSize: 12, color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 2 }}>SKIP REST</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => { useWorkoutStore.setState({ phase: "exercise", restTimer: 0 }); }}
+              activeOpacity={0.8}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={{ fontFamily: fonts.body.bold, fontSize: 12, color: restTimer <= 3 ? colors.accent.DEFAULT : colors.text.secondary, textTransform: "uppercase", letterSpacing: 2 }}>SKIP REST</Text>
+            </TouchableOpacity>
+          </MotiView>
         </View>
       )}
 
