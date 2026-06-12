@@ -5,7 +5,6 @@ import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useColors, typography, spacing, fonts } from "../../src/tokens";
-import { StatModule } from "../../src/components/ui/StatModule";
 import { SegmentedPanel } from "../../src/components/ui/SegmentedPanel";
 import { XpBar } from "../../src/components/ui/XpBar";
 import { ThemeSwitcher } from "../../src/components/ui/ThemeSwitcher";
@@ -518,35 +517,41 @@ export default function ProfileScreen() {
           <ThemeSwitcher />
         </SegmentedPanel>
 
-        {/* Stats Grid */}
-        <Text
+        {/* Quick Stats Row — compact, no duplicate StatModules */}
+        <View
           style={{
-            ...typography.subtitle,
-            color: colors.text.secondary,
-            fontSize: 11,
-            marginTop: spacing[2],
+            flexDirection: "row",
+            gap: spacing[2],
             marginBottom: spacing[3],
           }}
         >
-          STATISTICS
-        </Text>
-
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[2] }}>
-          <View style={{ width: "31%" }}>
-            <StatModule label="TOTAL XP" value={totalXp} accent="amber" size="sm" />
-          </View>
-          <View style={{ width: "31%" }}>
-            <StatModule label="WORKOUTS" value={workoutHistory.length} accent="green" size="sm" />
-          </View>
-          <View style={{ width: "31%" }}>
-            <StatModule
-              label="STREAK"
-              value={streakData.currentStreak}
-              accent={streakData.currentStreak >= 3 ? "green" : "amber"}
-              size="sm"
-              subValue={`Best: ${streakData.longestStreak}`}
-            />
-          </View>
+          {[
+            { label: "XP", value: totalXp, color: colors.accent.DEFAULT },
+            { label: "WORKOUTS", value: workoutHistory.length, color: colors.success },
+            { label: "STREAK", value: streakData.currentStreak, color: streakData.currentStreak >= 3 ? colors.success : colors.accent.DEFAULT },
+          ].map((stat) => (
+            <View
+              key={stat.label}
+              style={{
+                flex: 1,
+                backgroundColor: colors.bg.elevated,
+                borderWidth: 1,
+                borderColor: colors.border.subtle,
+                borderRadius: 4,
+                padding: spacing[2],
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 8 }}>
+                {stat.label}
+              </Text>
+              <Text
+                style={{ ...typography.h3, color: stat.color, fontSize: 20, marginTop: 2 }}
+              >
+                {stat.value}
+              </Text>
+            </View>
+          ))}
         </View>
 
         {/* Exercise Progression */}
@@ -702,74 +707,7 @@ export default function ProfileScreen() {
           </>
         )}
 
-        {/* Recent Activity */}
-        <SegmentedPanel title="RECENT ACTIVITY" accent="none" style={{ marginTop: spacing[2] }}>
-          {workoutHistory.length === 0 ? (
-            <Text
-              style={{
-                ...typography.bodySmall,
-                color: colors.text.secondary,
-                fontSize: 12,
-                textAlign: "center",
-                padding: spacing[4],
-              }}
-            >
-              No workouts recorded yet. Complete your first training session to see activity here.
-            </Text>
-          ) : (
-            <View style={{ gap: spacing[2] }}>
-              {[...workoutHistory]
-                .reverse()
-                .slice(0, 5)
-                .map((session) => (
-                  <View
-                    key={session.id}
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      backgroundColor: colors.bg.primary,
-                      padding: spacing[2],
-                      borderWidth: 1,
-                      borderColor: colors.border.subtle,
-                      borderRadius: 4,
-                    }}
-                  >
-                    <View>
-                      <Text
-                        style={{
-                          ...typography.bodySmall,
-                          color: colors.text.primary,
-                          fontSize: 11,
-                          fontFamily: fonts.body.semiBold,
-                        }}
-                      >
-                        {session.workoutId.toUpperCase()}
-                      </Text>
-                      <Text
-                        style={{
-                          ...typography.bodySmall,
-                          color: colors.text.secondary,
-                          fontSize: 9,
-                        }}
-                      >
-                        {session.date}
-                      </Text>
-                    </View>
-                    <Text
-                      style={{
-                        ...typography.bodySmall,
-                        color: colors.accent.DEFAULT,
-                        fontSize: 11,
-                      }}
-                    >
-                      +{session.xpEarned} XP
-                    </Text>
-                  </View>
-                ))}
-            </View>
-          )}
-        </SegmentedPanel>
+
 
         {/* Achievements */}
         <Text

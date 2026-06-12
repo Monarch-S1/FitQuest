@@ -3,10 +3,10 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useColors, typography, spacing, fonts } from "../../src/tokens";
-import { SegmentedPanel } from "../../src/components/ui/SegmentedPanel";
 import { WorkoutCard } from "../../src/components/ui/WorkoutCard";
 import { Button } from "../../src/components/ui/Button";
-import { getWorkoutsForGoal, getGoalConfig } from "../../src/data/workouts";
+import { SegmentedPanel } from "../../src/components/ui/SegmentedPanel";
+import { getWorkoutsForGoal } from "../../src/data/workouts";
 import { useUserStore } from "../../src/stores/useUserStore";
 import { getRecommendation } from "../../src/utils/recommendations";
 import { getProgressionSummary } from "../../src/utils/progression";
@@ -18,14 +18,11 @@ export default function TrainScreen() {
   const router = useRouter();
   const { workoutHistory, recoveryStatus, isHydrated, fitnessGoal } = useUserStore();
 
-  // Goal-specific workouts
   const goalWorkouts = useMemo(
     () => getWorkoutsForGoal(fitnessGoal),
     [fitnessGoal],
   );
-  const goalConfig = useMemo(() => getGoalConfig(fitnessGoal), [fitnessGoal]);
 
-  // Intelligence-powered recommendation
   const recommendation = useMemo(
     () => getRecommendation(workoutHistory, recoveryStatus),
     [workoutHistory, recoveryStatus],
@@ -40,7 +37,7 @@ export default function TrainScreen() {
     [router],
   );
 
-  // Fade-in animation when content loads
+  // Fade-in animation
   const fadeIn = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     if (isHydrated) {
@@ -309,76 +306,7 @@ export default function TrainScreen() {
             </Text>
           </View>
         </TouchableOpacity>
-
-        {/* Program Info */}
-        <SegmentedPanel title="PROGRAM STRUCTURE" accent="none">
-          <View style={{ gap: spacing[2] }}>
-            <InfoRow label="FREQUENCY" value="4 days/week, rotating A→B→C→D" />
-            <InfoRow label="PROGRAM" value={goalConfig.label} />
-            <InfoRow label="REST" value="Varies by goal (30-180s)" />
-            <InfoRow label="PROGRESSION" value="Double progression method" />
-            <InfoRow label="DELOAD" value="Every 4-6 weeks (-50% volume)" />
-          </View>
-        </SegmentedPanel>
-
-        {/* Difficulty selector */}
-        <SegmentedPanel title="DIFFICULTY" accent="none">
-          <Text
-            style={{
-              ...typography.body,
-              color: colors.text.secondary,
-              fontSize: 13,
-              lineHeight: 20,
-              marginBottom: spacing[3],
-            }}
-          >
-            Each exercise has built-in progression pathways. Start at the level that matches your
-            current capability and progress when you hit the upper rep range with perfect form.
-          </Text>
-          <View style={{ flexDirection: "row", gap: spacing[2] }}>
-            {["BEGINNER", "INTERMEDIATE", "ADVANCED"].map((level) => (
-              <View
-                key={level}
-                style={{
-                  flex: 1,
-                  backgroundColor: colors.bg.highlight,
-                  borderWidth: 1,
-                  borderColor: colors.border.subtle,
-                  borderRadius: 4,
-                  padding: spacing[2],
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    ...typography.label,
-                    color: level === "INTERMEDIATE" ? colors.accent.DEFAULT : colors.text.secondary,
-                    fontSize: 8,
-                    textAlign: "center",
-                  }}
-                >
-                  {level}
-                </Text>
-              </View>
-            ))}
-          </View>
-        </SegmentedPanel>
       </Animated.ScrollView>
     </SafeAreaView>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  const colors = useColors();
-
-  return (
-    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-      <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 9 }}>
-        {label}
-      </Text>
-      <Text style={{ ...typography.bodySmall, color: colors.text.primary, fontSize: 11 }}>
-        {value}
-      </Text>
-    </View>
   );
 }
