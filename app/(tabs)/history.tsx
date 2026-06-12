@@ -4,55 +4,41 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useColors, typography, spacing, fonts } from "../../src/tokens";
 import { useUserStore } from "../../src/stores/useUserStore";
 import { getLevel, getProgressToNextLevel } from "../../src/utils/level";
+import {
+  LineChart,
+  BarChart,
+  StreakCalendar,
+  WeekdayChart,
+} from "../../src/components/workout/WorkoutChart";
+import {
+  getVolumeData,
+  getXpData,
+  getDurationData,
+  getStreakCalendar,
+  getWorkoutByWeekday,
+} from "../../src/utils/chartData";
+import { XpBar } from "../../src/components/ui/XpBar";
+import { GlossyOverlay } from "../../src/components/ui/GlossyOverlay";
+import { SyncIndicator } from "../../src/components/ui/SyncIndicator";
 
-function StatBox({
-  label,
-  value,
-  trend,
-  color,
-}: {
-  label: string;
-  value: string;
-  trend?: "up" | "down";
-  color: string;
-}) {
+type Range = "7d" | "30d" | "all";
+const RANGE_OPTIONS: { key: Range; label: string; points: number }[] = [
+  { key: "7d", label: "7D", points: 7 },
+  { key: "30d", label: "30D", points: 30 },
+  { key: "all", label: "ALL", points: 99 },
+];
+
+function StatBox({ label, value, trend, colors }: { label: string; value: string; trend?: "up" | "down"; colors: ReturnType<typeof useColors> }) {
   return (
     <View style={{ alignItems: "center", flex: 1 }}>
-      <Text
-        style={{
-          fontFamily: fonts.body.semiBold,
-          fontSize: 10,
-          fontWeight: "bold",
-          color: "#9CA3AF",
-          textTransform: "uppercase",
-          letterSpacing: 2,
-          marginBottom: 4,
-        }}
-      >
+      <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 10, fontWeight: "bold", color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>
         {label}
       </Text>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <Text
-          style={{
-            fontFamily: fonts.heading,
-            fontSize: 24,
-            fontWeight: "900",
-            color: "#F3F4F6",
-          }}
-        >
+        <Text style={{ fontFamily: fonts.heading, fontSize: 24, fontWeight: "900", color: colors.text.primary }}>
           {value}
         </Text>
-        {trend && (
-          <Text
-            style={{
-              fontSize: 12,
-              color: trend === "up" ? "#F59E0B" : "#EF4444",
-              marginLeft: 4,
-            }}
-          >
-            {trend === "up" ? "↑" : "↓"}
-          </Text>
-        )}
+        {trend && <Text style={{ fontSize: 12, color: trend === "up" ? colors.accent.DEFAULT : colors.error, marginLeft: 4 }}>{trend === "up" ? "↑" : "↓"}</Text>}
       </View>
     </View>
   );
@@ -61,214 +47,138 @@ function StatBox({
 export default function HistoryScreen() {
   const colors = useColors();
   const { workoutHistory, totalXp, streakData } = useUserStore();
-  const [range, setRange] = useState<"7d" | "30d" | "all">("30d");
+  const [range, setRange] = useState<Range>("30d");
+
+  const maxPoints = RANGE_OPTIONS.find((o) => o.key === range)?.points ?? 30;
+
+  const volumeData = useMemo(() => getVolumeData(workoutHistory, maxPoints), [workoutHistory, maxPoints]);
+  const xpData = useMemo(() => getXpData(workoutHistory, maxPoints), [workoutHistory, maxPoints]);
+  const durationData = useMemo(() => getDurationData(workoutHistory, maxPoints), [workoutHistory, maxPoints]);
+  const streakCalendar = useMemo(() => getStreakCalendar(workoutHistory), [workoutHistory]);
+  const weekdayData = useMemo(() => getWorkoutByWeekday(workoutHistory), [workoutHistory]);
 
   const hasData = workoutHistory.length > 0;
+
+  const averageVolume = useMemo(() => {
+    if (volumeData.points.length === 0) return 0;
+    return Math.round(volumeData.points.reduce((a, b) => a + b.value, 0) / volumeData.points.length);
+  }, [volumeData]);
+  const averageXp = useMemo(() => {
+    if (xpData.points.length === 0) return 0;
+    return Math.round(xpData.points.reduce((a, b) => a + b.value, 0) / xpData.points.length);
+  }, [xpData]);
+  const averageDuration = useMemo(() => {
+    if (durationData.points.length === 0) return 0;
+    return Math.round(durationData.points.reduce((a, b) => a + b.value, 0) / durationData.points.length);
+  }, [durationData]);
 
   const level = getLevel(totalXp);
   const xpProgress = getProgressToNextLevel(totalXp);
 
-  // Simple bar chart data from recent workouts
-  const barData = useMemo(() => {
-    const recent = [...workoutHistory].reverse().slice(0, 7);
-    if (recent.length === 0) return [];
-    const maxSets = Math.max(...recent.map((s) => s.setsCompleted), 1);
-    return recent.map((s) => ({
-      height: Math.round((s.setsCompleted / maxSets) * 100),
-      label: s.date.slice(5),
-    }));
-  }, [workoutHistory]);
-
-  // Fade-in animation
   const fadeIn = useRef(new Animated.Value(0)).current;
   useEffect(() => {
-    Animated.timing(fadeIn, {
-      toValue: 1,
-      duration: 200,
-      easing: Easing.out(Easing.ease),
-      useNativeDriver: true,
-    }).start();
+    Animated.timing(fadeIn, { toValue: 1, duration: 200, easing: Easing.out(Easing.ease), useNativeDriver: true }).start();
   }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#0F1115" }}>
-      <Animated.ScrollView
-        style={{ flex: 1, opacity: fadeIn }}
-        contentContainerStyle={{
-          padding: spacing[4],
-          paddingBottom: spacing[12],
-        }}
-        showsVerticalScrollIndicator={false}
-      >
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
+      <Animated.ScrollView style={{ flex: 1, opacity: fadeIn }} contentContainerStyle={{ padding: spacing[4], paddingBottom: spacing[12] }} showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <Text
-          style={{
-            fontFamily: fonts.heading,
-            fontSize: 28,
-            fontWeight: "900",
-            color: "#F3F4F6",
-            textTransform: "uppercase",
-            letterSpacing: 2,
-            marginBottom: 24,
-          }}
-        >
-          History
-        </Text>
-
-        {/* Hero Stats */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginBottom: 40,
-          }}
-        >
-          <StatBox
-            label="Workouts"
-            value={String(workoutHistory.length)}
-            trend="up"
-            color="#F59E0B"
-          />
-          <StatBox
-            label="Streak"
-            value={String(streakData.currentStreak)}
-            trend="up"
-            color="#10B981"
-          />
-          <StatBox
-            label="Volume"
-            value={`${Math.round(totalXp / 1000)}k`}
-            trend={undefined}
-            color="#F59E0B"
-          />
+        <View style={{ marginBottom: spacing[4], position: "relative" }}>
+          <SyncIndicator />
+          <Text style={{ fontFamily: fonts.heading, fontSize: 28, fontWeight: "900", color: colors.text.primary, textTransform: "uppercase", letterSpacing: 2, marginTop: 4 }}>
+            Progress
+          </Text>
         </View>
 
+        {/* XP Bar */}
+        {hasData && (
+          <View style={{ marginBottom: spacing[3] }}>
+            <XpBar currentXp={xpProgress.currentXp} requiredXp={xpProgress.requiredXp} level={level} nextLevel={level + 1} />
+          </View>
+        )}
+
+        {/* Hero Stats */}
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 24 }}>
+          <StatBox colors={colors} label="Workouts" value={String(workoutHistory.length)} trend="up" />
+          <StatBox colors={colors} label="Streak" value={String(streakData.currentStreak)} trend="up" />
+          <StatBox colors={colors} label="Volume" value={`${Math.round(totalXp / 1000)}k`} />
+        </View>
+
+        {/* Range selector */}
+        {hasData && (
+          <View style={{ flexDirection: "row", gap: spacing[1], marginBottom: spacing[4], backgroundColor: colors.bg.surface, borderWidth: 1, borderColor: colors.border.subtle, borderRadius: 4, padding: 2, alignSelf: "flex-start" }}>
+            {RANGE_OPTIONS.map((opt) => (
+              <TouchableOpacity key={opt.key} onPress={() => setRange(opt.key)} activeOpacity={0.7} style={{ paddingHorizontal: spacing[3], paddingVertical: spacing[1], backgroundColor: range === opt.key ? colors.accent.DEFAULT : "transparent", borderRadius: 4 }}>
+                <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 9, color: range === opt.key ? colors.bg.primary : colors.text.secondary, letterSpacing: 1.5 }}>{opt.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
         {!hasData ? (
-          <View
-            style={{
-              backgroundColor: "#1A1D24",
-              borderRadius: 16,
-              padding: 40,
-              alignItems: "center",
-              borderWidth: 1,
-              borderColor: "#2D3139",
-            }}
-          >
+          <View style={{ backgroundColor: colors.bg.surface, borderRadius: 16, padding: 40, alignItems: "center", borderWidth: 1, borderColor: colors.border.subtle, overflow: "hidden" }}>
+            <GlossyOverlay highlightOpacity={0.06} showReflection={false} />
             <Text style={{ fontSize: 32, marginBottom: 12 }}>◇</Text>
-            <Text
-              style={{
-                fontFamily: fonts.body.bold,
-                fontSize: 10,
-                fontWeight: "bold",
-                color: "#9CA3AF",
-                textTransform: "uppercase",
-                letterSpacing: 2,
-                marginBottom: 8,
-              }}
-            >
-              No Workout Data
-            </Text>
-            <Text
-              style={{
-                fontFamily: fonts.body.regular,
-                fontSize: 12,
-                color: "#6B7280",
-                textAlign: "center",
-                lineHeight: 18,
-              }}
-            >
-              Complete your first workout to unlock analytics and performance tracking.
+            <Text style={{ fontFamily: fonts.body.bold, fontSize: 10, fontWeight: "bold", color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>NO WORKOUT DATA</Text>
+            <Text style={{ fontFamily: fonts.body.regular, fontSize: 12, color: colors.text.tertiary, textAlign: "center", lineHeight: 18 }}>
+              Complete your first workout to unlock analytics, charts, and performance tracking.
             </Text>
           </View>
         ) : (
           <>
-            {/* Minimal Bar Chart */}
-            <View
-              style={{
-                height: 160,
-                width: "100%",
-                marginBottom: 40,
-                justifyContent: "flex-end",
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "flex-end",
-                  height: "100%",
-                  paddingHorizontal: 8,
-                  gap: 16,
-                }}
-              >
-                {barData.map((bar, i) => (
-                  <View
-                    key={i}
-                    style={{
-                      flex: 1,
-                      backgroundColor: "#F59E0B33",
-                      borderTopLeftRadius: 4,
-                      borderTopRightRadius: 4,
-                      height: `${bar.height}%`,
-                      minHeight: 4,
-                    }}
-                  >
-                    <View
-                      style={{
-                        height: 2,
-                        backgroundColor: "#F59E0B",
-                        width: "100%",
-                      }}
-                    />
-                  </View>
-                ))}
-              </View>
+            {/* Volume Chart */}
+            <View style={{ backgroundColor: colors.bg.surface, borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.border.subtle }}>
+              <Text style={{ fontFamily: fonts.body.bold, fontSize: 10, fontWeight: "bold", color: colors.accent.DEFAULT, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>VOLUME</Text>
+              <Text style={{ fontFamily: fonts.body.regular, fontSize: 9, color: colors.text.secondary, marginBottom: 8 }}>Sets per workout session</Text>
+              <BarChart data={volumeData} accent={colors.accent.DEFAULT} />
             </View>
 
-            {/* Session List */}
-            {[...workoutHistory].reverse().map((session, i) => (
-              <View
-                key={session.id}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  paddingVertical: 16,
-                  borderBottomWidth: 1,
-                  borderBottomColor: "#2D3139",
-                }}
-              >
-                <View
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: 4,
-                    backgroundColor: "#F59E0B",
-                    marginRight: 16,
-                  }}
-                />
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={{
-                      fontFamily: fonts.body.bold,
-                      fontSize: 14,
-                      color: "#F3F4F6",
-                    }}
-                  >
-                    {session.date} • {session.workoutId.toUpperCase().replace("WORKOUT-", "")}
-                  </Text>
-                  <Text
-                    style={{
-                      fontFamily: fonts.body.regular,
-                      fontSize: 12,
-                      color: "#9CA3AF",
-                      marginTop: 2,
-                    }}
-                  >
-                    {Math.round(session.duration / 60)} mins • {session.setsCompleted} sets • +{session.xpEarned} XP
-                  </Text>
-                </View>
-                <Text style={{ fontSize: 16, color: "#2D3139" }}>›</Text>
+            {/* XP Chart */}
+            <View style={{ backgroundColor: colors.bg.surface, borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.border.subtle }}>
+              <Text style={{ fontFamily: fonts.body.bold, fontSize: 10, fontWeight: "bold", color: colors.accent.DEFAULT, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>XP EARNED</Text>
+              <Text style={{ fontFamily: fonts.body.regular, fontSize: 9, color: colors.text.secondary, marginBottom: 8 }}>Experience points per session</Text>
+              <LineChart data={xpData} accent={colors.accent.DEFAULT} />
+            </View>
+
+            {/* Duration Chart */}
+            <View style={{ backgroundColor: colors.bg.surface, borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.border.subtle }}>
+              <Text style={{ fontFamily: fonts.body.bold, fontSize: 10, fontWeight: "bold", color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>DURATION</Text>
+              <Text style={{ fontFamily: fonts.body.regular, fontSize: 9, color: colors.text.secondary, marginBottom: 8 }}>Individual session durations</Text>
+              <LineChart data={durationData} accent={colors.success} />
+            </View>
+
+            {/* Streak Calendar */}
+            <View style={{ backgroundColor: colors.bg.surface, borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.border.subtle }}>
+              <Text style={{ fontFamily: fonts.body.bold, fontSize: 10, fontWeight: "bold", color: colors.success, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>
+                STREAK CALENDAR · {streakData.currentStreak}d
+              </Text>
+              <StreakCalendar data={streakCalendar} />
+            </View>
+
+            {/* Weekday Distribution */}
+            {weekdayData.some((d) => d.count > 0) && (
+              <View style={{ backgroundColor: colors.bg.surface, borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.border.subtle }}>
+                <Text style={{ fontFamily: fonts.body.bold, fontSize: 10, fontWeight: "bold", color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>WEEKDAY DISTRIBUTION</Text>
+                <WeekdayChart data={weekdayData} accent={colors.accent.DEFAULT} />
               </View>
-            ))}
+            )}
+
+            {/* Session List */}
+            <View style={{ backgroundColor: colors.bg.surface, borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.border.subtle }}>
+              <Text style={{ fontFamily: fonts.body.bold, fontSize: 10, fontWeight: "bold", color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>ALL SESSIONS</Text>
+              {[...workoutHistory].reverse().map((session) => (
+                <View key={session.id} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border.subtle }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 11, color: colors.text.primary }}>{session.workoutId.toUpperCase()}</Text>
+                    <Text style={{ fontFamily: fonts.body.regular, fontSize: 9, color: colors.text.secondary, marginTop: 1 }}>
+                      {session.date} · {Math.round(session.duration / 60)}min · {session.setsCompleted} sets
+                    </Text>
+                  </View>
+                  <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 11, color: colors.accent.DEFAULT }}>+{session.xpEarned} XP</Text>
+                </View>
+              ))}
+            </View>
           </>
         )}
       </Animated.ScrollView>

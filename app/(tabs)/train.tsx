@@ -9,6 +9,7 @@ import { getRecommendation } from "../../src/utils/recommendations";
 import { getProgressionSummary } from "../../src/utils/progression";
 import { TrainScreenSkeleton } from "../../src/components/ui/Skeleton";
 import { Animated, Easing } from "react-native";
+import type { DifficultyTier } from "../../src/data/exercises";
 
 export default function TrainScreen() {
   const colors = useColors();
@@ -29,7 +30,7 @@ export default function TrainScreen() {
 
   const handleWorkoutSelect = useCallback(
     (workoutId: string) => {
-      router.push(`/workout/${workoutId}`);
+      router.push(`/workout/preview/${workoutId}`);
     },
     [router],
   );
@@ -49,14 +50,14 @@ export default function TrainScreen() {
 
   if (!isHydrated) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#0F1115" }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
         <TrainScreenSkeleton />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#0F1115" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
       <Animated.ScrollView
         style={{ flex: 1, opacity: fadeIn }}
         contentContainerStyle={{ padding: spacing[4], paddingBottom: spacing[12] }}
@@ -68,7 +69,7 @@ export default function TrainScreen() {
             fontFamily: fonts.heading,
             fontSize: 28,
             fontWeight: "900",
-            color: "#F3F4F6",
+            color: colors.text.primary,
             textTransform: "uppercase",
             letterSpacing: 2,
             marginBottom: 24,
@@ -86,7 +87,7 @@ export default function TrainScreen() {
                 width: 12,
                 height: 12,
                 borderRadius: 6,
-                backgroundColor: "#10B981",
+                backgroundColor: colors.success,
                 marginRight: 8,
               }}
             />
@@ -96,7 +97,7 @@ export default function TrainScreen() {
               width: 12,
               height: 12,
               borderRadius: 6,
-              backgroundColor: "#F59E0B",
+              backgroundColor: colors.accent.DEFAULT,
               marginRight: 8,
             }}
           />
@@ -105,7 +106,7 @@ export default function TrainScreen() {
               width: 12,
               height: 12,
               borderRadius: 6,
-              backgroundColor: "#2D3139",
+              backgroundColor: colors.border.subtle,
               marginRight: 8,
             }}
           />
@@ -114,7 +115,7 @@ export default function TrainScreen() {
               fontFamily: fonts.body.semiBold,
               fontSize: 10,
               fontWeight: "bold",
-              color: "#9CA3AF",
+              color: colors.text.secondary,
               textTransform: "uppercase",
               letterSpacing: 1,
               marginLeft: 4,
@@ -127,19 +128,19 @@ export default function TrainScreen() {
         {/* Recommendation reasoning */}
         <View
           style={{
-            backgroundColor: "#1A1D24",
+            backgroundColor: colors.bg.surface,
             borderRadius: 12,
             padding: 16,
             marginBottom: 20,
             borderWidth: 1,
-            borderColor: "#2D3139",
+            borderColor: colors.border.subtle,
           }}
         >
           <Text
             style={{
               fontFamily: fonts.body.regular,
               fontSize: 13,
-              color: "#9CA3AF",
+              color: colors.text.secondary,
               lineHeight: 20,
             }}
           >
@@ -151,7 +152,7 @@ export default function TrainScreen() {
               onPress={() => handleWorkoutSelect(recommendation.recommendedId)}
               style={{
                 marginTop: 12,
-                backgroundColor: "#F59E0B",
+                backgroundColor: colors.accent.DEFAULT,
                 borderRadius: 8,
                 paddingVertical: 10,
                 alignItems: "center",
@@ -162,7 +163,7 @@ export default function TrainScreen() {
                   fontFamily: fonts.body.bold,
                   fontSize: 12,
                   fontWeight: "bold",
-                  color: "#0F1115",
+                  color: colors.bg.primary,
                   textTransform: "uppercase",
                   letterSpacing: 1,
                 }}
@@ -179,11 +180,11 @@ export default function TrainScreen() {
                 height: 8,
                 borderRadius: 4,
                 backgroundColor:
-                  recommendation.confidence === "high" ? "#10B981" :
-                  recommendation.confidence === "medium" ? "#F59E0B" : "#9CA3AF",
+                  recommendation.confidence === "high" ? colors.success :
+                  recommendation.confidence === "medium" ? colors.accent.DEFAULT : colors.text.secondary,
               }}
             />
-            <Text style={{ fontFamily: fonts.body.regular, fontSize: 9, color: "#9CA3AF" }}>
+            <Text style={{ fontFamily: fonts.body.regular, fontSize: 9, color: colors.text.secondary }}>
               {recommendation.confidence === "high" ? "HIGH CONFIDENCE" :
                recommendation.confidence === "medium" ? "MODERATE" : "ESTIMATE"}
             </Text>
@@ -194,12 +195,12 @@ export default function TrainScreen() {
         {progressionSummary.exercisesReady.length > 0 && (
           <View
             style={{
-              backgroundColor: "#1A1D24",
+              backgroundColor: colors.bg.surface,
               borderRadius: 12,
               padding: 16,
               marginBottom: 20,
               borderWidth: 1,
-              borderColor: "#10B981",
+              borderColor: colors.success,
             }}
           >
             <Text
@@ -207,7 +208,7 @@ export default function TrainScreen() {
                 fontFamily: fonts.body.bold,
                 fontSize: 10,
                 fontWeight: "bold",
-                color: "#10B981",
+                color: colors.success,
                 textTransform: "uppercase",
                 letterSpacing: 1,
                 marginBottom: 8,
@@ -229,7 +230,7 @@ export default function TrainScreen() {
                   style={{
                     fontFamily: fonts.body.semiBold,
                     fontSize: 12,
-                    color: "#F3F4F6",
+                    color: colors.text.primary,
                     flex: 1,
                   }}
                 >
@@ -239,7 +240,7 @@ export default function TrainScreen() {
                   style={{
                     fontFamily: fonts.body.regular,
                     fontSize: 9,
-                    color: "#10B981",
+                    color: colors.success,
                   }}
                 >
                   {ex.highEndPercentage}%
@@ -253,7 +254,10 @@ export default function TrainScreen() {
         {goalWorkouts.map((w) => {
           const isActive = recommendation.recommendedId === w.id;
           const sets = w.exercises?.length || 0;
-          const dotColor = w.id.includes("a") ? "#10B981" : w.id.includes("d") ? "#EF4444" : "#F59E0B";
+          // Determine difficulty from average exercise difficulty tiers
+          const difficulties = w.exercises.map((e) => e.difficulty).filter(Boolean);
+          const avgDifficulty = difficulties.length > 0 ? difficulties[Math.floor(difficulties.length / 2)] : undefined;
+          const dotColor = avgDifficulty === "advanced" ? colors.error : avgDifficulty === "intermediate" ? colors.accent.DEFAULT : colors.success;
 
           return (
             <TouchableOpacity
@@ -261,21 +265,21 @@ export default function TrainScreen() {
               activeOpacity={0.8}
               onPress={() => handleWorkoutSelect(w.id)}
               style={{
-                backgroundColor: "#1A1D24",
+                backgroundColor: colors.bg.surface,
                 borderRadius: 16,
                 marginBottom: 16,
                 flexDirection: "row",
                 alignItems: "center",
                 padding: 16,
                 borderWidth: isActive ? 2 : 1,
-                borderColor: isActive ? "#F59E0B" : "#2D3139",
+                borderColor: isActive ? colors.accent.DEFAULT : colors.border.subtle,
               }}
             >
               <View
                 style={{
                   width: 64,
                   height: 64,
-                  backgroundColor: "#2D3139",
+                  backgroundColor: colors.border.subtle,
                   borderRadius: 8,
                   alignItems: "center",
                   justifyContent: "center",
@@ -289,7 +293,7 @@ export default function TrainScreen() {
                   style={{
                     fontFamily: fonts.body.bold,
                     fontSize: 18,
-                    color: "#F3F4F6",
+                    color: colors.text.primary,
                   }}
                 >
                   {w.name}
@@ -298,7 +302,7 @@ export default function TrainScreen() {
                   style={{
                     fontFamily: fonts.body.regular,
                     fontSize: 13,
-                    color: "#9CA3AF",
+                    color: colors.text.secondary,
                     marginTop: 2,
                   }}
                 >
@@ -317,18 +321,74 @@ export default function TrainScreen() {
           );
         })}
 
+        {/* Deload notice */}
+        {progressionSummary.deloadRecommended && (
+          <View
+            style={{
+              backgroundColor: colors.bg.surface,
+              borderRadius: 12,
+              padding: 16,
+              marginBottom: 20,
+              borderWidth: 1,
+              borderColor: colors.error,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: fonts.body.bold,
+                fontSize: 10,
+                fontWeight: "bold",
+                color: colors.error,
+                textTransform: "uppercase",
+                letterSpacing: 1,
+                marginBottom: 8,
+              }}
+            >
+              DELOAD WEEK SUGGESTED
+            </Text>
+            <Text
+              style={{
+                fontFamily: fonts.body.regular,
+                fontSize: 13,
+                color: colors.text.secondary,
+                lineHeight: 20,
+              }}
+            >
+              You've been training consistently for {progressionSummary.totalTrainingWeeks} weeks.
+              Reduce volume by 40-50% this week: 2 sets per exercise, leave 4-5 reps in reserve.
+              Your body will come back stronger.
+            </Text>
+          </View>
+        )}
+
+        {/* CORE PROGRAMS */}
+        <Text
+          style={{
+            fontFamily: fonts.body.semiBold,
+            fontSize: 11,
+            fontWeight: "bold",
+            color: colors.text.secondary,
+            textTransform: "uppercase",
+            letterSpacing: 1,
+            marginTop: 8,
+            marginBottom: 12,
+          }}
+        >
+          CORE PROGRAMS
+        </Text>
+
         {/* Exercise Library Link */}
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => router.push("/exercises/catalog")}
           style={{
-            backgroundColor: "#1A1D24",
+            backgroundColor: colors.bg.surface,
             borderRadius: 16,
             padding: 20,
             alignItems: "center",
             borderWidth: 1,
             borderStyle: "dashed",
-            borderColor: "#2D3139",
+            borderColor: colors.border.subtle,
           }}
         >
           <Text
@@ -336,7 +396,7 @@ export default function TrainScreen() {
               fontFamily: fonts.heading,
               fontSize: 16,
               fontWeight: "900",
-              color: "#F59E0B",
+              color: colors.accent.DEFAULT,
               textTransform: "uppercase",
               letterSpacing: 2,
             }}
@@ -347,7 +407,7 @@ export default function TrainScreen() {
             style={{
               fontFamily: fonts.body.regular,
               fontSize: 11,
-              color: "#9CA3AF",
+              color: colors.text.secondary,
               textAlign: "center",
               marginTop: 4,
             }}
