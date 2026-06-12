@@ -1,20 +1,17 @@
 import { useCallback, useMemo, useState, useEffect, useRef } from "react";
-import { View, Text, Animated, Easing } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Dimensions } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useColors, typography, spacing, fonts } from "../../src/tokens";
-import { XpBar } from "../../src/components/ui/XpBar";
-import { LevelBadge } from "../../src/components/ui/LevelBadge";
-import { Button } from "../../src/components/ui/Button";
-import { DailyMission } from "../../src/components/home/DailyMission";
-import { StreakDisplay } from "../../src/components/home/StreakDisplay";
-import { RecoveryStatus } from "../../src/components/home/RecoveryStatus";
-import { SyncIndicator } from "../../src/components/ui/SyncIndicator";
 import { useUserStore } from "../../src/stores/useUserStore";
 import { getRecommendation } from "../../src/utils/recommendations";
 import { parseLocalDate, getLocalToday } from "../../src/utils/date";
 import { HomeScreenSkeleton } from "../../src/components/ui/Skeleton";
 import { StreakMilestone, getStreakMilestone } from "../../src/components/home/StreakMilestone";
+import { Animated, Easing } from "react-native";
+
+const { width } = Dimensions.get("window");
 
 export default function HomeScreen() {
   const colors = useColors();
@@ -22,7 +19,7 @@ export default function HomeScreen() {
   const {
     level, totalXp, streakData, recoveryStatus, xpProgress,
     workoutHistory, lastShownMilestone, setLastShownMilestone,
-    isHydrated, fitnessGoal,
+    isHydrated, fitnessGoal, displayName,
   } = useUserStore();
 
   const recommendation = useMemo(
@@ -68,14 +65,19 @@ export default function HomeScreen() {
 
   if (!isHydrated) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#0F1115" }}>
         <HomeScreenSkeleton />
       </SafeAreaView>
     );
   }
 
+  // Recovery percentage for the gauge (0-100)
+  const recoveryPct =
+    recoveryStatus === "optimal" ? 88 :
+    recoveryStatus === "moderate" ? 65 : 40;
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#0F1115" }}>
       {milestoneTier && (
         <StreakMilestone tier={milestoneTier} onDismiss={handleDismissMilestone} />
       )}
@@ -86,8 +88,9 @@ export default function HomeScreen() {
           paddingBottom: spacing[12],
           flexGrow: 1,
         }}
+        showsVerticalScrollIndicator={false}
       >
-        {/* ── Hero Header ── */}
+        {/* ── Header & Streak ── */}
         <View
           style={{
             flexDirection: "row",
@@ -96,107 +99,216 @@ export default function HomeScreen() {
             marginBottom: spacing[5],
           }}
         >
-          <SyncIndicator />
           <View style={{ flex: 1, marginRight: spacing[3] }}>
             <Text
               style={{
-                ...typography.label,
-                color: colors.text.secondary,
+                fontFamily: fonts.body.semiBold,
                 fontSize: 10,
-                marginBottom: spacing[1],
+                fontWeight: "bold",
+                color: "#9CA3AF",
+                letterSpacing: 2,
+                textTransform: "uppercase",
               }}
             >
-              HOME · COMMAND CENTER
+              Welcome back
             </Text>
             <Text
               style={{
-                ...typography.display,
-                color: colors.text.primary,
+                fontFamily: fonts.heading,
+                fontSize: 24,
+                fontWeight: "900",
+                color: "#F3F4F6",
+                letterSpacing: -0.5,
+                textTransform: "uppercase",
+                marginTop: 2,
               }}
             >
-              ARCH
+              {displayName || "ATHLETE"}
             </Text>
-            <View style={{ marginTop: spacing[2] }}>
-              <XpBar
-                currentXp={xpProgress.currentXp}
-                requiredXp={xpProgress.requiredXp}
-                level={level}
-                nextLevel={level + 1}
-              />
-            </View>
           </View>
-          <LevelBadge level={level} size="md" />
-        </View>
-
-        {/* Welcome banner for new users */}
-        {workoutHistory.length === 0 && (
           <View
             style={{
-              backgroundColor: colors.bg.surface,
-              borderWidth: 1,
-              borderColor: colors.border.subtle,
-              borderRadius: 4,
-              padding: spacing[4],
-              marginBottom: spacing[4],
+              flexDirection: "row",
               alignItems: "center",
+              backgroundColor: "#1A1D24",
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 999,
+              borderWidth: 1,
+              borderColor: "#2D3139",
+            }}
+          >
+            <Text style={{ fontSize: 16, marginRight: 4 }}>🔥</Text>
+            <Text style={{ fontFamily: fonts.body.bold, fontSize: 14, color: "#F3F4F6" }}>
+              {streakData.currentStreak}
+            </Text>
+          </View>
+        </View>
+
+        {/* ── Hero Readiness Gauge ── */}
+        <View style={{ alignItems: "center", justifyContent: "center", marginBottom: 40 }}>
+          <View
+            style={{
+              width: 192,
+              height: 192,
+              borderRadius: 96,
+              borderWidth: 10,
+              borderColor: "#1A1D24",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {/* Accent ring arc — simplified as a border overlay */}
+            <View
+              style={{
+                position: "absolute",
+                top: -10,
+                left: -10,
+                right: -10,
+                bottom: -10,
+                borderRadius: 96,
+                borderWidth: 10,
+                borderColor: "#F59E0B",
+                borderRightColor: "transparent",
+                borderBottomColor: "transparent",
+                transform: [{ rotate: "45deg" }],
+              }}
+            />
+            <Text
+              style={{
+                fontFamily: fonts.heading,
+                fontSize: 48,
+                fontWeight: "900",
+                color: "#F3F4F6",
+              }}
+            >
+              {recoveryPct}%
+            </Text>
+            <Text
+              style={{
+                fontFamily: fonts.body.semiBold,
+                fontSize: 10,
+                fontWeight: "bold",
+                color: "#9CA3AF",
+                textTransform: "uppercase",
+                letterSpacing: 2,
+              }}
+            >
+              Recovery
+            </Text>
+          </View>
+        </View>
+
+        {/* ── Daily Mission Card ── */}
+        <View
+          style={{
+            backgroundColor: "#1A1D24",
+            borderRadius: 16,
+            padding: 20,
+            marginBottom: 32,
+            borderWidth: 1,
+            borderColor: "#2D3139",
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
+            <View
+              style={{
+                width: 40,
+                height: 40,
+                backgroundColor: "#0F1115",
+                borderRadius: 8,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text style={{ fontSize: 20 }}>⚡</Text>
+            </View>
+            <View style={{ marginLeft: 16, flex: 1 }}>
+              <Text
+                style={{
+                  fontFamily: fonts.body.bold,
+                  fontSize: 18,
+                  color: "#F3F4F6",
+                }}
+              >
+                {recommendation.recommendedName}
+              </Text>
+              <Text
+                style={{
+                  fontFamily: fonts.body.regular,
+                  fontSize: 12,
+                  color: "#9CA3AF",
+                  marginTop: 2,
+                }}
+              >
+                {recommendation.recommendedId !== "rest"
+                  ? `Target: ${recommendation.recommendedName}`
+                  : "Recovery day — rest and repair"}
+              </Text>
+            </View>
+          </View>
+          {/* Progress bar */}
+          <View
+            style={{
+              height: 4,
+              backgroundColor: "#2D3139",
+              borderRadius: 999,
+              overflow: "hidden",
+            }}
+          >
+            <View
+              style={{
+                width: streakData.isActiveToday ? "100%" : "75%",
+                height: "100%",
+                backgroundColor: "#F59E0B",
+                borderRadius: 999,
+              }}
+            />
+          </View>
+        </View>
+
+        {/* ── THE ACTION BUTTON ── */}
+        <TouchableOpacity activeOpacity={0.9} onPress={handleQuickTrain}>
+          <LinearGradient
+            colors={["#F59E0B", "#D97706"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+              height: 64,
+              borderRadius: 12,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              shadowColor: "#F59E0B",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.2,
+              shadowRadius: 12,
+              elevation: 8,
             }}
           >
             <Text
               style={{
-                ...typography.label,
-                color: colors.accent.DEFAULT,
-                fontSize: 10,
-                marginBottom: spacing[2],
+                fontFamily: fonts.heading,
+                fontSize: 20,
+                fontWeight: "900",
+                color: "#0F1115",
+                textTransform: "uppercase",
+                letterSpacing: 3,
               }}
             >
-              WELCOME TO ARCH
+              START TRAINING
             </Text>
             <Text
               style={{
-                ...typography.body,
-                color: colors.text.secondary,
-                fontSize: 13,
-                lineHeight: 20,
-                textAlign: "center",
+                fontSize: 20,
+                color: "#0F1115",
+                marginLeft: 8,
               }}
             >
-              Complete your first workout to begin tracking progress and building your streak.
+              ›
             </Text>
-          </View>
-        )}
-
-        {/* ── Streak + Recovery ── */}
-        <View style={{ gap: spacing[2], marginBottom: spacing[4] }}>
-          <StreakDisplay streak={streakData} />
-          <RecoveryStatus
-            status={recoveryStatus}
-            daysSinceLastWorkout={
-              streakData.lastWorkoutDate
-                ? Math.round(
-                    (parseLocalDate(getLocalToday()) - parseLocalDate(streakData.lastWorkoutDate)) /
-                      (1000 * 60 * 60 * 24),
-                  )
-                : undefined
-            }
-          />
-        </View>
-
-        {/* ── Daily Mission ── */}
-        <View style={{ marginBottom: spacing[4] }}>
-          <DailyMission
-            mission="Complete today's recommended workout with perfect form"
-            isComplete={streakData.isActiveToday}
-            onStart={handleQuickTrain}
-          />
-        </View>
-
-        {/* ── Big TRAIN CTA ── */}
-        <Button
-          title={`TRAIN ${recommendation.recommendedName}`}
-          onPress={handleQuickTrain}
-          size="lg"
-          fullWidth
-        />
+          </LinearGradient>
+        </TouchableOpacity>
       </Animated.ScrollView>
     </SafeAreaView>
   );

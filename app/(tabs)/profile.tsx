@@ -1,20 +1,13 @@
 import { useMemo, useCallback, useState, useEffect, useRef } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Alert, TextInput, Image, Platform } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Alert, TextInput, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useColors, typography, spacing, fonts } from "../../src/tokens";
-import { SegmentedPanel } from "../../src/components/ui/SegmentedPanel";
-import { XpBar } from "../../src/components/ui/XpBar";
-import { ThemeSwitcher } from "../../src/components/ui/ThemeSwitcher";
-import { GlossyOverlay } from "../../src/components/ui/GlossyOverlay";
-import { SyncIndicator } from "../../src/components/ui/SyncIndicator";
-import { FeedbackSheet } from "../../src/components/ui/FeedbackSheet";
 import { useUserStore, FitnessGoal, FitnessLevel } from "../../src/stores/useUserStore";
-import { getProgressionSummary } from "../../src/utils/progression";
 import { signOut as supabaseSignOut } from "../../src/services/supabase";
 import { videoCache } from "../../src/services/videoCache";
+import { Animated, Easing } from "react-native";
 
 const GOAL_LABELS: Record<FitnessGoal, string> = {
   strength: "Strength",
@@ -23,24 +16,6 @@ const GOAL_LABELS: Record<FitnessGoal, string> = {
   general: "General Fitness",
 };
 
-const GOAL_OPTIONS: FitnessGoal[] = ["strength", "muscle_gain", "endurance", "general"];
-
-const LEVEL_LABELS: Record<FitnessLevel, string> = {
-  beginner: "Beginner",
-  intermediate: "Intermediate",
-  advanced: "Advanced",
-};
-
-const LEVEL_OPTIONS: FitnessLevel[] = ["beginner", "intermediate", "advanced"];
-
-interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  unlocked: boolean;
-}
-
 function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
   const units = ["B", "KB", "MB", "GB"];
@@ -48,114 +23,38 @@ function formatBytes(bytes: number): string {
   return `${(bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0)} ${units[i]}`;
 }
 
-function getAchievements(
-  workoutHistoryLength: number,
-  level: number,
-  streak: number,
-): Achievement[] {
-  return [
-    {
-      id: "first-workout",
-      name: "First Step",
-      description: "Complete your first workout",
-      icon: "●",
-      unlocked: workoutHistoryLength >= 1,
-    },
-    {
-      id: "week-streak",
-      name: "Committed",
-      description: "7-day streak",
-      icon: "⚡",
-      unlocked: streak >= 7,
-    },
-    {
-      id: "month-streak",
-      name: "Unstoppable",
-      description: "30-day streak",
-      icon: "🔥",
-      unlocked: streak >= 30,
-    },
-    {
-      id: "level-5",
-      name: "Operative",
-      description: "Reach Level 5",
-      icon: "▲",
-      unlocked: level >= 5,
-    },
-    {
-      id: "level-10",
-      name: "Veteran",
-      description: "Reach Level 10",
-      icon: "▲▲",
-      unlocked: level >= 10,
-    },
-    {
-      id: "veteran-10",
-      name: "Dedicated",
-      description: "Complete 10 workouts",
-      icon: "✦",
-      unlocked: workoutHistoryLength >= 10,
-    },
-    {
-      id: "deloaded",
-      name: "Smart Training",
-      description: "Complete a deload week",
-      icon: "◆",
-      unlocked: level >= 10 && workoutHistoryLength >= 20,
-    },
-  ];
-}
-
 export default function ProfileScreen() {
   const colors = useColors();
-
+  const router = useRouter();
   const {
-    level,
-    totalXp,
-    streakData,
-    xpProgress,
-    workoutHistory,
-    displayName,
-    email,
-    fitnessGoal,
-    fitnessLevel,
-    isAuthenticated,
-    avatarUri,
-    updateProfile,
-    clearAuth,
+    level, totalXp, streakData, workoutHistory,
+    displayName, email, fitnessGoal, fitnessLevel,
+    isAuthenticated, avatarUri, updateProfile, clearAuth,
   } = useUserStore();
-  const [showEditName, setShowEditName] = useState(false);
+
   const [editName, setEditName] = useState(displayName);
-  const [showFeedback, setShowFeedback] = useState(false);
+  const [showEditName, setShowEditName] = useState(false);
   const [cachedVideoCount, setCachedVideoCount] = useState(0);
   const [cachedVideoSize, setCachedVideoSize] = useState(0);
 
-  // Sync editName when displayName changes externally (e.g., onboarding completion)
-  const prevDisplayNameRef = useRef(displayName);
-  useEffect(() => {
-    if (prevDisplayNameRef.current !== displayName && !showEditName) {
-      setEditName(displayName);
-      prevDisplayNameRef.current = displayName;
-    }
-  }, [displayName, showEditName]);
-
-  const progressionSummary = useMemo(() => getProgressionSummary(workoutHistory), [workoutHistory]);
-
-  const achievements = useMemo(
-    () => getAchievements(workoutHistory.length, level, streakData.currentStreak),
-    [workoutHistory.length, level, streakData.currentStreak],
-  );
-
   const rank =
-    level <= 3
-      ? "Recruit"
-      : level <= 6
-        ? "Operative"
-        : level <= 10
-          ? "Veteran"
-          : level <= 15
-            ? "Elite"
-            : "Commander";
+    level <= 3 ? "Recruit" :
+    level <= 6 ? "Operative" :
+    level <= 10 ? "Veteran" :
+    level <= 15 ? "Elite" : "Commander";
+
+  // Load cache info
+  const cacheMountedRef = useRef(true);
+  useEffect(() => {
+    cacheMountedRef.current = true;
+    videoCache.getCachedIds().then((ids) => {
+      if (cacheMountedRef.current) setCachedVideoCount(ids.length);
+    });
+    videoCache.getCacheSize().then((size) => {
+      if (cacheMountedRef.current) setCachedVideoSize(size);
+    });
+    return () => { cacheMountedRef.current = false; };
+  }, []);
 
   const handleSaveName = useCallback(() => {
     if (editName.trim()) {
@@ -167,7 +66,7 @@ export default function ProfileScreen() {
   const handlePickAvatar = useCallback(async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission needed", "Please grant photo library access to set a profile picture.");
+      Alert.alert("Permission needed", "Please grant photo library access.");
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -181,59 +80,10 @@ export default function ProfileScreen() {
     }
   }, [updateProfile]);
 
-  const handleChangeGoal = useCallback(() => {
-    const goalNames = GOAL_OPTIONS.map((g) => ({ text: GOAL_LABELS[g], onPress: () => {
-      Alert.alert(
-        "Change Training Program",
-        `Switching to ${GOAL_LABELS[g]} will update your workout program (rep ranges, sets, rest times). Your XP, streak, and workout history will be preserved. Continue?`,
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "CHANGE", onPress: () => updateProfile({ fitnessGoal: g }) },
-        ],
-      );
-    }}));
-    Alert.alert("Change Goal", "Select your new training goal:", [
-      ...goalNames.map((g) => ({ text: g.text, onPress: g.onPress })),
-      { text: "Cancel", style: "cancel" },
-    ], { cancelable: true });
-  }, [updateProfile]);
-
-  const handleChangeLevel = useCallback(() => {
-    const levelNames = LEVEL_OPTIONS.map((l) => ({ text: LEVEL_LABELS[l], onPress: () => {
-      Alert.alert(
-        "Change Level",
-        `Switching to ${LEVEL_LABELS[l]} will adjust exercise difficulty targets. Your progress will be preserved. Continue?`,
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "CHANGE", onPress: () => updateProfile({ fitnessLevel: l }) },
-        ],
-      );
-    }}));
-    Alert.alert("Change Level", "Select your current fitness level:", [
-      ...levelNames.map((l) => ({ text: l.text, onPress: l.onPress })),
-      { text: "Cancel", style: "cancel" },
-    ], { cancelable: true });
-  }, [updateProfile]);
-
-  // Load cache info on mount with unmount guard
-  const cacheMountedRef = useRef(true);
-  useEffect(() => {
-    cacheMountedRef.current = true;
-    videoCache.getCachedIds().then((ids) => {
-      if (cacheMountedRef.current) setCachedVideoCount(ids.length);
-    });
-    videoCache.getCacheSize().then((size) => {
-      if (cacheMountedRef.current) setCachedVideoSize(size);
-    });
-    return () => {
-      cacheMountedRef.current = false;
-    };
-  }, []);
-
   const handleClearCache = useCallback(() => {
     Alert.alert(
       "Clear Video Cache",
-      `Remove ${cachedVideoCount} cached video(s) (${formatBytes(cachedVideoSize)})? You can re-download them later.`,
+      `Remove ${cachedVideoCount} cached video(s) (${formatBytes(cachedVideoSize)})?`,
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -249,677 +99,257 @@ export default function ProfileScreen() {
     );
   }, [cachedVideoCount, cachedVideoSize]);
 
-  const handleOpenFeedback = useCallback(() => {
-    setShowFeedback(true);
-  }, []);
-
   const handleSignOut = useCallback(() => {
-    Alert.alert(
-      "Sign Out",
-      "Are you sure you want to sign out? Your workout data is stored locally and will be preserved.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "SIGN OUT",
-          style: "destructive",
-          onPress: async () => {
-            await supabaseSignOut();
-            clearAuth();
-          },
+    Alert.alert("Sign Out", "Are you sure?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "SIGN OUT",
+        style: "destructive",
+        onPress: async () => {
+          await supabaseSignOut();
+          clearAuth();
         },
-      ],
-    );
+      },
+    ]);
   }, [clearAuth]);
 
-  const router = useRouter();
+  // Fade-in
+  const fadeIn = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(fadeIn, {
+      toValue: 1,
+      duration: 200,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const SETTINGS_ITEMS = [
+    { label: "Account Settings", icon: "👤" },
+    { label: "Notifications", icon: "🔔" },
+    { label: "Video Cache", icon: "📹", badge: cachedVideoCount > 0 ? `${cachedVideoCount}` : undefined },
+    { label: "App Theme", icon: "🎨" },
+  ];
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{
-          padding: spacing[4],
-          paddingBottom: spacing[12],
-        }}
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#0F1115" }}>
+      <Animated.ScrollView
+        style={{ flex: 1, opacity: fadeIn }}
+        contentContainerStyle={{ padding: spacing[4], paddingBottom: spacing[12] }}
+        showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View style={{ marginBottom: spacing[4], position: "relative" }}>
-          <SyncIndicator />
-          <Text
-            style={{
-              ...typography.label,
-              color: colors.text.secondary,
-              fontSize: 10,
-              marginBottom: spacing[1],
-            }}
-          >
-            PROFILE · COMMANDER
-          </Text>
-          <Text
-            style={{
-              ...typography.display,
-              color: colors.text.primary,
-            }}
-          >
-            PROFILE
-          </Text>
-        </View>
-
-        {/* Identity card */}
-        <SegmentedPanel title="IDENTITY" accent="amber">
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: spacing[4],
-            }}
-          >
-            {/* Avatar */}
-            <TouchableOpacity onPress={handlePickAvatar} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Change profile picture">
-              <View
-                style={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: 36,
-                  borderWidth: 2,
-                  borderColor: colors.accent.DEFAULT,
-                  backgroundColor: colors.bg.elevated,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  overflow: "hidden",
-                }}
-              >
-                {avatarUri ? (
-                  <Image
-                    source={{ uri: avatarUri }}
-                    style={{ width: 72, height: 72, borderRadius: 36 }}
-                  />
-                ) : (
-                  <Text style={{ fontSize: 28, color: colors.text.secondary }}>+</Text>
-                )}
-              </View>
-              <View
-                style={{
-                  position: "absolute",
-                  bottom: -2,
-                  right: -2,
-                  width: 22,
-                  height: 22,
-                  borderRadius: 11,
-                  backgroundColor: colors.accent.DEFAULT,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderWidth: 2,
-                  borderColor: colors.bg.elevated,
-                }}
-              >
-                <Text style={{ fontSize: 10, color: colors.bg.primary }}>✎</Text>
-              </View>
-            </TouchableOpacity>
-            <View style={{ flex: 1 }}>
-              {showEditName ? (
-                <View style={{ flexDirection: "row", gap: spacing[2], alignItems: "center" }}>
-                  <TextInput
-                    value={editName}
-                    onChangeText={setEditName}
-                    autoFocus
-                    onSubmitEditing={handleSaveName}
-                    style={{
-                      flex: 1,
-                      backgroundColor: colors.bg.elevated,
-                      borderWidth: 1,
-                      borderColor: colors.accent.DEFAULT,
-                      borderRadius: 4,
-                      padding: spacing[2],
-                      color: colors.text.primary,
-                      fontFamily: fonts.body.semiBold,
-                      fontSize: 16,
-                    }}
-                  />
-                  <TouchableOpacity onPress={handleSaveName} accessibilityRole="button" accessibilityLabel="Save name">
-                    <Text
-                      style={{ ...typography.label, color: colors.accent.DEFAULT, fontSize: 9 }}
-                    >
-                      SAVE
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+        {/* ── Avatar & Identity ── */}
+        <View style={{ alignItems: "center", marginBottom: 32 }}>
+          <TouchableOpacity onPress={handlePickAvatar} activeOpacity={0.7}>
+            <View
+              style={{
+                width: 96,
+                height: 96,
+                borderRadius: 48,
+                borderWidth: 3,
+                borderColor: "#F59E0B",
+                backgroundColor: "#1A1D24",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+              }}
+            >
+              {avatarUri ? (
+                <Image source={{ uri: avatarUri }} style={{ width: 96, height: 96, borderRadius: 48 }} />
               ) : (
-                <TouchableOpacity onPress={() => setShowEditName(true)} accessibilityRole="button" accessibilityLabel="Edit display name" accessibilityHint="Double tap to edit your name">
-                  <Text
-                    style={{
-                      ...typography.h2,
-                      color: colors.text.primary,
-                      fontSize: 24,
-                    }}
-                  >
-                    {displayName}
+                <Text style={{ fontSize: 40, color: "#F59E0B" }}>+</Text>
+              )}
+            </View>
+          </TouchableOpacity>
+
+          {/* Name */}
+          <View style={{ marginTop: 16, alignItems: "center" }}>
+            {showEditName ? (
+              <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+                <TextInput
+                  value={editName}
+                  onChangeText={setEditName}
+                  autoFocus
+                  onSubmitEditing={handleSaveName}
+                  style={{
+                    backgroundColor: "#1A1D24",
+                    borderWidth: 1,
+                    borderColor: "#F59E0B",
+                    borderRadius: 8,
+                    padding: 8,
+                    color: "#F3F4F6",
+                    fontFamily: fonts.body.semiBold,
+                    fontSize: 16,
+                    minWidth: 120,
+                    textAlign: "center",
+                  }}
+                />
+                <TouchableOpacity onPress={handleSaveName}>
+                  <Text style={{ fontFamily: fonts.body.bold, fontSize: 10, color: "#F59E0B" }}>
+                    SAVE
                   </Text>
                 </TouchableOpacity>
-              )}
-              <Text
-                style={{
-                  ...typography.bodySmall,
-                  color: colors.text.secondary,
-                  marginTop: spacing[1],
-                }}
-              >
-                Rank: {rank}
-              </Text>
-              {email ? (
+              </View>
+            ) : (
+              <TouchableOpacity onPress={() => setShowEditName(true)}>
                 <Text
                   style={{
-                    ...typography.bodySmall,
-                    color: colors.text.secondary,
-                    fontSize: 9,
-                    marginTop: 1,
+                    fontFamily: fonts.heading,
+                    fontSize: 24,
+                    fontWeight: "900",
+                    color: "#F3F4F6",
+                    textTransform: "uppercase",
                   }}
                 >
-                  {email}
+                  {displayName || "ATHLETE"}
                 </Text>
-              ) : null}
-              <View style={{ marginTop: spacing[2] }}>
-                <XpBar
-                  currentXp={xpProgress.currentXp}
-                  requiredXp={xpProgress.requiredXp}
-                  level={level}
-                  nextLevel={level + 1}
-                />
-              </View>
-            </View>
+              </TouchableOpacity>
+            )}
           </View>
 
-          {/* Goal & Level badges — tappable to change */}
+          {/* Level Badge */}
           <View
             style={{
-              flexDirection: "row",
-              gap: spacing[2],
-              marginTop: spacing[3],
+              backgroundColor: "#F59E0B",
+              paddingHorizontal: 12,
+              paddingVertical: 4,
+              borderRadius: 999,
+              marginTop: 8,
             }}
           >
-            <TouchableOpacity
-              onPress={handleChangeGoal}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={`Goal: ${GOAL_LABELS[fitnessGoal]}. Tap to change.`}
+            <Text
               style={{
-                flex: 1,
-                backgroundColor: colors.bg.primary,
-                borderWidth: 1,
-                borderColor: colors.accent.DEFAULT,
-                borderRadius: 4,
-                padding: spacing[2],
-                overflow: "hidden",
+                fontFamily: fonts.body.bold,
+                fontSize: 10,
+                fontWeight: "bold",
+                color: "#0F1115",
+                textTransform: "uppercase",
+                letterSpacing: 1,
               }}
             >
-              <GlossyOverlay highlightOpacity={0.1} showReflection={false} />
-              <Text
-                style={{
-                  ...typography.label,
-                  color: colors.text.secondary,
-                  fontSize: 7,
-                }}
-              >
-                GOAL · TAP TO CHANGE
-              </Text>
-              <Text
-                style={{
-                  ...typography.bodySmall,
-                  color: colors.accent.DEFAULT,
-                  fontSize: 10,
-                  marginTop: 2,
-                }}
-              >
-                {GOAL_LABELS[fitnessGoal]}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleChangeLevel}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={`Level: ${LEVEL_LABELS[fitnessLevel]}. Tap to change.`}
-              style={{
-                flex: 1,
-                backgroundColor: colors.bg.primary,
-                borderWidth: 1,
-                borderColor: colors.success,
-                borderRadius: 4,
-                padding: spacing[2],
-                overflow: "hidden",
-              }}
-            >
-              <GlossyOverlay highlightOpacity={0.1} showReflection={false} />
-              <Text
-                style={{
-                  ...typography.label,
-                  color: colors.text.secondary,
-                  fontSize: 7,
-                }}
-              >
-                LEVEL · TAP TO CHANGE
-              </Text>
-              <Text
-                style={{
-                  ...typography.bodySmall,
-                  color: colors.success,
-                  fontSize: 10,
-                  marginTop: 2,
-                }}
-              >
-                {LEVEL_LABELS[fitnessLevel]}
-              </Text>
-            </TouchableOpacity>
+              LVL {level} — {rank.toUpperCase()}
+            </Text>
           </View>
-        </SegmentedPanel>
+        </View>
 
-        {/* ── Theme Settings ── */}
-        <SegmentedPanel title="THEME" accent="amber" style={{ marginTop: spacing[2] }}>
-          <ThemeSwitcher />
-        </SegmentedPanel>
-
-        {/* Quick Stats Row — compact, no duplicate StatModules */}
+        {/* ── Compact Stats Row ── */}
         <View
           style={{
             flexDirection: "row",
-            gap: spacing[2],
-            marginBottom: spacing[3],
+            justifyContent: "center",
+            gap: 24,
+            paddingVertical: 24,
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderColor: "#2D3139",
+            marginBottom: 32,
           }}
         >
-          {[
-            { label: "XP", value: totalXp, color: colors.accent.DEFAULT },
-            { label: "WORKOUTS", value: workoutHistory.length, color: colors.success },
-            { label: "STREAK", value: streakData.currentStreak, color: streakData.currentStreak >= 3 ? colors.success : colors.accent.DEFAULT },
-          ].map((stat) => (
-            <View
-              key={stat.label}
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ fontSize: 14 }}>🏋️</Text>
+            <Text style={{ fontFamily: fonts.body.bold, fontSize: 14, color: "#F3F4F6", marginTop: 2 }}>
+              {workoutHistory.length}
+            </Text>
+            <Text style={{ fontFamily: fonts.body.regular, fontSize: 10, color: "#9CA3AF" }}>
+              Workouts
+            </Text>
+          </View>
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ fontSize: 14 }}>🔥</Text>
+            <Text style={{ fontFamily: fonts.body.bold, fontSize: 14, color: "#F3F4F6", marginTop: 2 }}>
+              {streakData.currentStreak}
+            </Text>
+            <Text style={{ fontFamily: fonts.body.regular, fontSize: 10, color: "#9CA3AF" }}>
+              Streak
+            </Text>
+          </View>
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ fontSize: 14 }}>⚡</Text>
+            <Text style={{ fontFamily: fonts.body.bold, fontSize: 14, color: "#F3F4F6", marginTop: 2 }}>
+              {totalXp >= 1000 ? `${(totalXp / 1000).toFixed(1)}K` : totalXp}
+            </Text>
+            <Text style={{ fontFamily: fonts.body.regular, fontSize: 10, color: "#9CA3AF" }}>
+              XP
+            </Text>
+          </View>
+        </View>
+
+        {/* ── Settings List ── */}
+        {SETTINGS_ITEMS.map((item, i) => (
+          <TouchableOpacity
+            key={item.label}
+            activeOpacity={0.7}
+            onPress={() => {
+              if (item.label === "Video Cache") handleClearCache();
+              if (item.label === "App Theme") router.push("/profile");
+            }}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              paddingVertical: 20,
+              borderBottomWidth: 1,
+              borderBottomColor: "#2D3139",
+            }}
+          >
+            <Text style={{ fontSize: 18, marginRight: 16 }}>{item.icon}</Text>
+            <Text
               style={{
                 flex: 1,
-                backgroundColor: colors.bg.elevated,
-                borderWidth: 1,
-                borderColor: colors.border.subtle,
-                borderRadius: 4,
-                padding: spacing[2],
-                alignItems: "center",
+                fontFamily: fonts.body.regular,
+                fontSize: 14,
+                color: "#F3F4F6",
               }}
             >
-              <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 8 }}>
-                {stat.label}
-              </Text>
-              <Text
-                style={{ ...typography.h3, color: stat.color, fontSize: 20, marginTop: 2 }}
-              >
-                {stat.value}
-              </Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Exercise Progression */}
-        {progressionSummary.exercisesInProgress.length > 0 && (
-          <>
-            <Text
-              style={{
-                ...typography.subtitle,
-                color: colors.text.secondary,
-                fontSize: 11,
-                marginTop: spacing[2],
-                marginBottom: spacing[3],
-              }}
-            >
-              EXERCISE PROGRESSION
+              {item.label}
             </Text>
-            {progressionSummary.exercisesReady.length > 0 && (
-              <SegmentedPanel
-                title={`READY TO PROGRESS (${progressionSummary.exercisesReady.length})`}
-                accent="green"
-                style={{ marginBottom: spacing[2] }}
-              >
-                {progressionSummary.exercisesReady.map((ex) => (
-                  <View key={ex.exerciseId}>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <View style={{ flex: 1 }}>
-                        <Text
-                          style={{
-                            ...typography.bodySmall,
-                            color: colors.text.primary,
-                            fontFamily: fonts.body.semiBold,
-                            fontSize: 11,
-                          }}
-                        >
-                          {ex.exerciseName}
-                        </Text>
-                        <Text
-                          style={{
-                            ...typography.bodySmall,
-                            color: colors.text.secondary,
-                            fontSize: 9,
-                            marginTop: 2,
-                          }}
-                        >
-                          Avg {ex.averageReps} reps · {ex.sessionsCompleted} sessions
-                        </Text>
-                      </View>
-                      <View style={{ alignItems: "flex-end", marginLeft: spacing[2] }}>
-                        <Text
-                          style={{
-                            ...typography.label,
-                            color: colors.success,
-                            fontSize: 7,
-                          }}
-                        >
-                          {ex.highEndPercentage}% UPPER RANGE
-                        </Text>
-                        <Text
-                          style={{
-                            ...typography.bodySmall,
-                            color: colors.text.secondary,
-                            fontSize: 8,
-                            marginTop: 2,
-                          }}
-                          numberOfLines={1}
-                        >
-                          Next: {ex.nextProgression.split("→")[0]?.trim() || "Advanced variation"}
-                        </Text>
-                      </View>
-                    </View>
-                    <View
-                      style={{
-                        height: 1,
-                        backgroundColor: colors.border.subtle,
-                        marginVertical: spacing[1],
-                      }}
-                    />
-                  </View>
-                ))}
-              </SegmentedPanel>
-            )}
-            <SegmentedPanel title="IN PROGRESS" accent="none" style={{ marginBottom: spacing[2] }}>
-              {progressionSummary.exercisesInProgress.slice(0, 8).map((ex, i, arr) => (
-                <View key={ex.exerciseId}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        ...typography.bodySmall,
-                        color: colors.text.primary,
-                        fontSize: 11,
-                      }}
-                    >
-                      {ex.exerciseName}
-                    </Text>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: spacing[1],
-                      }}
-                    >
-                      <Text
-                        style={{
-                          ...typography.bodySmall,
-                          color: colors.text.secondary,
-                          fontSize: 9,
-                        }}
-                      >
-                        Rep range: {ex.repRange[0]}-{ex.repRange[1]}
-                      </Text>
-                      {ex.recentTrend !== "unknown" && (
-                        <Text
-                          style={{
-                            ...typography.label,
-                            fontSize: 7,
-                            color:
-                              ex.recentTrend === "up"
-                                ? colors.success
-                                : ex.recentTrend === "down"
-                                  ? colors.error
-                                  : colors.text.secondary,
-                          }}
-                        >
-                          {ex.recentTrend === "up" ? "▲" : ex.recentTrend === "down" ? "▼" : "◆"}
-                        </Text>
-                      )}
-                    </View>
-                  </View>
-                  {i < arr.length - 1 && (
-                    <View
-                      style={{
-                        height: 1,
-                        backgroundColor: colors.border.subtle,
-                        marginVertical: spacing[1],
-                      }}
-                    />
-                  )}
-                </View>
-              ))}
-            </SegmentedPanel>
-          </>
-        )}
-
-
-
-        {/* Achievements */}
-        <Text
-          style={{
-            ...typography.subtitle,
-            color: colors.text.secondary,
-            fontSize: 11,
-            marginTop: spacing[2],
-            marginBottom: spacing[3],
-          }}
-        >
-          ACHIEVEMENTS
-        </Text>
-
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[2] }}>
-          {achievements.map((achievement) => (
-            <View
-              key={achievement.id}
-              style={{
-                width: "31%",
-                backgroundColor: achievement.unlocked ? `${colors.success}15` : colors.bg.elevated,
-                borderWidth: 1,
-                borderColor: achievement.unlocked ? colors.success : colors.border.subtle,
-                borderRadius: 4,
-                padding: spacing[2],
-                alignItems: "center",
-                opacity: achievement.unlocked ? 1 : 0.5,
-              }}
-            >
-              <Text style={{ fontSize: 20, marginBottom: spacing[1] }}>
-                {achievement.unlocked ? achievement.icon : "○"}
-              </Text>
-              <Text
+            {item.badge && (
+              <View
                 style={{
-                  ...typography.label,
-                  color: achievement.unlocked ? colors.success : colors.text.secondary,
-                  fontSize: 7,
-                  textAlign: "center",
-                }}
-                numberOfLines={2}
-              >
-                {achievement.name.toUpperCase()}
-              </Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Feedback */}
-        <SegmentedPanel title="SUPPORT" accent="amber" style={{ marginTop: spacing[4] }}>
-          <TouchableOpacity
-            onPress={handleOpenFeedback}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Send feedback or report a bug"
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              paddingVertical: spacing[2],
-            }}
-          >
-            <Text
-              style={{
-                ...typography.bodySmall,
-                color: colors.text.primary,
-                fontSize: 12,
-              }}
-            >
-              Send Feedback / Report Bug
-            </Text>
-            <Text
-              style={{
-                ...typography.label,
-                color: colors.accent.DEFAULT,
-                fontSize: 9,
-              }}
-            >
-              →
-            </Text>
-          </TouchableOpacity>
-        </SegmentedPanel>
-
-        {/* Feedback Modal */}
-        <FeedbackSheet visible={showFeedback} onClose={() => setShowFeedback(false)} />
-
-        {/* Storage */}
-        <SegmentedPanel title="STORAGE" accent="none" style={{ marginTop: spacing[2] }}>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              paddingVertical: spacing[2],
-            }}
-          >
-            <View>
-              <Text
-                style={{
-                  ...typography.bodySmall,
-                  color: colors.text.primary,
-                  fontSize: 12,
+                  backgroundColor: "#F59E0B",
+                  borderRadius: 999,
+                  paddingHorizontal: 8,
+                  paddingVertical: 2,
+                  marginRight: 8,
                 }}
               >
-                Cached Videos
-              </Text>
-              <Text
-                style={{
-                  ...typography.bodySmall,
-                  color: colors.text.secondary,
-                  fontSize: 9,
-                  marginTop: 2,
-                }}
-              >
-                {cachedVideoCount} video{cachedVideoCount !== 1 ? "s" : ""} · {formatBytes(cachedVideoSize)}
-              </Text>
-            </View>
-            {cachedVideoCount > 0 ? (
-              <TouchableOpacity
-                onPress={handleClearCache}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel="Clear all cached videos"
-              >
-                <Text
-                  style={{
-                    ...typography.label,
-                    color: colors.error,
-                    fontSize: 9,
-                  }}
-                >
-                  CLEAR
+                <Text style={{ fontFamily: fonts.body.bold, fontSize: 10, color: "#0F1115" }}>
+                  {item.badge}
                 </Text>
-              </TouchableOpacity>
-            ) : (
-              <Text
-                style={{
-                  ...typography.label,
-                  color: colors.text.tertiary,
-                  fontSize: 8,
-                }}
-              >
-                NONE CACHED
-              </Text>
+              </View>
             )}
-          </View>
-        </SegmentedPanel>
-
-        {/* Legal */}
-        <SegmentedPanel title="LEGAL" accent="none" style={{ marginTop: spacing[2] }}>
-          <TouchableOpacity
-            onPress={() => router.push("/privacy-policy")}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Privacy Policy"
-            accessibilityHint="Opens privacy policy"
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              paddingVertical: spacing[2],
-            }}
-          >
-            <Text
-              style={{
-                ...typography.bodySmall,
-                color: colors.text.primary,
-                fontSize: 12,
-              }}
-            >
-              Privacy Policy
-            </Text>
-            <Text
-              style={{
-                ...typography.label,
-                color: colors.text.secondary,
-                fontSize: 9,
-              }}
-            >
-              VIEW →
-            </Text>
+            <Text style={{ fontSize: 16, color: "#9CA3AF" }}>›</Text>
           </TouchableOpacity>
-        </SegmentedPanel>
+        ))}
 
-        {/* Sign Out */}
+        {/* ── Sign Out ── */}
         {isAuthenticated && (
           <TouchableOpacity
             onPress={handleSignOut}
             activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Sign out of your account"
             style={{
-              marginTop: spacing[4],
+              marginTop: 32,
               borderWidth: 1,
-              borderColor: colors.error,
-              borderRadius: 4,
-              padding: spacing[3],
+              borderColor: "#EF4444",
+              borderRadius: 12,
+              padding: 16,
               alignItems: "center",
             }}
           >
             <Text
               style={{
-                ...typography.label,
-                color: colors.error,
-                fontSize: 10,
+                fontFamily: fonts.body.bold,
+                fontSize: 12,
+                fontWeight: "bold",
+                color: "#EF4444",
                 letterSpacing: 2,
+                textTransform: "uppercase",
               }}
             >
-              SIGN OUT
+              Sign Out
             </Text>
           </TouchableOpacity>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
     </SafeAreaView>
   );
 }

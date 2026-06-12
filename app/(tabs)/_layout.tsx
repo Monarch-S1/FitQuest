@@ -2,8 +2,6 @@ import { Tabs } from "expo-router";
 import { View, Text } from "react-native";
 import { useColors, typography, spacing, fonts } from "../../src/tokens";
 
-
-
 export default function TabLayout() {
   const colors = useColors();
 
@@ -13,49 +11,55 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: colors.bg.primary,
+          backgroundColor: colors.bg.surface,
           borderTopWidth: 1,
-          borderTopColor: colors.border.subtle,
-          height: 60,
-          paddingBottom: 6,
-          paddingTop: 6,
+          borderTopColor: "#2D3139",
+          height: 88,
+          paddingBottom: 24,
+          paddingTop: 8,
         },
-        tabBarActiveTintColor: colors.accent.DEFAULT,
-        tabBarInactiveTintColor: colors.text.secondary,
+        tabBarActiveTintColor: "#F59E0B",
+        tabBarInactiveTintColor: "#9CA3AF",
         tabBarShowLabel: false,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon icon="⌂" label="HOME" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <TabItem icon="⌂" label="HOME" focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="train"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon icon="⚔" label="TRAIN" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <TabItem icon="⚔" label="TRAIN" focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon icon="◈" label="HISTORY" focused={focused} />
+            <TabItem icon="◈" label="PROGRESS" focused={focused} />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="body-map"
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon icon="◇" label="BODY" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon icon="■" label="PROFILE" focused={focused} />
+            <TabItem icon="■" label="PROFILE" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="body-map"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabItem icon="◇" label="BODY" focused={focused} />
           ),
         }}
       />
@@ -63,8 +67,9 @@ export default function TabLayout() {
   );
 }
 
-function TabIcon({ icon, label, focused }: { icon: string; label: string; focused: boolean }) {
-  const colors = useColors();
+
+
+function TabItem({ icon, label, focused }: { icon: string; label: string; focused: boolean }) {
   return (
     <View style={{ alignItems: "center", justifyContent: "center", width: 64 }}>
       <View
@@ -74,13 +79,13 @@ function TabIcon({ icon, label, focused }: { icon: string; label: string; focuse
           alignItems: "center",
           justifyContent: "center",
           borderBottomWidth: focused ? 2 : 0,
-          borderBottomColor: focused ? colors.accent.DEFAULT : "transparent",
+          borderBottomColor: focused ? "#F59E0B" : "transparent",
         }}
       >
         <Text
           style={{
             fontSize: 16,
-            color: focused ? colors.accent.DEFAULT : colors.text.secondary,
+            color: focused ? "#F59E0B" : "#9CA3AF",
           }}
         >
           {icon}
@@ -91,7 +96,7 @@ function TabIcon({ icon, label, focused }: { icon: string; label: string; focuse
         style={{
           fontFamily: fonts.body.semiBold,
           fontSize: 9,
-          color: focused ? colors.accent.DEFAULT : colors.text.secondary,
+          color: focused ? "#F59E0B" : "#9CA3AF",
           letterSpacing: 0.3,
           marginTop: 1,
         }}
