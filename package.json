@@ -75,6 +75,8 @@
     "update:prod": "eas update --channel production",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css}\"",
+    "generate:icons": "node scripts/generate-icons.js",
+    "generate:splash": "node scripts/generate-splash.js",
     "check:native": "node scripts/check-native-deps.js",
     "check:native:list": "node scripts/check-native-deps.js --list",
     "check:native:snapshot": "node scripts/check-native-deps.js --snapshot"
