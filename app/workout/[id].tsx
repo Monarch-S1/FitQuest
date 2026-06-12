@@ -18,6 +18,7 @@ import { getWorkoutByIdForGoal } from "../../src/data/workouts";
 import { calculateWorkoutXp } from "../../src/utils/xp";
 import { GlossyOverlay } from "../../src/components/ui/GlossyOverlay";
 import * as Haptics from "expo-haptics";
+import { MotiView } from "moti";
 
 /** Get today's date in local timezone as YYYY-MM-DD */
 function getLocalDate(): string {
@@ -334,9 +335,21 @@ export default function WorkoutPlayerScreen() {
       {phase === "rest" && (
         <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: colors.bg.primary, zIndex: 50, justifyContent: "center", alignItems: "center" }}>
           <Text style={{ fontFamily: fonts.heading, fontSize: 10, color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 4, marginBottom: 8 }}>REST</Text>
-          <Text style={{ fontFamily: fonts.heading, fontSize: 120, color: colors.success, fontVariant: ["tabular-nums"] }}>
-            {restTimer}
-          </Text>
+          <MotiView
+            animate={{
+              scale: restTimer <= 3 ? [1, 1.12, 1] : 1,
+              opacity: restTimer <= 3 ? [1, 0.6, 1] : 1,
+            }}
+            transition={{
+              type: "timing",
+              duration: 600,
+              loop: restTimer <= 3,
+            }}
+          >
+            <Text style={{ fontFamily: fonts.heading, fontSize: 120, color: restTimer <= 3 ? colors.accent.DEFAULT : colors.success, fontVariant: ["tabular-nums"] }}>
+              {restTimer}
+            </Text>
+          </MotiView>
           <Text style={{ fontFamily: fonts.body.regular, fontSize: 12, color: colors.text.secondary, marginBottom: 48 }}>SECONDS</Text>
           {/* Next exercise preview */}
           {nextExerciseData && (
