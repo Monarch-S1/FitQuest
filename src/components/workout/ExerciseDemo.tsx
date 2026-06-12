@@ -94,8 +94,8 @@ export function ExerciseDemo({ exercise }: ExerciseDemoProps) {
         )}`;
     try {
       await WebBrowser.openBrowserAsync(url, {
-        toolbarColor: '#0F1115',
-        controlsColor: '#F59E0B',
+        toolbarColor: colors.bg.primary,
+        controlsColor: colors.accent.DEFAULT,
       });
     } catch {
       Alert.alert("Unable to open browser", "Please check your device settings.");
