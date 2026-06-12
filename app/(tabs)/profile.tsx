@@ -10,6 +10,8 @@ import { signOut as supabaseSignOut } from "../../src/services/supabase";
 import { videoCache } from "../../src/services/videoCache";
 import { ThemeSwitcher } from "../../src/components/ui/ThemeSwitcher";
 import { FeedbackSheet } from "../../src/components/ui/FeedbackSheet";
+import { SyncIndicator } from "../../src/components/ui/SyncIndicator";
+import { XpBar } from "../../src/components/ui/XpBar";
 import { Animated, Easing } from "react-native";
 
 const GOAL_LABELS: Record<FitnessGoal, string> = {
@@ -162,6 +164,7 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
       <Animated.ScrollView style={{ flex: 1, opacity: fadeIn }} contentContainerStyle={{ padding: spacing[4], paddingBottom: spacing[12] }} showsVerticalScrollIndicator={false}>
+        <SyncIndicator />
         {/* Avatar & Identity */}
         <View style={{ alignItems: "center", marginBottom: 24 }}>
           <TouchableOpacity onPress={handlePickAvatar} activeOpacity={0.7}>

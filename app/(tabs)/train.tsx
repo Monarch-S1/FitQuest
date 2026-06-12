@@ -9,7 +9,6 @@ import { getRecommendation } from "../../src/utils/recommendations";
 import { getProgressionSummary } from "../../src/utils/progression";
 import { TrainScreenSkeleton } from "../../src/components/ui/Skeleton";
 import { Animated, Easing } from "react-native";
-import type { DifficultyTier } from "../../src/data/exercises";
 
 export default function TrainScreen() {
   const colors = useColors();
@@ -254,10 +253,10 @@ export default function TrainScreen() {
         {goalWorkouts.map((w) => {
           const isActive = recommendation.recommendedId === w.id;
           const sets = w.exercises?.length || 0;
-          // Determine difficulty from average exercise difficulty tiers
-          const difficulties = w.exercises.map((e) => e.difficulty).filter(Boolean);
-          const avgDifficulty = difficulties.length > 0 ? difficulties[Math.floor(difficulties.length / 2)] : undefined;
-          const dotColor = avgDifficulty === "advanced" ? colors.error : avgDifficulty === "intermediate" ? colors.accent.DEFAULT : colors.success;
+          // Determine difficulty from exercise difficulty tiers
+          const hasAdvanced = w.exercises.some((e) => e.difficulty === "advanced");
+          const hasIntermediate = w.exercises.some((e) => e.difficulty === "intermediate");
+          const dotColor = hasAdvanced ? colors.error : hasIntermediate ? colors.accent.DEFAULT : colors.success;
 
           return (
             <TouchableOpacity
