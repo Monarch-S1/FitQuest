@@ -152,7 +152,7 @@ export function ExerciseDemo({ exercise }: ExerciseDemoProps) {
                 fontSize: 9,
               }}
             >
-              FORM GUIDE
+              TECHNIQUE
             </Text>
             <Text
               style={{
@@ -287,7 +287,7 @@ export function ExerciseDemo({ exercise }: ExerciseDemoProps) {
                   marginBottom: spacing[1],
                 }}
               >
-                MECHANICS
+                BIOMECHANICS
               </Text>
               <Text
                 style={{
@@ -321,7 +321,7 @@ export function ExerciseDemo({ exercise }: ExerciseDemoProps) {
                 marginBottom: spacing[1],
               }}
             >
-              PROGRESSION PATH
+              SKILL PATH
             </Text>
             <Text
               style={{

@@ -255,7 +255,7 @@ export default function TrainScreen() {
           activeOpacity={0.85}
           onPress={() => router.push("/exercises/catalog")}
           accessibilityRole="button"
-          accessibilityLabel="Exercise Library"
+          accessibilityLabel="Skills Library"
           accessibilityHint="Browse all exercises by muscle group"
           style={{
             backgroundColor: colors.bg.elevated,
@@ -276,7 +276,7 @@ export default function TrainScreen() {
               marginBottom: spacing[1],
             }}
           >
-            EXERCISE LIBRARY
+            SKILLS LIBRARY
           </Text>
           <Text
             style={{
@@ -286,7 +286,7 @@ export default function TrainScreen() {
               textAlign: "center",
             }}
           >
-            Browse all exercises by muscle group · View form details · Track progression
+            Browse all skills by muscle group · View form details · Track progression
           </Text>
           <View
             style={{

@@ -144,7 +144,7 @@ export function SkillDetailSheet({ node, onClose }: SkillDetailSheetProps) {
                 marginBottom: 2,
               }}
             >
-              BIOMECHANICAL NOTE
+              ANATOMY NOTE
             </Text>
             <Text
               style={{
@@ -265,7 +265,7 @@ export function SkillDetailSheet({ node, onClose }: SkillDetailSheetProps) {
             marginBottom: spacing[2],
           }}
         >
-          PROGRESSION PATHWAY
+          SKILL PATH
         </Text>
         <View
           style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[1], alignItems: "center" }}

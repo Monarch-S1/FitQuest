@@ -132,7 +132,7 @@ export default function ExerciseCatalogScreen() {
                   marginBottom: spacing[1],
                 }}
               >
-                EXERCISE CATALOG
+                SKILLS CATALOG
               </Text>
               <Text
                 style={{
@@ -140,7 +140,7 @@ export default function ExerciseCatalogScreen() {
                   color: colors.text.primary,
                 }}
               >
-                EXERCISE LIBRARY
+                SKILLS LIBRARY
               </Text>
             </View>
             <TouchableOpacity
@@ -479,7 +479,7 @@ export default function ExerciseCatalogScreen() {
                           marginBottom: spacing[1],
                         }}
                       >
-                        MECHANICS
+                        BIOMECHANICS
                       </Text>
                       <Text
                         style={{
@@ -513,7 +513,7 @@ export default function ExerciseCatalogScreen() {
                         marginBottom: spacing[1],
                       }}
                     >
-                      PROGRESSION PATH
+                      SKILL PATH
                     </Text>
                     <Text
                       style={{
