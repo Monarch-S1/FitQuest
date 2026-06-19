@@ -8,6 +8,7 @@ import { SegmentedPanel } from "../../../src/components/ui/SegmentedPanel";
 import { getWorkoutByIdForGoal } from "../../../src/data/workouts";
 import { useUserStore } from "../../../src/stores/useUserStore";
 import { GlossyOverlay } from "../../../src/components/ui/GlossyOverlay";
+import { generateWarmUp, estimateWarmUpDuration, getWarmUpZoneSummary } from "../../../src/utils/warmup";
 
 export default function WorkoutPreviewScreen() {
   const colors = useColors();
@@ -28,6 +29,10 @@ export default function WorkoutPreviewScreen() {
       }, 0) / 60,
     );
   }, [workout]);
+
+  const warmUp = useMemo(() => (workout ? generateWarmUp(workout) : []), [workout]);
+  const warmUpDuration = useMemo(() => estimateWarmUpDuration(warmUp), [warmUp]);
+  const warmUpZones = useMemo(() => getWarmUpZoneSummary(warmUp), [warmUp]);
 
   const targetMuscles = useMemo(() => {
     if (!workout) return [];
@@ -111,6 +116,14 @@ export default function WorkoutPreviewScreen() {
             </View>
             <View style={{ alignItems: "center" }}>
               <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 8 }}>
+                WARM-UP
+              </Text>
+              <Text style={{ ...typography.h3, color: colors.warning ?? "#F59E0B" }}>
+                {warmUp.length} · ~{warmUpDuration < 60 ? "<1" : Math.round(warmUpDuration / 60)} min
+              </Text>
+            </View>
+            <View style={{ alignItems: "center" }}>
+              <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 8 }}>
                 MUSCLES
               </Text>
               <Text style={{ ...typography.h3, color: colors.text.primary }}>
@@ -149,6 +162,126 @@ export default function WorkoutPreviewScreen() {
             ))}
           </View>
         </SegmentedPanel>
+
+        {/* Warm-Up */}
+        {warmUp.length > 0 && (
+          <>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: spacing[4],
+                marginBottom: spacing[3],
+                gap: spacing[2],
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: `${colors.warning ?? "#F59E0B"}20`,
+                  borderWidth: 1,
+                  borderColor: colors.warning ?? "#F59E0B",
+                  borderRadius: 4,
+                  paddingHorizontal: spacing[2],
+                  paddingVertical: spacing[0],
+                }}
+              >
+                <Text
+                  style={{
+                    ...typography.label,
+                    color: colors.warning ?? "#F59E0B",
+                    fontSize: 8,
+                  }}
+                >
+                  WARM-UP
+                </Text>
+              </View>
+              <Text
+                style={{
+                  ...typography.bodySmall,
+                  color: colors.text.secondary,
+                  fontSize: 10,
+                  flex: 1,
+                }}
+                numberOfLines={1}
+              >
+                {warmUpZones.join(" · ")} · {warmUpDuration < 60
+                  ? "<1 min"
+                  : `~${Math.round(warmUpDuration / 60)} min`}
+              </Text>
+            </View>
+
+            {warmUp.map((wu, index) => (
+              <View
+                key={`warmup-${wu.exercise.id}`}
+                style={{
+                  backgroundColor: colors.bg.elevated,
+                  borderWidth: 1,
+                  borderColor: `${colors.warning ?? "#F59E0B"}40`,
+                  borderLeftWidth: 3,
+                  borderLeftColor: colors.warning ?? "#F59E0B",
+                  borderRadius: 4,
+                  padding: spacing[3],
+                  marginBottom: spacing[2],
+                  overflow: "hidden",
+                }}
+              >
+                <GlossyOverlay highlightOpacity={0.08} showReflection={false} />
+                <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                  <View
+                    style={{
+                      width: 24,
+                      height: 24,
+                      backgroundColor: `${colors.warning ?? "#F59E0B"}40`,
+                      borderRadius: 4,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginRight: spacing[2],
+                    }}
+                  >
+                    <Text
+                      style={{
+                        ...typography.label,
+                        color: colors.warning ?? "#F59E0B",
+                        fontSize: 10,
+                      }}
+                    >
+                      {index + 1}
+                    </Text>
+                  </View>
+
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        ...typography.h4,
+                        color: colors.text.primary,
+                        fontSize: 16,
+                      }}
+                    >
+                      {wu.exercise.name}
+                    </Text>
+
+                    <View style={{ flexDirection: "row", marginTop: spacing[1], gap: spacing[2] }}>
+                      <View style={{ flexDirection: "row", alignItems: "center" }}>
+                        <Text style={{ ...typography.bodySmall, color: colors.warning ?? "#F59E0B", fontSize: 10 }}>
+                          {wu.sets} SETS
+                        </Text>
+                        <Text style={{ ...typography.bodySmall, color: colors.text.secondary, fontSize: 10, marginHorizontal: spacing[1] }}>
+                          ×
+                        </Text>
+                        <Text style={{ ...typography.bodySmall, color: colors.text.primary, fontSize: 10 }}>
+                          {wu.repRange[0]}-{wu.repRange[1]} {wu.tempo === "isometric" ? "SEC" : "REPS"}
+                        </Text>
+                      </View>
+                      <Text style={{ ...typography.bodySmall, color: colors.text.secondary, fontSize: 10 }}>
+                        {wu.restInterval}s REST
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </>
+        )}
 
         {/* Exercise List */}
         <Text

@@ -16,6 +16,7 @@ import { getWorkoutByIdForGoal } from "../../src/data/workouts";
 import { calculateWorkoutXp } from "../../src/utils/xp";
 import { extractCompletedIds, findNewUnlocks } from "../../src/utils/skillUnlocks";
 import { detectNewMastery } from "../../src/utils/doubleProgression";
+import { generateWarmUp } from "../../src/utils/warmup";
 import { playLevelUpSound } from "../../src/services/levelUpSound";
 import { GlossyOverlay } from "../../src/components/ui/GlossyOverlay";
 
@@ -66,6 +67,10 @@ export default function WorkoutPlayerScreen() {
     import("../../src/utils/skillUnlocks").NewClassUnlock[]
   >([]);
 
+  // Warm-up generation — computed once when workout is available
+  const warmUpRef = useRef<import("../../src/utils/warmup").WarmUpExercise[]>([]);
+  const warmUpCountRef = useRef(0);
+
   // Rep counter state — user enters actual reps per set
   const preWorkoutLevelRef = useRef(1);
 
@@ -100,7 +105,22 @@ export default function WorkoutPlayerScreen() {
       hasStartedWorkout.current = true;
       // Reset any stale workout state from a previous session
       useWorkoutStore.getState().reset();
-      startWorkout(workout.exercises);
+
+      // Generate warm-up and prepend to exercises
+      const warmUps = generateWarmUp(workout);
+      warmUpRef.current = warmUps;
+      warmUpCountRef.current = warmUps.length;
+      const warmUpExercises: import("../../src/data/exercises").Exercise[] = warmUps.map((wu) => ({
+        ...wu.exercise,
+        defaultSets: wu.sets,
+        repRange: wu.repRange,
+        tempo: wu.tempo,
+        restInterval: wu.restInterval,
+        biomechanicalNotes: "WARM-UP: " + (wu.exercise.biomechanicalNotes || "Prepare the target muscles with controlled movement."),
+      }));
+
+      const allExercises = [...warmUpExercises, ...workout.exercises];
+      startWorkout(allExercises);
     }
   }, [workout, startWorkout]);
 
@@ -402,15 +422,43 @@ export default function WorkoutPlayerScreen() {
       <ScrollView contentContainerStyle={{ padding: spacing[4], paddingBottom: spacing[12] }}>
         {/* Exercise header */}
         <HUDModule
-          label={`EXERCISE ${currentExerciseIndex + 1} OF ${exerciseProgress.length}`}
-          accent="amber"
+          label={
+            currentExerciseIndex < warmUpCountRef.current
+              ? `WARM-UP ${currentExerciseIndex + 1} OF ${warmUpCountRef.current}`
+              : `EXERCISE ${currentExerciseIndex + 1 - warmUpCountRef.current} OF ${exerciseProgress.length - warmUpCountRef.current}`
+          }
+          accent={currentExerciseIndex < warmUpCountRef.current ? "amber" : "amber"}
           style={{ marginBottom: spacing[4] }}
         >
           {exercise && currentProgress && (
             <>
-              <Text style={{ ...typography.h2, color: colors.text.primary, fontSize: 24 }}>
-                {exercise.name}
-              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[2] }}>
+                <Text style={{ ...typography.h2, color: colors.text.primary, fontSize: 24, flex: 1 }}>
+                  {exercise.name}
+                </Text>
+                {currentExerciseIndex < warmUpCountRef.current && (
+                  <View
+                    style={{
+                      backgroundColor: `${colors.warning ?? "#F59E0B"}20`,
+                      borderWidth: 1,
+                      borderColor: colors.warning ?? "#F59E0B",
+                      borderRadius: 4,
+                      paddingHorizontal: spacing[2],
+                      paddingVertical: spacing[0],
+                    }}
+                  >
+                    <Text
+                      style={{
+                        ...typography.label,
+                        color: colors.warning ?? "#F59E0B",
+                        fontSize: 9,
+                      }}
+                    >
+                      WARM-UP
+                    </Text>
+                  </View>
+                )}
+              </View>
               <View
                 style={{
                   flexDirection: "row",
