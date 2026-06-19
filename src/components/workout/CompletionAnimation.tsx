@@ -1,11 +1,16 @@
-import { useEffect, useState, useMemo } from "react";
-import { View, Text } from "react-native";
+import { useEffect, useState, useMemo, useRef } from "react";
+import { View, Text, Animated } from "react-native";
 import { MotiView } from "moti";
 import { useColors, typography, spacing, fonts } from "../../tokens";
 import { Button } from "../ui/Button";
 import { XpBreakdown } from "../../utils/xp";
 import { checkAchievements, AchievementBadge } from "../ui/AchievementSystem";
 import { GlossyOverlay } from "../ui/GlossyOverlay";
+import {
+  playLevelUpSound,
+  playCompletionSound,
+  cleanupSound,
+} from "../../services/levelUpSound";
 
 interface CompletionAnimationProps {
   xpBreakdown: XpBreakdown;
@@ -40,7 +45,11 @@ export function CompletionAnimation({
   const colors = useColors();
   const [showContent, setShowContent] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
+  const [flashVisible, setFlashVisible] = useState(true);
   const leveledUp = newLevel > level;
+
+  // Screen flash animation value
+  const flashOpacity = useRef(new Animated.Value(1)).current;
 
   // Check for newly unlocked achievements
   const unlockedAchievements = useMemo(() => {
@@ -49,24 +58,63 @@ export function CompletionAnimation({
   }, [achievementContext]);
 
   useEffect(() => {
+    // Play the appropriate sound
+    if (leveledUp) {
+      playLevelUpSound();
+    } else {
+      playCompletionSound();
+    }
+
+    // Screen flash: bright white/gold that fades to transparent
+    Animated.timing(flashOpacity, {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: true,
+    }).start(() => setFlashVisible(false));
+
     const timer = setTimeout(() => setShowContent(true), 600);
     const achieveTimer = setTimeout(() => setShowAchievements(true), 1800);
     return () => {
       clearTimeout(timer);
       clearTimeout(achieveTimer);
+      cleanupSound();
     };
   }, []);
 
-  // Pre-compute particle positions — more particles for a celebration feel
-  const particles = useMemo(
+  // Pre-compute particles — explosive radial burst + rising particles
+  const burstParticles = useMemo(
     () =>
-      Array.from({ length: 16 }, (_, i) => ({
-        translateY: -400 - Math.random() * 300,
-        translateX: (Math.random() - 0.5) * 100,
-        duration: 1200 + Math.random() * 1500,
+      Array.from({ length: 24 }, (_, i) => {
+        const angle = (i / 24) * Math.PI * 2;
+        const distance = 80 + Math.random() * 180;
+        const isStar = i % 3 === 0;
+        const isCircle = i % 3 === 1;
+        return {
+          translateX: Math.cos(angle) * distance,
+          translateY: Math.sin(angle) * distance,
+          duration: 600 + Math.random() * 400,
+          size: isStar ? 6 : isCircle ? 4 + Math.random() * 4 : 3 + Math.random() * 3,
+          color:
+            [colors.accent.DEFAULT, colors.accent.light, colors.success, colors.warning, "#FFFFFF", colors.accent.dark][
+              i % 6
+            ],
+          rotation: Math.random() * 720,
+          borderRadius: isCircle ? 50 : isStar ? 2 : 0,
+        };
+      }),
+    [],
+  );
+
+  // Rising sparkle particles
+  const sparkles = useMemo(
+    () =>
+      Array.from({ length: 20 }, (_, i) => ({
+        translateY: -300 - Math.random() * 200,
+        translateX: (Math.random() - 0.5) * 120,
+        duration: 1000 + Math.random() * 1200,
         left: `${5 + Math.random() * 90}%`,
-        size: 3 + Math.random() * 8,
-        color: [colors.accent.DEFAULT, colors.success, colors.accent.dark, colors.accent.light, colors.warning][i % 5],
+        size: 2 + Math.random() * 5,
+        color: [colors.accent.DEFAULT, colors.accent.light, colors.success, colors.warning, "#FFFFFF"][i % 5],
         rotation: Math.random() * 360,
       })),
     [],
@@ -88,6 +136,23 @@ export function CompletionAnimation({
         padding: spacing[6],
       }}
     >
+      {/* Screen flash — bright white overlay that fades instantly */}
+      {flashVisible && (
+        <Animated.View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: leveledUp ? "#FFD700" : "#FFFFFF",
+            opacity: flashOpacity,
+            zIndex: 100,
+          }}
+        />
+      )}
+
       {/* Background glow effect */}
       {showContent && (
         <MotiView
@@ -104,12 +169,43 @@ export function CompletionAnimation({
         />
       )}
 
-      {/* Background particles */}
+      {/* Explosive radial burst particles (from center, immediate) */}
+      {showContent && (
+        <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, justifyContent: "center", alignItems: "center" }}>
+          {burstParticles.map((p, i) => (
+            <MotiView
+              key={`burst-${i}`}
+              from={{ translateX: 0, translateY: 0, opacity: 1, scale: 1.2, rotate: "0deg" }}
+              animate={{
+                translateX: p.translateX,
+                translateY: p.translateY,
+                opacity: 0,
+                scale: 0.3,
+                rotate: `${p.rotation}deg`,
+              }}
+              transition={{
+                type: "timing",
+                duration: p.duration,
+                delay: i * 30,
+              }}
+              style={{
+                position: "absolute",
+                width: p.size,
+                height: p.size,
+                backgroundColor: p.color,
+                borderRadius: p.borderRadius,
+              }}
+            />
+          ))}
+        </View>
+      )}
+
+      {/* Rising sparkle particles */}
       {showContent && (
         <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
-          {particles.map((p, i) => (
+          {sparkles.map((p, i) => (
             <MotiView
-              key={i}
+              key={`sparkle-${i}`}
               from={{ translateY: 0, opacity: 1, scale: 1, rotate: "0deg" }}
               animate={{
                 translateY: p.translateY,
@@ -121,7 +217,7 @@ export function CompletionAnimation({
               transition={{
                 type: "timing",
                 duration: p.duration,
-                delay: i * 80,
+                delay: i * 60 + 200,
               }}
               style={{
                 position: "absolute",
@@ -147,31 +243,53 @@ export function CompletionAnimation({
         transition={{ type: "spring", damping: 12, stiffness: 80 }}
         style={{ alignItems: "center", width: "100%" }}
       >
-        {/* Animated completion badge */}
+        {/* Animated completion badge — larger, with glow pulse */}
         <MotiView
           from={{ scale: 0, rotate: "-180deg" }}
           animate={{ scale: 1, rotate: "0deg" }}
           transition={{ type: "spring", damping: 10, stiffness: 100, delay: 200 }}
         >
+          <MotiView
+            from={{ scale: 0.8, opacity: 0.6 }}
+            animate={{ scale: 1.3, opacity: 0 }}
+            transition={{ type: "timing", duration: 800, delay: 300, loop: true, repeatReverse: true }}
+            style={{
+              position: "absolute",
+              top: -4,
+              left: -4,
+              right: -4,
+              bottom: -4,
+              borderWidth: 2,
+              borderColor: leveledUp ? colors.accent.DEFAULT : colors.success,
+              borderRadius: 6,
+            }}
+          />
           <View
             style={{
-              width: 88,
-              height: 88,
-              backgroundColor: `${colors.success}15`,
-              borderWidth: 2,
-              borderColor: colors.success,
+              width: leveledUp ? 100 : 88,
+              height: leveledUp ? 100 : 88,
+              backgroundColor: `${"#FFD700"}20`,
+              borderWidth: 2.5,
+              borderColor: leveledUp ? "#FFD700" : colors.success,
               borderRadius: 4,
               alignItems: "center",
               justifyContent: "center",
               marginBottom: spacing[4],
-              shadowColor: colors.success,
+              shadowColor: leveledUp ? "#FFD700" : colors.success,
               shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.4,
-              shadowRadius: 12,
-              elevation: 8,
+              shadowOpacity: 0.5,
+              shadowRadius: 16,
+              elevation: 10,
             }}
           >
-            <Text style={{ fontSize: 40 }}>✦</Text>
+            <MotiView
+              animate={{ rotate: "360deg" }}
+              transition={{ type: "timing", duration: 4000, loop: true }}
+            >
+              <Text style={{ fontSize: leveledUp ? 48 : 40 }}>
+                {leveledUp ? "★" : "✦"}
+              </Text>
+            </MotiView>
           </View>
         </MotiView>
 
@@ -313,44 +431,51 @@ export function CompletionAnimation({
           </View>
         </MotiView>
 
-        {/* Level up indicator */}
+        {/* Level up indicator — more dramatic */}
         {leveledUp && (
           <MotiView
             from={{ opacity: 0, scale: 2 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 900, type: "spring", damping: 10 }}
+            transition={{ delay: 900, type: "spring", damping: 10, stiffness: 150 }}
             style={{
-              backgroundColor: `${colors.accent.DEFAULT}15`,
-              borderWidth: 1.5,
-              borderColor: colors.accent.DEFAULT,
+              backgroundColor: `${colors.accent.DEFAULT}18`,
+              borderWidth: 2,
+              borderColor: "#FFD700",
               borderRadius: 4,
-              padding: spacing[3],
-              marginTop: spacing[4],
+              padding: spacing[4],
+              marginTop: spacing[5],
               flexDirection: "row",
               alignItems: "center",
-              gap: spacing[2],
-              shadowColor: colors.accent.DEFAULT,
+              gap: spacing[3],
+              shadowColor: "#FFD700",
               shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 6,
+              shadowOpacity: 0.4,
+              shadowRadius: 12,
+              elevation: 8,
               overflow: "hidden",
             }}
           >
-            <GlossyOverlay highlightOpacity={0.12} showReflection={false} />
+            <GlossyOverlay highlightOpacity={0.15} showReflection={true} />
             <MotiView
-              from={{ rotate: "0deg" }}
-              animate={{ rotate: "360deg" }}
-              transition={{ type: "timing", duration: 1500, repeat: -1 }}
+              from={{ rotate: "0deg", scale: 1 }}
+              animate={{ rotate: "360deg", scale: 1.1 }}
+              transition={{
+                type: "timing",
+                duration: 1500,
+                loop: true,
+              }}
             >
-              <Text style={{ fontSize: 28 }}>▲</Text>
+              <Text style={{ fontSize: 36 }}>★</Text>
             </MotiView>
             <View>
-              <Text style={{ ...typography.label, color: colors.accent.DEFAULT, fontSize: 10 }}>
+              <Text style={{ ...typography.label, color: "#FFD700", fontSize: 12, letterSpacing: 2 }}>
                 LEVEL UP!
               </Text>
-              <Text style={{ ...typography.h3, color: colors.text.primary }}>
-                LEVEL {level} → LEVEL {newLevel}
+              <Text style={{ ...typography.h2, color: colors.text.primary }}>
+                LEVEL {level} → {newLevel}
+              </Text>
+              <Text style={{ ...typography.bodySmall, color: colors.text.secondary, fontSize: 11, marginTop: 2 }}>
+                New abilities unlocked
               </Text>
             </View>
           </MotiView>
