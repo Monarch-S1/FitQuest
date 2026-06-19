@@ -1,38 +1,67 @@
-import { Audio, AVPlaybackSource } from "expo-av";
-import { Platform } from "react-native";
+/**
+ * Level-Up Sound Effects — ARCH
+ *
+ * Plays sound effects for level-ups, skill unlocks, and workout completion.
+ * Gracefully degrades when the expo-av native module is unavailable (e.g., Expo Go).
+ * When unavailable, all functions become silent no-ops.
+ */
 
-let soundObject: Audio.Sound | null = null;
+// ─── Conditional native module import ──────────────────────────
+// expo-av's Audio module throws "Cannot find native module 'ExponentAV'"
+// in Expo Go because it requires native build linking.
+// We catch that here so the app doesn't crash on import.
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let AV: any = null;
+
+try {
+  // Dynamic require avoids static import failure
+  AV = require("expo-av");
+} catch {
+  // expo-av native module is not available — sound functions become no-ops
+  console.warn("[levelUpSound] expo-av not available, sounds disabled");
+}
+
+// ─── Sound state ────────────────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let soundObject: any = null;
+
+// ─── Core helpers ───────────────────────────────────────────────
+
+/**
+ * Check if sound is available (native module loaded successfully).
+ */
+function isSoundAvailable(): boolean {
+  return AV !== null;
+}
+
+// ─── Public API ─────────────────────────────────────────────────
 
 /**
  * Play the level-up chime sound effect.
- * Gracefully degrades if the sound file isn't available or loading fails.
- *
- * To add a real audio file:
- * 1. Place a short WAV/MP3 file at assets/sounds/levelup.mp3
- * 2. Uncomment the require() line below
- * 3. Remove the Platform check
+ * Gracefully degrades if expo-av native module is unavailable.
  */
-export async function playLevelUpSound() {
+export async function playLevelUpSound(): Promise<void> {
+  if (!isSoundAvailable()) return;
+
   try {
-    // Configure audio mode for playback
+    const Audio = AV.Audio;
+    const Sound = Audio.Sound;
+
     await Audio.setAudioModeAsync({
       playsInSilentModeIOS: true,
       staysActiveInBackground: false,
       shouldDuckAndroid: true,
     });
 
-    // Sound source — add a real audio file to assets/sounds/ and uncomment:
-    // const source: AVPlaybackSource = require("../../assets/sounds/levelup.mp3");
-
-    // Fallback: generate a simple tone sequence using tiny base64 WAV
-    // This creates a short ascending chime (C5 → E5 → G5) as a WAV
-    const source: AVPlaybackSource = { uri: generateLevelUpChimeDataUri() };
+    const source = { uri: generateLevelUpChimeDataUri() };
 
     if (soundObject) {
       await soundObject.unloadAsync();
     }
 
-    soundObject = new Audio.Sound();
+    soundObject = new Sound();
     await soundObject.loadAsync(source, { volume: 0.4 });
     await soundObject.playAsync();
   } catch {
@@ -41,9 +70,52 @@ export async function playLevelUpSound() {
 }
 
 /**
+ * Play the workout completion sound (a satisfying thud/chord).
+ */
+export async function playCompletionSound(): Promise<void> {
+  if (!isSoundAvailable()) return;
+
+  try {
+    const Audio = AV.Audio;
+    const Sound = Audio.Sound;
+
+    await Audio.setAudioModeAsync({
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: false,
+      shouldDuckAndroid: true,
+    });
+
+    const source = { uri: generateCompletionChordDataUri() };
+
+    if (soundObject) {
+      await soundObject.unloadAsync();
+    }
+
+    soundObject = new Sound();
+    await soundObject.loadAsync(source, { volume: 0.3 });
+    await soundObject.playAsync();
+  } catch {
+    // Sound is optional
+  }
+}
+
+/** Clean up sound resources */
+export async function cleanupSound(): Promise<void> {
+  if (soundObject) {
+    try {
+      await soundObject.unloadAsync();
+    } catch {
+      // Ignore cleanup errors
+    }
+    soundObject = null;
+  }
+}
+
+// ─── WAV generation (pure JS — no native deps) ──────────────────
+
+/**
  * Generate a tiny WAV file as a data URI containing a level-up chime.
  * Three ascending tones (C5→E5→G5) played as short sine wave pulses.
- * This avoids needing an actual audio file in the repo.
  */
 function generateLevelUpChimeDataUri(): string {
   const sampleRate = 22050;
@@ -51,7 +123,6 @@ function generateLevelUpChimeDataUri(): string {
   const buffer = new ArrayBuffer(44 + numSamples * 2);
   const view = new DataView(buffer);
 
-  // WAV header
   writeWavHeader(view, sampleRate, numSamples);
 
   // Three ascending tones: C5 (523Hz), E5 (659Hz), G5 (784Hz)
@@ -67,11 +138,11 @@ function generateLevelUpChimeDataUri(): string {
     // Apply ADSR envelope: quick attack, sustain, quick release
     let envelope: number;
     if (notePos < 0.05) {
-      envelope = notePos / 0.05; // attack
+      envelope = notePos / 0.05;
     } else if (notePos > 0.85) {
-      envelope = (1 - notePos) / 0.15; // release
+      envelope = (1 - notePos) / 0.15;
     } else {
-      envelope = 1.0; // sustain
+      envelope = 1.0;
     }
 
     // Sine wave with slight harmonics for richness
@@ -94,64 +165,6 @@ function generateLevelUpChimeDataUri(): string {
 }
 
 /**
- * Write a standard 16-bit mono WAV header to the DataView.
- */
-function writeWavHeader(view: DataView, sampleRate: number, numSamples: number) {
-  const byteRate = sampleRate * 2; // 16-bit mono
-  const dataSize = numSamples * 2;
-
-  // RIFF header
-  writeString(view, 0, "RIFF");
-  view.setUint32(4, 36 + dataSize, true);
-  writeString(view, 8, "WAVE");
-
-  // fmt chunk
-  writeString(view, 12, "fmt ");
-  view.setUint32(16, 16, true); // chunk size
-  view.setUint16(20, 1, true); // PCM
-  view.setUint16(22, 1, true); // mono
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, byteRate, true);
-  view.setUint16(32, 2, true); // block align
-  view.setUint16(34, 16, true); // bits per sample
-
-  // data chunk
-  writeString(view, 36, "data");
-  view.setUint32(40, dataSize, true);
-}
-
-function writeString(view: DataView, offset: number, str: string) {
-  for (let i = 0; i < str.length; i++) {
-    view.setUint8(offset + i, str.charCodeAt(i));
-  }
-}
-
-/**
- * Play the workout completion sound (a satisfying thud/chord).
- */
-export async function playCompletionSound() {
-  try {
-    await Audio.setAudioModeAsync({
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: false,
-      shouldDuckAndroid: true,
-    });
-
-    const source: AVPlaybackSource = { uri: generateCompletionChordDataUri() };
-
-    if (soundObject) {
-      await soundObject.unloadAsync();
-    }
-
-    soundObject = new Audio.Sound();
-    await soundObject.loadAsync(source, { volume: 0.3 });
-    await soundObject.playAsync();
-  } catch {
-    // Sound is optional
-  }
-}
-
-/**
  * Generate a rich major chord (C major: C4+E4+G4) as a sustained WAV tone.
  */
 function generateCompletionChordDataUri(): string {
@@ -167,8 +180,7 @@ function generateCompletionChordDataUri(): string {
 
   for (let i = 0; i < numSamples; i++) {
     const pos = i / numSamples;
-    // Quick attack, then fade out
-    let envelope = pos < 0.02 ? pos / 0.02 : Math.max(0, 1 - pos * 0.5);
+    const envelope = pos < 0.02 ? pos / 0.02 : Math.max(0, 1 - pos * 0.5);
 
     let sample = 0;
     for (const freq of frequencies) {
@@ -188,14 +200,34 @@ function generateCompletionChordDataUri(): string {
   return `data:audio/wav;base64,${btoa(binary)}`;
 }
 
-/** Clean up sound resources */
-export async function cleanupSound() {
-  if (soundObject) {
-    try {
-      await soundObject.unloadAsync();
-    } catch {
-      // Ignore cleanup errors
-    }
-    soundObject = null;
+// ─── WAV header utilities ───────────────────────────────────────
+
+/**
+ * Write a standard 16-bit mono WAV header to the DataView.
+ */
+function writeWavHeader(view: DataView, sampleRate: number, numSamples: number) {
+  const byteRate = sampleRate * 2;
+  const dataSize = numSamples * 2;
+
+  writeString(view, 0, "RIFF");
+  view.setUint32(4, 36 + dataSize, true);
+  writeString(view, 8, "WAVE");
+
+  writeString(view, 12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+
+  writeString(view, 36, "data");
+  view.setUint32(40, dataSize, true);
+}
+
+function writeString(view: DataView, offset: number, str: string) {
+  for (let i = 0; i < str.length; i++) {
+    view.setUint8(offset + i, str.charCodeAt(i));
   }
 }

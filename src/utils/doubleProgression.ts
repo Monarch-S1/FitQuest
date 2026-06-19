@@ -11,7 +11,6 @@
 
 import { WorkoutSession } from "../stores/useUserStore";
 import {
-  ALL_EXERCISES_96,
   getExercise96ById,
   Exercise96,
 } from "../data/exercises96";

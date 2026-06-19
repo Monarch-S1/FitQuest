@@ -19,7 +19,7 @@ import {
   getLevelUpReplacement,
   confirmLevelUp,
 } from "../utils/doubleProgression";
-import { getExercise96ById, ALL_EXERCISES_96 } from "../data/exercises96";
+import { getExercise96ById, getAllExercises96 } from "../data/exercises96";
 import type { WorkoutSession } from "../stores/useUserStore";
 
 // ─── Helpers ────────────────────────────────
@@ -159,7 +159,7 @@ describe("checkExerciseProgression", () => {
   });
 
   it("returns nextExercise=null for max-level (level 12) exercises", () => {
-    const lvl12 = ALL_EXERCISES_96.find((e) => e.pathwayLevel === 12);
+    const lvl12 = getAllExercises96().find((e) => e.pathwayLevel === 12);
     if (!lvl12) return; // guard
     const result = checkExerciseProgression(lvl12.id, []);
     expect(result!.nextExercise).toBeNull();
@@ -403,7 +403,7 @@ describe("getLevelUpReplacement", () => {
   });
 
   it("returns null for max-level (level 12) exercises", () => {
-    const lvl12 = ALL_EXERCISES_96.find((e) => e.pathwayLevel === 12);
+    const lvl12 = getAllExercises96().find((e) => e.pathwayLevel === 12);
     if (!lvl12) return;
     expect(getLevelUpReplacement(lvl12.id)).toBeNull();
   });

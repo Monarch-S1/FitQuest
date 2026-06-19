@@ -5,43 +5,57 @@
  * Structured from Level 1 (Absolute Beginner) to Level 12 (Elite).
  *
  * Each pathway lives in its own file for maintainability.
- * This index centralises all exports.
+ * This index centralises all exports with **lazy loading** so
+ * the 8 pathway files are NOT loaded on app startup — only
+ * when exercise data is first accessed.
  */
 
 // ─── Re-export helpers ─────────────────────────────
 export { Exercise96, M, CK, E } from "./helpers";
 
-// ─── Import all pathway arrays ─────────────────────
-import { HP } from "./hp";
-import { VP } from "./vp";
-import { HPLL } from "./hpll";
-import { VPLL } from "./vpll";
-import { AQL } from "./aql";
-import { HPL } from "./hpl";
-import { AC } from "./ac";
-import { PLC } from "./plc";
-
-import { type Exercise } from "../exercises";
+import { type Exercise96 } from "./helpers";
 import { PathwayId } from "../pathways";
-import { Exercise96 } from "./helpers";
 
 // ═══════════════════════════════════════════════════
-// MASTER EXPORT — all 96 exercises
+// LAZY LOADING — pathway files imported on first use
 // ═══════════════════════════════════════════════════
 
-export const ALL_EXERCISES_96: Exercise96[] = [
-  ...HP, ...VP, ...HPLL, ...VPLL,
-  ...AQL, ...HPL, ...AC, ...PLC,
-];
+let _allExercises: Exercise96[] | null = null;
+
+/** Load and cache all 96 exercises on first call */
+function loadAll(): Exercise96[] {
+  if (_allExercises) return _allExercises;
+
+  // Dynamic require() defers module loading until first access
+  const { HP } = require("./hp") as { HP: Exercise96[] };
+  const { VP } = require("./vp") as { VP: Exercise96[] };
+  const { HPLL } = require("./hpll") as { HPLL: Exercise96[] };
+  const { VPLL } = require("./vpll") as { VPLL: Exercise96[] };
+  const { AQL } = require("./aql") as { AQL: Exercise96[] };
+  const { HPL } = require("./hpl") as { HPL: Exercise96[] };
+  const { AC } = require("./ac") as { AC: Exercise96[] };
+  const { PLC } = require("./plc") as { PLC: Exercise96[] };
+
+  _allExercises = [
+    ...HP, ...VP, ...HPLL, ...VPLL,
+    ...AQL, ...HPL, ...AC, ...PLC,
+  ];
+  return _allExercises;
+}
+
+/** Get all 96 exercises (lazy-loaded on first call) */
+export function getAllExercises96(): Exercise96[] {
+  return loadAll();
+}
 
 /** Lookup an exercise by its pathway ID (e.g. "HP6") */
 export function getExercise96ById(id: string): Exercise96 | undefined {
-  return ALL_EXERCISES_96.find((e) => e.id === id);
+  return loadAll().find((e) => e.id === id);
 }
 
 /** Get all exercises in a specific pathway */
 export function getExercisesByPathway(pathway: PathwayId): Exercise96[] {
-  return ALL_EXERCISES_96.filter((e) => e.pathwayId === pathway);
+  return loadAll().filter((e) => e.pathwayId === pathway);
 }
 
 /** Get all exercises by parent family */
@@ -53,7 +67,7 @@ export function getExercisesByParentFamily(family: "push" | "pull" | "legs" | "c
     core: ["ac", "plc"],
   };
   const ids = families[family] ?? [];
-  return ALL_EXERCISES_96.filter((e) => ids.includes(e.pathwayId));
+  return loadAll().filter((e) => ids.includes(e.pathwayId));
 }
 
 // ─── Legacy ID mappings ────────────────────────────

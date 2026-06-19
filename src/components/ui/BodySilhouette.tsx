@@ -575,9 +575,9 @@ export function BodySilhouette({
       </View>
 
       <Svg width={200} height={530} viewBox={viewBox}>
-        {/* Background silhouette */}
+        {/* Background silhouette — faint body outline */}
         {activeMuscles.map((m) => (
-          <Path key={`bg-${m.id}`} d={m.d} fill={colors.bg.highlight} fillOpacity={0.15} />
+          <Path key={`bg-${m.id}`} d={m.d} fill={colors.bg.highlight} fillOpacity={0.35} />
         ))}
 
         {/* Interactive muscle paths */}
@@ -593,9 +593,9 @@ export function BodySilhouette({
               d={m.d}
               fill={isSelected ? fillColor : hasData ? fillColor : "transparent"}
               fillOpacity={isSelected ? 0.65 : hasData ? opacity * 0.55 : 0}
-              stroke={hasData || isSelected ? fillColor : colors.border.subtle}
-              strokeWidth={isSelected ? 0.25 : 0.08}
-              strokeOpacity={hasData ? opacity : isSelected ? 0.8 : 0.15}
+              stroke={hasData || isSelected ? fillColor : colors.text.tertiary}
+              strokeWidth={isSelected ? 0.25 : hasData ? 0.15 : 0.2}
+              strokeOpacity={hasData ? opacity : isSelected ? 0.8 : 0.4}
               onPress={() => onSelectMuscle(m.zone)}
             />
           );

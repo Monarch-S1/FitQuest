@@ -7,7 +7,7 @@
  */
 
 import type { DifficultyTier } from "./exercises";
-import { ALL_EXERCISES_96, Exercise96 } from "./exercises96";
+import { getAllExercises96, Exercise96 } from "./exercises96";
 import { PATHWAYS, PathwayId, PATHWAY_LIST, levelToDifficulty } from "./pathways";
 
 export type { DifficultyTier };
@@ -68,7 +68,7 @@ function buildEightBranchTree(): SkillBranch[] {
     HPL12: ["HPL11"],    // Unassisted Nordic needs assisted
   };
 
-  for (const exercise of ALL_EXERCISES_96) {
+  for (const exercise of getAllExercises96()) {
     const pathway = PATHWAYS[exercise.pathwayId];
     const level = exercise.pathwayLevel;
     const difficulty = levelToDifficulty(level);

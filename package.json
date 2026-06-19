@@ -6,6 +6,7 @@
     "@babel/helpers": "^7.29.7",
     "@expo-google-fonts/bebas-neue": "^0.4.1",
     "@expo-google-fonts/inter": "^0.4.2",
+    "@expo/ngrok": "^4.1.3",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@sentry/react-native": "~7.11.0",
     "@supabase/supabase-js": "^2.105.4",

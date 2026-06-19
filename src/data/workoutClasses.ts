@@ -9,7 +9,7 @@
  * of the exercise skill tree.
  */
 
-import { ALL_EXERCISES_96, getExercise96ById } from "./exercises96";
+import { getExercise96ById } from "./exercises96";
 import { WorkoutDay, Exercise } from "./exercises";
 
 // ─── Types ─────────────────────────────────────────
