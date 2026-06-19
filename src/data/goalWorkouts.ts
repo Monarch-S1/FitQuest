@@ -1,5 +1,6 @@
 import { FitnessGoal } from "../stores/useUserStore";
 import { Exercise, Tempo, WorkoutDay, workoutA, workoutB, workoutC, workoutD } from "./exercises";
+import { getClassWorkout } from "./workoutClasses";
 
 // ─── Goal-Specific Training Parameters ──────────────────────────────────────
 
@@ -141,7 +142,20 @@ export function getWorkoutByIdForGoal(
   id: string,
   goal: FitnessGoal,
 ): WorkoutDay | undefined {
-  return getWorkoutsForGoal(goal).find((w) => w.id === id);
+  // First check standard rotation workouts (A/B/C/D)
+  const standardWorkout = getWorkoutsForGoal(goal).find((w) => w.id === id);
+  if (standardWorkout) return standardWorkout;
+
+  // Fall back to Workout Class (unlockable themed workout)
+  const classWorkout = getClassWorkout(id);
+  if (!classWorkout) return undefined;
+
+  // Apply goal transformation to class workout exercises
+  return {
+    ...classWorkout,
+    name: `${classWorkout.name} · ${GOAL_CONFIGS[goal].label}`,
+    exercises: classWorkout.exercises.map((ex) => transformExercise(ex, goal)),
+  };
 }
 
 /**
