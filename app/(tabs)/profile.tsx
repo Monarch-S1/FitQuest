@@ -125,6 +125,7 @@ export default function ProfileScreen() {
     avatarUri,
     updateProfile,
     clearAuth,
+    exercisePresets,
   } = useUserStore();
   const [showEditName, setShowEditName] = useState(false);
   const [editName, setEditName] = useState(displayName);
@@ -910,6 +911,88 @@ export default function ProfileScreen() {
             </View>
           ))}
         </View>
+
+        {/* Custom Presets */}
+        {Object.keys(exercisePresets).length > 0 && (
+          <>
+            <Text
+              style={{
+                ...typography.subtitle,
+                color: colors.text.secondary,
+                fontSize: 11,
+                marginTop: spacing[3],
+                marginBottom: spacing[3],
+              }}
+            >
+              Custom Presets ({Object.keys(exercisePresets).length})
+            </Text>
+            <SegmentedPanel title="SAVED PRESETS" accent="amber" style={{ marginBottom: spacing[2] }}>
+              {Object.values(exercisePresets)
+                .sort((a, b) => (a.label || a.exerciseId).localeCompare(b.label || b.exerciseId))
+                .map((preset, i, arr) => (
+                <View key={preset.exerciseId}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={{
+                          ...typography.bodySmall,
+                          color: colors.text.primary,
+                          fontFamily: fonts.body.semiBold,
+                          fontSize: 11,
+                        }}
+                      >
+                        {preset.label || preset.exerciseId}
+                      </Text>
+                      <Text
+                        style={{
+                          ...typography.bodySmall,
+                          color: colors.text.secondary,
+                          fontSize: 9,
+                          marginTop: 2,
+                        }}
+                      >
+                        {preset.defaultSets} × {preset.repRange[0]}-{preset.repRange[1]} · {preset.restInterval}s rest · {preset.tempo}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => {
+                        const store = useUserStore.getState();
+                        dialog.destructive({
+                          title: "Delete Preset",
+                          message: `Remove custom preset for "${preset.label || preset.exerciseId}"?`,
+                          actionLabel: "DELETE",
+                          onAction: () => store.removeExercisePreset(preset.exerciseId),
+                        });
+                      }}
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Delete preset for ${preset.label || preset.exerciseId}`}
+                    >
+                      <Text style={{ ...typography.label, color: colors.error, fontSize: 8 }}>
+                        DELETE
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  {i < arr.length - 1 && (
+                    <View
+                      style={{
+                        height: 1,
+                        backgroundColor: colors.border.subtle,
+                        marginVertical: spacing[1],
+                      }}
+                    />
+                  )}
+                </View>
+              ))}
+            </SegmentedPanel>
+          </>
+        )}
 
         {/* Feedback */}
         <SegmentedPanel title="SUPPORT" accent="amber" style={{ marginTop: spacing[4] }}>

@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useColors, typography, spacing, fonts } from "../../src/tokens";
@@ -9,9 +9,12 @@ import {
   workoutC,
   workoutD,
   Exercise,
+  Tempo,
   MuscleGroup,
 } from "../../src/data/exercises";
 import { workouts } from "../../src/data/workouts";
+import { useUserStore, ExercisePreset } from "../../src/stores/useUserStore";
+import { hasPreset, createPresetFromExercise } from "../../src/utils/exercisePresets";
 
 const ALL_EXERCISES = [
   ...workoutA.exercises,
@@ -99,8 +102,18 @@ export default function ExerciseCatalogScreen() {
   const colors = useColors();
 
   const router = useRouter();
+  const { setExercisePreset, removeExercisePreset } = useUserStore();
   const [selectedMuscle, setSelectedMuscle] = useState<MuscleGroup | null>(null);
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
+
+  // Preset editor state
+  const [editPresetId, setEditPresetId] = useState<string | null>(null);
+  const [editSets, setEditSets] = useState(3);
+  const [editRepLow, setEditRepLow] = useState(8);
+  const [editRepHigh, setEditRepHigh] = useState(15);
+  const [editRest, setEditRest] = useState(90);
+  const [editTempo, setEditTempo] = useState<Tempo>("3-1-2-0");
+  const [editLabel, setEditLabel] = useState("");
 
   // Derive unique muscle groups present across all exercises
   const availableMuscles = useMemo(() => {
@@ -123,7 +136,48 @@ export default function ExerciseCatalogScreen() {
 
   const handleToggleExpand = useCallback((exerciseId: string) => {
     setExpandedExercise((prev) => (prev === exerciseId ? null : exerciseId));
+    setEditPresetId(null);
   }, []);
+
+  const handleOpenPresetEditor = useCallback((exercise: Exercise) => {
+    const preset = hasPreset(exercise.id) ? useUserStore.getState().exercisePresets?.[exercise.id] : null;
+    setEditPresetId(exercise.id);
+    if (preset) {
+      setEditSets(preset.defaultSets);
+      setEditRepLow(preset.repRange[0]);
+      setEditRepHigh(preset.repRange[1]);
+      setEditRest(preset.restInterval);
+      setEditTempo(preset.tempo);
+      setEditLabel(preset.label ?? "");
+    } else {
+      setEditSets(exercise.defaultSets);
+      setEditRepLow(exercise.repRange[0]);
+      setEditRepHigh(exercise.repRange[1]);
+      setEditRest(exercise.restInterval);
+      setEditTempo(exercise.tempo);
+      setEditLabel("");
+    }
+  }, []);
+
+  const handleSavePreset = useCallback(() => {
+    if (!editPresetId) return;
+    const preset = createPresetFromExercise(
+      { id: editPresetId } as Exercise,
+      {
+        label: editLabel || undefined,
+        defaultSets: editSets,
+        repRange: [editRepLow, editRepHigh],
+        restInterval: editRest,
+        tempo: editTempo,
+      },
+    );
+    setExercisePreset(preset);
+    setEditPresetId(null);
+  }, [editPresetId, editLabel, editSets, editRepLow, editRepHigh, editRest, editTempo, setExercisePreset]);
+
+  const handleRemovePreset = useCallback((exerciseId: string) => {
+    removeExercisePreset(exerciseId);
+  }, [removeExercisePreset]);
 
   const handleTrainWorkout = useCallback(
     (workoutId: string) => {
@@ -630,30 +684,280 @@ export default function ExerciseCatalogScreen() {
                     </View>
                   )}
 
-                  {/* Action: Train this workout */}
-                  <TouchableOpacity
-                    activeOpacity={0.85}
-                    onPress={() => handleTrainWorkout(WORKOUT_ID_MAP[workoutName] || "workout-a")}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Start ${workoutName}`}
-                    style={{
-                      marginTop: spacing[3],
-                      backgroundColor: colors.accent.DEFAULT,
-                      borderRadius: 4,
-                      padding: spacing[3],
-                      alignItems: "center",
-                    }}
-                  >
-                    <Text
+                  {/* Custom Preset Section */}
+                  {editPresetId === exercise.id ? (
+                    <View
                       style={{
-                        ...typography.label,
-                        color: colors.bg.primary,
-                        fontSize: 11,
+                        marginTop: spacing[3],
+                        backgroundColor: colors.bg.primary,
+                        borderWidth: 1,
+                        borderColor: `${colors.warning ?? "#F59E0B"}40`,
+                        borderRadius: 4,
+                        padding: spacing[3],
                       }}
                     >
-                      START {workoutName}
-                    </Text>
-                  </TouchableOpacity>
+                      <Text
+                        style={{
+                          ...typography.label,
+                          color: colors.warning ?? "#F59E0B",
+                          fontSize: 8,
+                          marginBottom: spacing[2],
+                        }}
+                      >
+                        CUSTOM PRESET
+                      </Text>
+
+                      {/* Label */}
+                      <TextInput
+                        placeholder="Label (optional)"
+                        placeholderTextColor={colors.text.tertiary}
+                        value={editLabel}
+                        onChangeText={setEditLabel}
+                        style={{
+                          backgroundColor: colors.bg.elevated,
+                          borderWidth: 1,
+                          borderColor: colors.border.subtle,
+                          borderRadius: 4,
+                          padding: spacing[2],
+                          color: colors.text.primary,
+                          fontSize: 12,
+                          marginBottom: spacing[2],
+                        }}
+                      />
+
+                      {/* Sets */}
+                      <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: spacing[2] }}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 7, marginBottom: spacing[0] }}>
+                            SETS
+                          </Text>
+                          <TextInput
+                            keyboardType="number-pad"
+                            value={String(editSets)}
+                            onChangeText={(v) => setEditSets(Math.max(1, Number(v) || 1))}
+                            style={{
+                              backgroundColor: colors.bg.elevated,
+                              borderWidth: 1,
+                              borderColor: colors.border.subtle,
+                              borderRadius: 4,
+                              padding: spacing[2],
+                              color: colors.text.primary,
+                              fontSize: 14,
+                              textAlign: "center",
+                            }}
+                          />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 7, marginBottom: spacing[0] }}>
+                            REPS LOW
+                          </Text>
+                          <TextInput
+                            keyboardType="number-pad"
+                            value={String(editRepLow)}
+                            onChangeText={(v) => setEditRepLow(Math.max(1, Number(v) || 1))}
+                            style={{
+                              backgroundColor: colors.bg.elevated,
+                              borderWidth: 1,
+                              borderColor: colors.border.subtle,
+                              borderRadius: 4,
+                              padding: spacing[2],
+                              color: colors.text.primary,
+                              fontSize: 14,
+                              textAlign: "center",
+                            }}
+                          />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 7, marginBottom: spacing[0] }}>
+                            REPS HIGH
+                          </Text>
+                          <TextInput
+                            keyboardType="number-pad"
+                            value={String(editRepHigh)}
+                            onChangeText={(v) => setEditRepHigh(Math.max(Number(editRepLow) + 1, Number(v) || Number(editRepLow) + 1))}
+                            style={{
+                              backgroundColor: colors.bg.elevated,
+                              borderWidth: 1,
+                              borderColor: colors.border.subtle,
+                              borderRadius: 4,
+                              padding: spacing[2],
+                              color: colors.text.primary,
+                              fontSize: 14,
+                              textAlign: "center",
+                            }}
+                          />
+                        </View>
+                      </View>
+
+                      {/* Rest & Tempo */}
+                      <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: spacing[2] }}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 7, marginBottom: spacing[0] }}>
+                            REST (s)
+                          </Text>
+                          <TextInput
+                            keyboardType="number-pad"
+                            value={String(editRest)}
+                            onChangeText={(v) => setEditRest(Math.max(10, Number(v) || 30))}
+                            style={{
+                              backgroundColor: colors.bg.elevated,
+                              borderWidth: 1,
+                              borderColor: colors.border.subtle,
+                              borderRadius: 4,
+                              padding: spacing[2],
+                              color: colors.text.primary,
+                              fontSize: 14,
+                              textAlign: "center",
+                            }}
+                          />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 7, marginBottom: spacing[0] }}>
+                            TEMPO
+                          </Text>
+                          <TextInput
+                            value={editTempo}
+                            onChangeText={(v) => setEditTempo(v as Tempo)}
+                            placeholder="3-1-2-0"
+                            placeholderTextColor={colors.text.tertiary}
+                            style={{
+                              backgroundColor: colors.bg.elevated,
+                              borderWidth: 1,
+                              borderColor: colors.border.subtle,
+                              borderRadius: 4,
+                              padding: spacing[2],
+                              color: colors.text.primary,
+                              fontSize: 14,
+                              textAlign: "center",
+                            }}
+                          />
+                        </View>
+                      </View>
+
+                      {/* Action buttons */}
+                      <View style={{ flexDirection: "row", gap: spacing[2] }}>
+                        <View style={{ flex: 1 }}>
+                          <TouchableOpacity
+                            onPress={() => setEditPresetId(null)}
+                            activeOpacity={0.7}
+                            style={{
+                              borderWidth: 1,
+                              borderColor: colors.border.subtle,
+                              borderRadius: 4,
+                              padding: spacing[2],
+                              alignItems: "center",
+                            }}
+                          >
+                            <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 9 }}>
+                              CANCEL
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <TouchableOpacity
+                            onPress={handleSavePreset}
+                            activeOpacity={0.85}
+                            style={{
+                              backgroundColor: colors.accent.DEFAULT,
+                              borderRadius: 4,
+                              padding: spacing[2],
+                              alignItems: "center",
+                            }}
+                          >
+                            <Text style={{ ...typography.label, color: colors.bg.primary, fontSize: 9 }}>
+                              SAVE PRESET
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </View>
+                  ) : (
+                    <>
+                      {/* Preset indicator & CUSTOMIZE button */}
+                      <View style={{ flexDirection: "row", gap: spacing[2], marginTop: spacing[2] }}>
+                        {hasPreset(exercise.id) && (
+                          <View
+                            style={{
+                              backgroundColor: `${colors.warning ?? "#F59E0B"}15`,
+                              borderWidth: 1,
+                              borderColor: colors.warning ?? "#F59E0B",
+                              borderRadius: 4,
+                              paddingHorizontal: spacing[2],
+                              paddingVertical: spacing[0],
+                            }}
+                          >
+                            <Text
+                              style={{
+                                ...typography.label,
+                                color: colors.warning ?? "#F59E0B",
+                                fontSize: 7,
+                              }}
+                            >
+                              CUSTOM
+                            </Text>
+                          </View>
+                        )}
+                        <TouchableOpacity
+                          onPress={() => handleOpenPresetEditor(exercise)}
+                          activeOpacity={0.7}
+                          style={{
+                            backgroundColor: colors.bg.primary,
+                            borderWidth: 1,
+                            borderColor: colors.border.subtle,
+                            borderRadius: 4,
+                            paddingHorizontal: spacing[2],
+                            paddingVertical: spacing[0],
+                          }}
+                        >
+                          <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 7 }}>
+                            {hasPreset(exercise.id) ? "EDIT" : "CUSTOMIZE"}
+                          </Text>
+                        </TouchableOpacity>
+                        {hasPreset(exercise.id) && (
+                          <TouchableOpacity
+                            onPress={() => handleRemovePreset(exercise.id)}
+                            activeOpacity={0.7}
+                            style={{
+                              borderWidth: 1,
+                              borderColor: colors.error,
+                              borderRadius: 4,
+                              paddingHorizontal: spacing[2],
+                              paddingVertical: spacing[0],
+                            }}
+                          >
+                            <Text style={{ ...typography.label, color: colors.error, fontSize: 7 }}>
+                              RESET
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+
+                      {/* Action: Train this workout */}
+                      <TouchableOpacity
+                        activeOpacity={0.85}
+                        onPress={() => handleTrainWorkout(WORKOUT_ID_MAP[workoutName] || "workout-a")}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Start ${workoutName}`}
+                        style={{
+                          marginTop: spacing[2],
+                          backgroundColor: colors.accent.DEFAULT,
+                          borderRadius: 4,
+                          padding: spacing[3],
+                          alignItems: "center",
+                        }}
+                      >
+                        <Text
+                          style={{
+                            ...typography.label,
+                            color: colors.bg.primary,
+                            fontSize: 11,
+                          }}
+                        >
+                          START {workoutName}
+                        </Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
                 </View>
               )}
             </TouchableOpacity>

@@ -1,4 +1,4 @@
-import { FitnessGoal } from "../stores/useUserStore";
+import { FitnessGoal, useUserStore } from "../stores/useUserStore";
 import { Exercise, Tempo, WorkoutDay, workoutA, workoutB, workoutC, workoutD } from "./exercises";
 import { getClassWorkout } from "./workoutClasses";
 
@@ -77,7 +77,10 @@ function transformExercise(exercise: Exercise, goal: FitnessGoal): Exercise {
   const config = GOAL_CONFIGS[goal];
 
   // Skip transformation for general goal (no changes)
-  if (goal === "general") return exercise;
+  if (goal === "general") {
+    // Still check for custom presets even for general goal
+    return applyUserPreset(exercise);
+  }
 
   const [low, high] = exercise.repRange;
   const newRepRange = clampRepRange(
@@ -101,12 +104,35 @@ function transformExercise(exercise: Exercise, goal: FitnessGoal): Exercise {
     ? config.tempoOverride(exercise.tempo)
     : exercise.tempo;
 
-  return {
+  const postGoal = {
     ...exercise,
     repRange: newRepRange,
     defaultSets: Math.max(2, Math.round(exercise.defaultSets * config.setsMultiplier)),
     tempo: newTempo,
     restInterval: Math.max(30, Math.round(exercise.restInterval * config.restMultiplier)),
+  };
+
+  // Apply custom presets on top of goal transformation
+  return applyUserPreset(postGoal);
+}
+
+/**
+ * Override exercise parameters with a user's custom preset if one exists.
+ * This runs after goal transformation so custom presets take highest priority.
+ */
+function applyUserPreset(exercise: Exercise): Exercise {
+  // Access store directly — this is called from UI-bound functions
+  const state = useUserStore.getState();
+  const preset = state.exercisePresets?.[exercise.id];
+
+  if (!preset) return exercise;
+
+  return {
+    ...exercise,
+    defaultSets: preset.defaultSets,
+    repRange: preset.repRange,
+    tempo: preset.tempo,
+    restInterval: preset.restInterval,
   };
 }
 

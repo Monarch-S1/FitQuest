@@ -7,6 +7,20 @@ import { getLocalToday, parseLocalDate } from "../utils/date";
 import type { ThemeMode, AccentKey } from "../tokens/themes";
 import { pushProfile, incrementalSync, fullSync } from "../services/cloudSync";
 import { isSupabaseConfigured } from "../services/supabase";
+import type { Tempo } from "../data/exercises";
+
+// ─── Exercise Preset ───────────────────────────────────────────
+
+export interface ExercisePreset {
+  exerciseId: string;
+  label?: string;
+  defaultSets: number;
+  repRange: [number, number];
+  tempo: Tempo;
+  restInterval: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface WorkoutSession {
   id: string;
@@ -66,6 +80,9 @@ interface UserState {
   // Mastery tracking — IDs of exercises where upper rep range was hit
   masteredExerciseIds: string[];
 
+  // Custom exercise presets
+  exercisePresets: Record<string, ExercisePreset>;
+
   // Actions
   setAuth: (userId: string, email: string) => void;
   clearAuth: () => void;
@@ -81,6 +98,10 @@ interface UserState {
   addWorkoutSession: (session: WorkoutSession) => void;
   /** Mark exercises as mastered when upper rep range is met */
   markMastered: (exerciseIds: string[]) => void;
+  /** Save or update a custom exercise preset */
+  setExercisePreset: (preset: ExercisePreset) => void;
+  /** Remove a custom exercise preset */
+  removeExercisePreset: (exerciseId: string) => void;
   recalculate: () => void;
   setLastShownMilestone: (days: number) => void;
 }
@@ -161,6 +182,9 @@ export const useUserStore = create<UserState>()(
 
   // Mastery defaults
   masteredExerciseIds: [],
+
+  // Exercise presets defaults
+  exercisePresets: {},
 
       // Training data defaults
       totalXp: 0,
@@ -326,6 +350,27 @@ export const useUserStore = create<UserState>()(
         set({ masteredExerciseIds: Array.from(updated) });
       },
 
+      setExercisePreset: (preset) => {
+        const state = get();
+        set({
+          exercisePresets: {
+            ...state.exercisePresets,
+            [preset.exerciseId]: {
+              ...preset,
+              updatedAt: new Date().toISOString(),
+              createdAt: state.exercisePresets[preset.exerciseId]?.createdAt ?? preset.createdAt,
+            },
+          },
+        });
+      },
+
+      removeExercisePreset: (exerciseId) => {
+        const state = get();
+        const copy = { ...state.exercisePresets };
+        delete copy[exerciseId];
+        set({ exercisePresets: copy });
+      },
+
       setLastShownMilestone: (days) => {
         set({ lastShownMilestone: days });
       },
@@ -352,6 +397,7 @@ export const useUserStore = create<UserState>()(
         accentColor: state.accentColor,
         lastShownMilestone: state.lastShownMilestone,
         masteredExerciseIds: state.masteredExerciseIds,
+        exercisePresets: state.exercisePresets,
       }),
       // Recompute all derived values after loading persisted data
       // (streak, recovery, and level may have changed since last save)
