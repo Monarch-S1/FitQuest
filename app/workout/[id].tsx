@@ -14,6 +14,8 @@ import { useRestNotifications } from "../../src/hooks/useRestNotifications";
 import { useUserStore } from "../../src/stores/useUserStore";
 import { getWorkoutByIdForGoal } from "../../src/data/workouts";
 import { calculateWorkoutXp } from "../../src/utils/xp";
+import { extractCompletedIds, findNewUnlocks } from "../../src/utils/skillUnlocks";
+import { playLevelUpSound } from "../../src/services/levelUpSound";
 import { GlossyOverlay } from "../../src/components/ui/GlossyOverlay";
 
 /** Get today's date in local timezone as YYYY-MM-DD */
@@ -56,9 +58,16 @@ export default function WorkoutPlayerScreen() {
 
   const [workoutComplete, setWorkoutComplete] = useState(false);
   const [xpBreakdown, setXpBreakdown] = useState(calculateWorkoutXp(0, 0));
+  const [newSkillUnlocks, setNewSkillUnlocks] = useState<
+    import("../../src/utils/skillUnlocks").NewSkillUnlock[]
+  >([]);
 
   // Rep counter state — user enters actual reps per set
   const preWorkoutLevelRef = useRef(1);
+
+  // Capture the exercise IDs that were completed BEFORE this workout,
+  // so we can diff against the post-workout state to find new unlocks.
+  const preWorkoutCompletedRef = useRef<Set<string>>(new Set());
 
   // Time-based hold state — use refs to avoid effect dependency loops
   const [isHolding, setIsHolding] = useState(false);
@@ -152,8 +161,9 @@ export default function WorkoutPlayerScreen() {
     try {
       const userStore = useUserStore.getState();
 
-      // Capture level BEFORE calling addWorkoutSession
+      // Capture level and completed exercises BEFORE calling addWorkoutSession
       preWorkoutLevelRef.current = userStore.level;
+      preWorkoutCompletedRef.current = extractCompletedIds(userStore.workoutHistory);
 
       const result = finishWorkout();
       const streak = userStore.streakData.currentStreak;
@@ -178,6 +188,19 @@ export default function WorkoutPlayerScreen() {
       };
 
       addWorkoutSession(session);
+
+      // Compute newly unlocked skill tree exercises by diffing pre vs post
+      const freshState = useUserStore.getState();
+      const newCompleted = extractCompletedIds(freshState.workoutHistory);
+      const unlocks = findNewUnlocks(preWorkoutCompletedRef.current, newCompleted);
+      if (unlocks.length > 0) {
+        setNewSkillUnlocks(unlocks);
+        // Play unlock sound for the first unlock
+        if (unlocks.length >= 1) {
+          playLevelUpSound();
+        }
+      }
+
       setWorkoutComplete(true);
     } finally {
       completingRef.current = false;
@@ -300,6 +323,7 @@ export default function WorkoutPlayerScreen() {
           lastWorkoutDuration: totalDuration,
           lastWorkoutAllComplete: exerciseProgress.every((ep) => ep.isComplete),
         }}
+        newSkillUnlocks={newSkillUnlocks}
       />
     );
   }

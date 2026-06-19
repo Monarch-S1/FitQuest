@@ -11,6 +11,7 @@ import {
   playCompletionSound,
   cleanupSound,
 } from "../../services/levelUpSound";
+import { NewSkillUnlock } from "../../utils/skillUnlocks";
 
 interface CompletionAnimationProps {
   xpBreakdown: XpBreakdown;
@@ -31,6 +32,8 @@ interface CompletionAnimationProps {
     lastWorkoutAllComplete?: boolean;
     muscleLevels?: Record<string, number>;
   };
+  /** Newly unlocked skill tree exercises from this workout */
+  newSkillUnlocks?: NewSkillUnlock[];
 }
 
 export function CompletionAnimation({
@@ -41,10 +44,12 @@ export function CompletionAnimation({
   workoutName,
   onContinue,
   achievementContext,
+  newSkillUnlocks,
 }: CompletionAnimationProps) {
   const colors = useColors();
   const [showContent, setShowContent] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
+  const [showSkillUnlocks, setShowSkillUnlocks] = useState(false);
   const [flashVisible, setFlashVisible] = useState(true);
   const leveledUp = newLevel > level;
 
@@ -74,9 +79,11 @@ export function CompletionAnimation({
 
     const timer = setTimeout(() => setShowContent(true), 600);
     const achieveTimer = setTimeout(() => setShowAchievements(true), 1800);
+    const skillTimer = setTimeout(() => setShowSkillUnlocks(true), 1300);
     return () => {
       clearTimeout(timer);
       clearTimeout(achieveTimer);
+      clearTimeout(skillTimer);
       cleanupSound();
     };
   }, []);
@@ -479,6 +486,130 @@ export function CompletionAnimation({
               </Text>
             </View>
           </MotiView>
+        )}
+
+        {/* Skill unlock notifications */}
+        {showSkillUnlocks && newSkillUnlocks && newSkillUnlocks.length > 0 && (
+          <View style={{ width: "100%", marginTop: spacing[4] }}>
+            <MotiView
+              from={{ opacity: 0, translateY: 10 }}
+              animate={{ opacity: 1, translateY: 0 }}
+              transition={{ type: "spring", damping: 15 }}
+            >
+              <Text
+                style={{
+                  ...typography.label,
+                  color: colors.accent.DEFAULT,
+                  fontSize: 9,
+                  marginBottom: spacing[2],
+                  textAlign: "center",
+                }}
+              >
+                NEW SKILLS UNLOCKED
+              </Text>
+            </MotiView>
+            <View style={{ gap: spacing[2] }}>
+              {newSkillUnlocks.map((unlock, i) => (
+                <MotiView
+                  key={unlock.node.exercise.id}
+                  from={{ opacity: 0, translateX: -20, scale: 0.9 }}
+                  animate={{ opacity: 1, translateX: 0, scale: 1 }}
+                  transition={{
+                    delay: i * 150,
+                    type: "spring",
+                    damping: 14,
+                    stiffness: 100,
+                  }}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    backgroundColor: `${unlock.branchAccent}12`,
+                    borderWidth: 1,
+                    borderColor: `${unlock.branchAccent}35`,
+                    borderRadius: 4,
+                    padding: spacing[3],
+                    gap: spacing[2],
+                    overflow: "hidden",
+                  }}
+                >
+                  <GlossyOverlay highlightOpacity={0.1} showReflection={false} />
+                  <View
+                    style={{
+                      width: 32,
+                      height: 32,
+                      backgroundColor: `${unlock.branchAccent}15`,
+                      borderWidth: 1,
+                      borderColor: `${unlock.branchAccent}40`,
+                      borderRadius: 4,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text style={{ fontSize: 16 }}>{unlock.branchIcon}</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        ...typography.label,
+                        color: unlock.branchAccent,
+                        fontSize: 9,
+                      }}
+                    >
+                      {unlock.branchLabel} · {unlock.node.difficulty.toUpperCase()}
+                    </Text>
+                    <Text
+                      style={{
+                        ...typography.body,
+                        color: colors.text.primary,
+                        fontSize: 13,
+                        fontFamily: fonts.body.semiBold,
+                        marginTop: 1,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {unlock.node.exercise.name.toUpperCase()}
+                    </Text>
+                    <Text
+                      style={{
+                        ...typography.bodySmall,
+                        color: colors.text.secondary,
+                        fontSize: 9,
+                        marginTop: 1,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {unlock.node.exercise.repRange[0]}–{unlock.node.exercise.repRange[1]} reps ·{' '}
+                      {unlock.node.exercise.defaultSets} sets
+                    </Text>
+                  </View>
+                  <MotiView
+                    from={{ scale: 0, rotate: "-90deg" }}
+                    animate={{ scale: 1, rotate: "0deg" }}
+                    transition={{
+                      delay: i * 150 + 300,
+                      type: "spring",
+                      damping: 10,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 24,
+                        height: 24,
+                        backgroundColor: `${unlock.branchAccent}20`,
+                        borderWidth: 1,
+                        borderColor: unlock.branchAccent,
+                        borderRadius: 4,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Text style={{ fontSize: 12, color: unlock.branchAccent }}>★</Text>
+                    </View>
+                  </MotiView>
+                </MotiView>
+              ))}
+            </View>
+          </View>
         )}
 
         {/* Achievement badges */}
