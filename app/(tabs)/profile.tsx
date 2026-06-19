@@ -1,5 +1,5 @@
 import { useMemo, useCallback, useState, useEffect, useRef } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Alert, TextInput, Image, Platform } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Image, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
@@ -16,6 +16,7 @@ import { useUserStore, FitnessGoal, FitnessLevel } from "../../src/stores/useUse
 import { getProgressionSummary } from "../../src/utils/progression";
 import { signOut as supabaseSignOut } from "../../src/services/supabase";
 import { videoCache } from "../../src/services/videoCache";
+import { useDialog } from "../../src/components/ui/Dialog";
 
 const GOAL_LABELS: Record<FitnessGoal, string> = {
   strength: "Strength",
@@ -168,7 +169,7 @@ export default function ProfileScreen() {
   const handlePickAvatar = useCallback(async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission needed", "Please grant photo library access to set a profile picture.");
+      dialog.alert({ title: "Permission needed", message: "Please grant photo library access to set a profile picture." });
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -184,36 +185,32 @@ export default function ProfileScreen() {
 
   const handleChangeGoal = useCallback(() => {
     const goalNames = GOAL_OPTIONS.map((g) => ({ text: GOAL_LABELS[g], onPress: () => {
-      Alert.alert(
-        "Change Training Program",
-        `Switching to ${GOAL_LABELS[g]} will update your workout program (rep ranges, sets, rest times). Your XP, streak, and workout history will be preserved. Continue?`,
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "CHANGE", onPress: () => updateProfile({ fitnessGoal: g }) },
-        ],
-      );
+      dialog.confirm({
+        title: "Change Training Program",
+        message: `Switching to ${GOAL_LABELS[g]} will update your workout program (rep ranges, sets, rest times). Your XP, streak, and workout history will be preserved. Continue?`,
+        confirmLabel: "CHANGE",
+        onConfirm: () => updateProfile({ fitnessGoal: g }),
+      });
     }}));
-    Alert.alert("Change Goal", "Select your new training goal:", [
-      ...goalNames.map((g) => ({ text: g.text, onPress: g.onPress })),
-      { text: "Cancel", style: "cancel" },
-    ], { cancelable: true });
+    dialog.select({
+      title: "Change Goal",
+      options: goalNames.map((g) => ({ label: g.text, onPress: g.onPress })),
+    });
   }, [updateProfile]);
 
   const handleChangeLevel = useCallback(() => {
     const levelNames = LEVEL_OPTIONS.map((l) => ({ text: LEVEL_LABELS[l], onPress: () => {
-      Alert.alert(
-        "Change Level",
-        `Switching to ${LEVEL_LABELS[l]} will adjust exercise difficulty targets. Your progress will be preserved. Continue?`,
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "CHANGE", onPress: () => updateProfile({ fitnessLevel: l }) },
-        ],
-      );
+      dialog.confirm({
+        title: "Change Level",
+        message: `Switching to ${LEVEL_LABELS[l]} will adjust exercise difficulty targets. Your progress will be preserved. Continue?`,
+        confirmLabel: "CHANGE",
+        onConfirm: () => updateProfile({ fitnessLevel: l }),
+      });
     }}));
-    Alert.alert("Change Level", "Select your current fitness level:", [
-      ...levelNames.map((l) => ({ text: l.text, onPress: l.onPress })),
-      { text: "Cancel", style: "cancel" },
-    ], { cancelable: true });
+    dialog.select({
+      title: "Change Level",
+      options: levelNames.map((l) => ({ label: l.text, onPress: l.onPress })),
+    });
   }, [updateProfile]);
 
   // Load cache info on mount with unmount guard
@@ -232,22 +229,16 @@ export default function ProfileScreen() {
   }, []);
 
   const handleClearCache = useCallback(() => {
-    Alert.alert(
-      "Clear Video Cache",
-      `Remove ${cachedVideoCount} cached video(s) (${formatBytes(cachedVideoSize)})? You can re-download them later.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "CLEAR",
-          style: "destructive",
-          onPress: async () => {
-            await videoCache.clearAll();
-            setCachedVideoCount(0);
-            setCachedVideoSize(0);
-          },
-        },
-      ],
-    );
+    dialog.destructive({
+      title: "Clear Video Cache",
+      message: `Remove ${cachedVideoCount} cached video(s) (${formatBytes(cachedVideoSize)})? You can re-download them later.`,
+      actionLabel: "CLEAR",
+      onAction: async () => {
+        await videoCache.clearAll();
+        setCachedVideoCount(0);
+        setCachedVideoSize(0);
+      },
+    });
   }, [cachedVideoCount, cachedVideoSize]);
 
   const handleOpenFeedback = useCallback(() => {
@@ -255,24 +246,19 @@ export default function ProfileScreen() {
   }, []);
 
   const handleSignOut = useCallback(() => {
-    Alert.alert(
-      "Sign Out",
-      "Are you sure you want to sign out? Your workout data is stored locally and will be preserved.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "SIGN OUT",
-          style: "destructive",
-          onPress: async () => {
-            await supabaseSignOut();
-            clearAuth();
-          },
-        },
-      ],
-    );
+    dialog.destructive({
+      title: "Sign Out",
+      message: "Are you sure you want to sign out? Your workout data is stored locally and will be preserved.",
+      actionLabel: "SIGN OUT",
+      onAction: async () => {
+        await supabaseSignOut();
+        clearAuth();
+      },
+    });
   }, [clearAuth]);
 
   const router = useRouter();
+  const dialog = useDialog();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
@@ -854,6 +840,7 @@ export default function ProfileScreen() {
 
         {/* Feedback Modal */}
         <FeedbackSheet visible={showFeedback} onClose={() => setShowFeedback(false)} />
+        <dialog.Dialog />
 
         {/* Storage */}
         <SegmentedPanel title="STORAGE" accent="none" style={{ marginTop: spacing[2] }}>

@@ -1,11 +1,12 @@
 import { useCallback, useMemo, useEffect, useRef, useState } from "react";
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { MotiView } from "moti";
 import * as WebBrowser from "expo-web-browser";
 import { useColors, typography, spacing } from "../../tokens";
 import { Exercise } from "../../data/exercises";
 import { exerciseVideoIds, exerciseMp4Urls, hasMp4Source } from "../../data/exerciseVideos";
 import { videoCache } from "../../services/videoCache";
+import { useDialog } from "../ui/Dialog";
 
 interface ExerciseDemoProps {
   exercise: Exercise;
@@ -13,6 +14,7 @@ interface ExerciseDemoProps {
 
 export function ExerciseDemo({ exercise }: ExerciseDemoProps) {
   const colors = useColors();
+  const dialog = useDialog();
 
   const [expanded, setExpanded] = useState(false);
 
@@ -98,7 +100,7 @@ export function ExerciseDemo({ exercise }: ExerciseDemoProps) {
         controlsColor: '#F59E0B',
       });
     } catch {
-      Alert.alert("Unable to open browser", "Please check your device settings.");
+      dialog.alert({ title: "Unable to open browser", message: "Please check your device settings." });
     }
   }, [exercise.name, videoId]);
 
@@ -440,6 +442,7 @@ export function ExerciseDemo({ exercise }: ExerciseDemoProps) {
             </View>
         </MotiView>
       )}
+      <dialog.Dialog />
     </View>
   );
 }
