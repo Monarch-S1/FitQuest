@@ -1,30 +1,36 @@
 import { useCallback, useMemo, useState, useEffect, useRef } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Animated, Easing } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { View, Text, TouchableOpacity, Animated, Easing } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useColors, typography, spacing, fonts } from "../../src/tokens";
 import { XpBar } from "../../src/components/ui/XpBar";
 import { LevelBadge } from "../../src/components/ui/LevelBadge";
 import { Button } from "../../src/components/ui/Button";
+import { StatModule } from "../../src/components/ui/StatModule";
+import { WorkoutCard } from "../../src/components/ui/WorkoutCard";
 import { DailyMission } from "../../src/components/home/DailyMission";
 import { StreakDisplay } from "../../src/components/home/StreakDisplay";
 import { RecoveryStatus } from "../../src/components/home/RecoveryStatus";
+import { GlossyOverlay } from "../../src/components/ui/GlossyOverlay";
 import { SyncIndicator } from "../../src/components/ui/SyncIndicator";
 import { useUserStore } from "../../src/stores/useUserStore";
-import { getRecommendation } from "../../src/utils/recommendations";
+import { getWorkoutsForGoal } from "../../src/data/workouts";
+import { getTrainingInsights, getRecommendation } from "../../src/utils/recommendations";
 import { parseLocalDate, getLocalToday } from "../../src/utils/date";
 import { HomeScreenSkeleton } from "../../src/components/ui/Skeleton";
 import { StreakMilestone, getStreakMilestone } from "../../src/components/home/StreakMilestone";
 
 export default function HomeScreen() {
   const colors = useColors();
+
   const router = useRouter();
-  const {
-    level, totalXp, streakData, recoveryStatus, xpProgress,
-    workoutHistory, lastShownMilestone, setLastShownMilestone,
-    isHydrated, fitnessGoal, displayName,
-  } = useUserStore();
+  const { level, totalXp, streakData, recoveryStatus, xpProgress, workoutHistory, lastShownMilestone, setLastShownMilestone, isHydrated, fitnessGoal } = useUserStore();
+
+  // Intelligence-driven insights
+  const insights = useMemo(
+    () => getTrainingInsights(workoutHistory, recoveryStatus, streakData.currentStreak),
+    [workoutHistory, recoveryStatus, streakData.currentStreak],
+  );
 
   const recommendation = useMemo(
     () => getRecommendation(workoutHistory, recoveryStatus, fitnessGoal),
@@ -36,8 +42,29 @@ export default function HomeScreen() {
     router.push(`/workout/${workoutId}`);
   }, [router, recommendation]);
 
-  // Streak milestone celebration
+  const handleWorkoutSelect = useCallback(
+    (workoutId: string) => {
+      router.push(`/workout/preview/${workoutId}`);
+    },
+    [router],
+  );
+
+  // Goal-specific workouts
+  const goalWorkouts = useMemo(
+    () => getWorkoutsForGoal(fitnessGoal),
+    [fitnessGoal],
+  );
+
+  const workouts = goalWorkouts.map((w) => ({ data: w, id: w.id }));
+
+  // Memoized workout filtering for bento grid
+  const featuredWorkoutId = useMemo(() => recommendation.recommendedId !== "rest" ? recommendation.recommendedId : "workout-a", [recommendation.recommendedId]);
+  const featuredWorkout = useMemo(() => workouts.find((w) => w.id === featuredWorkoutId) || workouts[0], [featuredWorkoutId]);
+  const remainingWorkouts = useMemo(() => workouts.filter((w) => w.id !== featuredWorkoutId), [featuredWorkoutId]);
+
   const [milestoneTier, setMilestoneTier] = useState<ReturnType<typeof getStreakMilestone>>(null);
+
+  // Check for new streak milestone after hydration
   useEffect(() => {
     if (!isHydrated) return;
     const milestone = getStreakMilestone(streakData.currentStreak);
@@ -54,7 +81,7 @@ export default function HomeScreen() {
     setMilestoneTier(null);
   }, [milestoneTier, setLastShownMilestone]);
 
-  // Fade-in animation
+  // Fade-in animation when content loads
   const fadeIn = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     if (isHydrated) {
@@ -75,61 +102,45 @@ export default function HomeScreen() {
     );
   }
 
-  // Recovery percentage for the gauge
-  const recoveryPct =
-    recoveryStatus === "optimal" ? 88 :
-    recoveryStatus === "moderate" ? 65 : 40;
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
+      {/* Streak milestone celebration overlay */}
       {milestoneTier && (
         <StreakMilestone tier={milestoneTier} onDismiss={handleDismissMilestone} />
       )}
       <Animated.ScrollView
         style={{ flex: 1, opacity: fadeIn }}
-        contentContainerStyle={{
-          padding: spacing[4],
-          paddingBottom: spacing[12],
-          flexGrow: 1,
-        }}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ padding: spacing[4], paddingBottom: spacing[12] }}
       >
-        {/* Hero Header */}
+        {/* ── Hero Header: Level + XP + Quick Stats ── */}
         <View
           style={{
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "flex-start",
             marginBottom: spacing[5],
+            position: "relative",
           }}
         >
+          <SyncIndicator />
           <View style={{ flex: 1, marginRight: spacing[3] }}>
-            <SyncIndicator />
             <Text
               style={{
-                fontFamily: fonts.body.semiBold,
-                fontSize: 10,
-                fontWeight: "bold",
+                ...typography.label,
                 color: colors.text.secondary,
-                letterSpacing: 2,
-                textTransform: "uppercase",
-                marginTop: 4,
+                fontSize: 10,
+                marginBottom: spacing[1],
               }}
             >
-              Welcome back
+              HOME · COMMAND CENTER
             </Text>
             <Text
               style={{
-                fontFamily: fonts.heading,
-                fontSize: 24,
-                fontWeight: "900",
+                ...typography.display,
                 color: colors.text.primary,
-                letterSpacing: -0.5,
-                textTransform: "uppercase",
-                marginTop: 2,
               }}
             >
-              {displayName || "ATHLETE"}
+              ARCH
             </Text>
             <View style={{ marginTop: spacing[2] }}>
               <XpBar
@@ -148,9 +159,9 @@ export default function HomeScreen() {
           <View
             style={{
               backgroundColor: colors.bg.surface,
-              borderRadius: 12,
               borderWidth: 1,
               borderColor: colors.border.subtle,
+              borderRadius: 4,
               padding: spacing[4],
               marginBottom: spacing[4],
               alignItems: "center",
@@ -158,11 +169,9 @@ export default function HomeScreen() {
           >
             <Text
               style={{
-                fontFamily: fonts.body.bold,
-                fontSize: 10,
-                fontWeight: "bold",
+                ...typography.label,
                 color: colors.accent.DEFAULT,
-                letterSpacing: 2,
+                fontSize: 10,
                 marginBottom: spacing[2],
               }}
             >
@@ -170,7 +179,7 @@ export default function HomeScreen() {
             </Text>
             <Text
               style={{
-                fontFamily: fonts.body.regular,
+                ...typography.body,
                 color: colors.text.secondary,
                 fontSize: 13,
                 lineHeight: 20,
@@ -182,7 +191,94 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* Streak + Recovery */}
+        {/* ── Intelligence Insights ── */}
+        {insights.length > 0 && (
+          <View style={{ gap: spacing[2], marginBottom: spacing[4] }}>
+            {insights.map((insight, i) => (
+              <View
+                key={i}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: spacing[2],
+                  backgroundColor: colors.bg.elevated,
+                  borderWidth: 1,
+                  borderColor:
+                    insight.type === "deload"
+                      ? colors.error
+                      : insight.type === "progression"
+                        ? colors.success
+                        : colors.border.subtle,
+                  borderRadius: 4,
+                  padding: spacing[3],
+                  // Glow for high-priority insights
+                  ...(insight.type === "deload" && {
+                    shadowColor: colors.error,
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 8,
+                    elevation: 4,
+                  }),
+                  ...(insight.type === "progression" && {
+                    shadowColor: colors.success,
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 8,
+                    elevation: 4,
+                  }),
+                }}
+              >
+                <View
+                  style={{
+                    width: 32,
+                    height: 32,
+                    backgroundColor:
+                      insight.type === "deload"
+                        ? `${colors.error}15`
+                        : insight.type === "progression"
+                          ? `${colors.success}15`
+                          : colors.bg.primary,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderWidth: 1,
+                    borderColor:
+                      insight.type === "deload"
+                        ? colors.error
+                        : insight.type === "progression"
+                          ? colors.success
+                          : colors.border.subtle,
+                    borderRadius: 4,
+                  }}
+                >
+                  <Text style={{ fontSize: 14 }}>{insight.icon}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[1] }}>
+                    <Text
+                      style={{ ...typography.label, color: colors.text.secondary, fontSize: 9 }}
+                    >
+                      {insight.title}
+                    </Text>
+                  </View>
+                  <Text
+                    style={{
+                      ...typography.bodySmall,
+                      color: colors.text.primary,
+                      fontSize: 11,
+                      lineHeight: 16,
+                      marginTop: 2,
+                      fontFamily: fonts.body.regular,
+                    }}
+                  >
+                    {insight.message}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* ── Streak + Recovery row ── */}
         <View style={{ gap: spacing[2], marginBottom: spacing[4] }}>
           <StreakDisplay streak={streakData} />
           <RecoveryStatus
@@ -198,60 +294,7 @@ export default function HomeScreen() {
           />
         </View>
 
-        {/* Hero Readiness Gauge */}
-        <View style={{ alignItems: "center", justifyContent: "center", marginBottom: 32 }}>
-          <View
-            style={{
-              width: 192,
-              height: 192,
-              borderRadius: 96,
-              borderWidth: 10,
-              borderColor: colors.bg.surface,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <View
-              style={{
-                position: "absolute",
-                top: -10,
-                left: -10,
-                right: -10,
-                bottom: -10,
-                borderRadius: 96,
-                borderWidth: 10,
-                borderColor: colors.accent.DEFAULT,
-                borderRightColor: "transparent",
-                borderBottomColor: "transparent",
-                transform: [{ rotate: "45deg" }],
-              }}
-            />
-            <Text
-              style={{
-                fontFamily: fonts.heading,
-                fontSize: 48,
-                fontWeight: "900",
-                color: colors.text.primary,
-              }}
-            >
-              {recoveryPct}%
-            </Text>
-            <Text
-              style={{
-                fontFamily: fonts.body.semiBold,
-                fontSize: 10,
-                fontWeight: "bold",
-                color: colors.text.secondary,
-                textTransform: "uppercase",
-                letterSpacing: 2,
-              }}
-            >
-              Recovery
-            </Text>
-          </View>
-        </View>
-
-        {/* Daily Mission Card */}
+        {/* ── Daily Mission ── */}
         <View style={{ marginBottom: spacing[4] }}>
           <DailyMission
             mission="Complete today's recommended workout with perfect form"
@@ -260,41 +303,194 @@ export default function HomeScreen() {
           />
         </View>
 
-        {/* Gradient TRAIN CTA */}
-        <TouchableOpacity activeOpacity={0.9} onPress={handleQuickTrain}>
-          <LinearGradient
-            colors={[colors.accent.DEFAULT, colors.accent.DEFAULT]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
+        {/* ── Quick Start CTA ── */}
+        <Button
+          title={`TRAIN ${recommendation.recommendedName}`}
+          onPress={handleQuickTrain}
+          size="lg"
+          fullWidth
+        />
+
+        {/* ── Bento Grid: Stats + Workouts ── */}
+        <Text
+          style={{
+            ...typography.subtitle,
+            color: colors.text.secondary,
+            fontSize: 11,
+            marginTop: spacing[6],
+            marginBottom: spacing[3],
+          }}
+        >
+          YOUR PROGRAM
+        </Text>
+
+        {/* Row 1: Two equal stat cards */}
+        <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: spacing[2] }}>
+          <View style={{ flex: 1 }}>
+            <StatModule label="TOTAL XP" value={totalXp} accent="amber" size="sm" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <StatModule
+              label="WORKOUTS"
+              value={workoutHistory.length}
+              subValue={
+                streakData.currentStreak >= 3 ? `${streakData.currentStreak}d streak` : undefined
+              }
+              accent={streakData.currentStreak >= 3 ? "green" : "amber"}
+              size="sm"
+            />
+          </View>
+        </View>
+
+        {/* Row 2: Featured workout (wide) + Exercise Library (square) */}
+        <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: spacing[2] }}>
+          {/* Featured workout card — 2/3 width */}
+          <View style={{ flex: 2 }}>
+            <WorkoutCard
+              workout={featuredWorkout.data}
+              onPress={() => handleWorkoutSelect(featuredWorkoutId)}
+              isActive={recommendation.recommendedId !== "rest"}
+            />
+          </View>
+          {/* Exercise Library shortcut — 1/3 width */}
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => router.push("/exercises/catalog")}
+            accessibilityRole="button"
+            accessibilityLabel="Exercise Library"
+            accessibilityHint="Browse all 24 exercises by muscle group"
             style={{
-              height: 64,
-              borderRadius: 12,
-              flexDirection: "row",
+              flex: 1,
+              backgroundColor: colors.bg.elevated,
+              borderWidth: 1.5,
+              borderColor: colors.border.subtle,
+              borderRadius: 4,
+              padding: spacing[3],
               alignItems: "center",
               justifyContent: "center",
-              shadowColor: colors.accent.DEFAULT,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.2,
-              shadowRadius: 12,
-              elevation: 8,
+              minHeight: 120,
+              overflow: "hidden",
             }}
           >
-            <Text
+            <GlossyOverlay highlightOpacity={0.1} />
+            <View
               style={{
-                fontFamily: fonts.heading,
-                fontSize: 20,
-                fontWeight: "900",
-                color: colors.bg.primary,
-                textTransform: "uppercase",
-                letterSpacing: 3,
+                width: 36,
+                height: 36,
+                backgroundColor: `${colors.accent.DEFAULT}15`,
+                borderWidth: 1,
+                borderColor: colors.accent.DEFAULT,
+                borderRadius: 4,
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: spacing[2],
               }}
             >
-              TRAIN {recommendation.recommendedName}
+              <Text style={{ fontSize: 16 }}>📚</Text>
+            </View>
+            <Text
+              style={{
+                ...typography.label,
+                color: colors.accent.DEFAULT,
+                fontSize: 8,
+                textAlign: "center",
+              }}
+            >
+              EXERCISE
             </Text>
-            <Text style={{ fontSize: 20, color: colors.bg.primary, marginLeft: 8 }}>›</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+            <Text
+              style={{
+                ...typography.label,
+                color: colors.accent.DEFAULT,
+                fontSize: 8,
+                textAlign: "center",
+              }}
+            >
+              LIBRARY
+            </Text>
+            <Text
+              style={{
+                ...typography.bodySmall,
+                color: colors.text.tertiary,
+                fontSize: 7,
+                textAlign: "center",
+                marginTop: spacing[1],
+              }}
+            >
+              24 exercises
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Row 3: Remaining workout cards in 2-column bento */}
+        <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: spacing[2] }}>
+          {remainingWorkouts.slice(0, 2).map((w) => (
+            <View key={w.id} style={{ flex: 1 }}>
+              <WorkoutCard
+                workout={w.data}
+                onPress={() => handleWorkoutSelect(w.id)}
+                isActive={false}
+              />
+            </View>
+          ))}
+        </View>
+
+        {/* Row 4: Last workout card (full width) */}
+        {remainingWorkouts.slice(2).map((w) => (
+          <View key={w.id} style={{ marginBottom: spacing[2] }}>
+            <WorkoutCard
+              workout={w.data}
+              onPress={() => handleWorkoutSelect(w.id)}
+              isActive={false}
+            />
+          </View>
+        ))}
+
+        {/* ── Program Structure Panel ── */}
+        <View
+          style={{
+            backgroundColor: colors.bg.elevated,
+            borderWidth: 1,
+            borderColor: colors.border.subtle,
+            borderRadius: 4,
+            padding: spacing[3],
+            marginTop: spacing[2],
+            overflow: "hidden",
+          }}
+        >
+          <GlossyOverlay highlightOpacity={0.06} showReflection={false} />
+          <Text
+            style={{
+              ...typography.label,
+              color: colors.text.secondary,
+              fontSize: 9,
+              marginBottom: spacing[2],
+            }}
+          >
+            PROGRAM STRUCTURE
+          </Text>
+          <View style={{ gap: spacing[2] }}>
+            <InfoRow label="FREQUENCY" value="4 days/week, rotating A→B→C→D" />
+            <InfoRow label="PROGRESSION" value="Double progression method" />
+            <InfoRow label="DELOAD" value="Every 4-6 weeks (-50% volume)" />
+          </View>
+        </View>
       </Animated.ScrollView>
     </SafeAreaView>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  const colors = useColors();
+
+  return (
+    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+      <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 9 }}>
+        {label}
+      </Text>
+      <Text style={{ ...typography.bodySmall, color: colors.text.primary, fontSize: 11 }}>
+        {value}
+      </Text>
+    </View>
   );
 }

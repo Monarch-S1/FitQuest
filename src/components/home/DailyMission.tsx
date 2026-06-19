@@ -20,7 +20,7 @@ export function DailyMission({
   return (
     <View
       style={{
-        backgroundColor: isComplete ? `${colors.success}14` : colors.bg.primary,
+        backgroundColor: isComplete ? "rgba(16, 185, 129, 0.08)" : colors.bg.primary,
         borderWidth: 1.5,
         borderColor: isComplete ? colors.success : colors.border.accent,
         borderRadius: 4,
@@ -38,7 +38,7 @@ export function DailyMission({
           width: 60,
           height: 60,
           borderRightWidth: 60,
-          borderRightColor: isComplete ? `${colors.success}1A` : `${colors.accent.DEFAULT}0F`,
+          borderRightColor: isComplete ? "rgba(16, 185, 129, 0.1)" : "rgba(245, 158, 11, 0.06)",
           borderBottomWidth: 60,
           borderBottomColor: "transparent",
         }}

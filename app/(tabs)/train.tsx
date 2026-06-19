@@ -1,9 +1,12 @@
 import { useCallback, useMemo, useRef, useEffect } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useColors, typography, spacing, fonts } from "../../src/tokens";
-import { getWorkoutsForGoal } from "../../src/data/workouts";
+import { SegmentedPanel } from "../../src/components/ui/SegmentedPanel";
+import { WorkoutCard } from "../../src/components/ui/WorkoutCard";
+import { Button } from "../../src/components/ui/Button";
+import { getWorkoutsForGoal, getGoalConfig } from "../../src/data/workouts";
 import { useUserStore } from "../../src/stores/useUserStore";
 import { getRecommendation } from "../../src/utils/recommendations";
 import { getProgressionSummary } from "../../src/utils/progression";
@@ -15,11 +18,14 @@ export default function TrainScreen() {
   const router = useRouter();
   const { workoutHistory, recoveryStatus, isHydrated, fitnessGoal } = useUserStore();
 
+  // Goal-specific workouts
   const goalWorkouts = useMemo(
     () => getWorkoutsForGoal(fitnessGoal),
     [fitnessGoal],
   );
+  const goalConfig = useMemo(() => getGoalConfig(fitnessGoal), [fitnessGoal]);
 
+  // Intelligence-powered recommendation
   const recommendation = useMemo(
     () => getRecommendation(workoutHistory, recoveryStatus),
     [workoutHistory, recoveryStatus],
@@ -34,7 +40,7 @@ export default function TrainScreen() {
     [router],
   );
 
-  // Fade-in animation
+  // Fade-in animation when content loads
   const fadeIn = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     if (isHydrated) {
@@ -60,161 +66,89 @@ export default function TrainScreen() {
       <Animated.ScrollView
         style={{ flex: 1, opacity: fadeIn }}
         contentContainerStyle={{ padding: spacing[4], paddingBottom: spacing[12] }}
-        showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <Text
-          style={{
-            fontFamily: fonts.heading,
-            fontSize: 28,
-            fontWeight: "900",
-            color: colors.text.primary,
-            textTransform: "uppercase",
-            letterSpacing: 2,
-            marginBottom: 24,
-          }}
-        >
-          Recommended
-        </Text>
-
-        {/* AI Recommendation Header — colored dots */}
-        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 24 }}>
-          {[1, 2, 3].map((i) => (
-            <View
-              key={i}
-              style={{
-                width: 12,
-                height: 12,
-                borderRadius: 6,
-                backgroundColor: colors.success,
-                marginRight: 8,
-              }}
-            />
-          ))}
-          <View
-            style={{
-              width: 12,
-              height: 12,
-              borderRadius: 6,
-              backgroundColor: colors.accent.DEFAULT,
-              marginRight: 8,
-            }}
-          />
-          <View
-            style={{
-              width: 12,
-              height: 12,
-              borderRadius: 6,
-              backgroundColor: colors.border.subtle,
-              marginRight: 8,
-            }}
-          />
+        <View style={{ marginBottom: spacing[4] }}>
           <Text
             style={{
-              fontFamily: fonts.body.semiBold,
-              fontSize: 10,
-              fontWeight: "bold",
+              ...typography.label,
               color: colors.text.secondary,
-              textTransform: "uppercase",
-              letterSpacing: 1,
-              marginLeft: 4,
+              fontSize: 10,
+              marginBottom: spacing[1],
             }}
           >
-            Progression: Set {Math.min(workoutHistory.length + 1, 12)}/12
+            TRAIN · WORKOUT SYSTEM
+          </Text>
+          <Text
+            style={{
+              ...typography.display,
+              color: colors.text.primary,
+            }}
+          >
+            TRAINING GRID
           </Text>
         </View>
 
-        {/* Recommendation reasoning */}
-        <View
-          style={{
-            backgroundColor: colors.bg.surface,
-            borderRadius: 12,
-            padding: 16,
-            marginBottom: 20,
-            borderWidth: 1,
-            borderColor: colors.border.subtle,
-          }}
-        >
+        {/* Intelligence-Driven Recommendation */}
+        <SegmentedPanel title="TODAY'S RECOMMENDATION" accent="amber">
           <Text
             style={{
-              fontFamily: fonts.body.regular,
-              fontSize: 13,
+              ...typography.body,
               color: colors.text.secondary,
+              fontSize: 13,
               lineHeight: 20,
             }}
           >
             {recommendation.reasoning}
           </Text>
           {recommendation.recommendedId !== "rest" && (
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => handleWorkoutSelect(recommendation.recommendedId)}
-              style={{
-                marginTop: 12,
-                backgroundColor: colors.accent.DEFAULT,
-                borderRadius: 8,
-                paddingVertical: 10,
-                alignItems: "center",
-              }}
-            >
-              <Text
-                style={{
-                  fontFamily: fonts.body.bold,
-                  fontSize: 12,
-                  fontWeight: "bold",
-                  color: colors.bg.primary,
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
-                }}
-              >
-                {recommendation.recommendedName}
-              </Text>
-            </TouchableOpacity>
+            <View style={{ marginTop: spacing[3] }}>
+              <Button
+                title={recommendation.recommendedName}
+                onPress={() => handleWorkoutSelect(recommendation.recommendedId)}
+                fullWidth
+              />
+            </View>
           )}
           {/* Confidence indicator */}
-          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 12, gap: 6 }}>
-            <View
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: 4,
-                backgroundColor:
-                  recommendation.confidence === "high" ? colors.success :
-                  recommendation.confidence === "medium" ? colors.accent.DEFAULT : colors.text.secondary,
-              }}
-            />
-            <Text style={{ fontFamily: fonts.body.regular, fontSize: 9, color: colors.text.secondary }}>
-              {recommendation.confidence === "high" ? "HIGH CONFIDENCE" :
-               recommendation.confidence === "medium" ? "MODERATE" : "ESTIMATE"}
-            </Text>
-          </View>
-        </View>
-
-        {/* Progression Readiness */}
-        {progressionSummary.exercisesReady.length > 0 && (
           <View
             style={{
-              backgroundColor: colors.bg.surface,
-              borderRadius: 12,
-              padding: 16,
-              marginBottom: 20,
-              borderWidth: 1,
-              borderColor: colors.success,
+              flexDirection: "row",
+              alignItems: "center",
+              marginTop: spacing[2],
+              gap: spacing[1],
             }}
           >
-            <Text
+            <View
               style={{
-                fontFamily: fonts.body.bold,
-                fontSize: 10,
-                fontWeight: "bold",
-                color: colors.success,
-                textTransform: "uppercase",
-                letterSpacing: 1,
-                marginBottom: 8,
+                width: 6,
+                height: 6,
+                borderRadius: 3,
+                backgroundColor:
+                  recommendation.confidence === "high"
+                    ? colors.success
+                    : recommendation.confidence === "medium"
+                      ? colors.accent.DEFAULT
+                      : colors.text.secondary,
               }}
-            >
-              {progressionSummary.exercisesReady.length} Ready to Progress
+            />
+            <Text style={{ ...typography.bodySmall, color: colors.text.secondary, fontSize: 9 }}>
+              {recommendation.confidence === "high"
+                ? "HIGH CONFIDENCE"
+                : recommendation.confidence === "medium"
+                  ? "MODERATE CONFIDENCE"
+                  : "ESTIMATE"}
             </Text>
+          </View>
+        </SegmentedPanel>
+
+        {/* Progression Readiness — only show when there's data */}
+        {progressionSummary.exercisesReady.length > 0 && (
+          <SegmentedPanel
+            title={`${progressionSummary.exercisesReady.length} READY TO PROGRESS`}
+            accent="green"
+            style={{ marginTop: spacing[2] }}
+          >
             {progressionSummary.exercisesReady.slice(0, 3).map((ex) => (
               <View
                 key={ex.exerciseId}
@@ -222,134 +156,69 @@ export default function TrainScreen() {
                   flexDirection: "row",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  paddingVertical: 8,
+                  backgroundColor: colors.bg.primary,
+                  padding: spacing[2],
+                  borderWidth: 1,
+                  borderColor: colors.border.subtle,
+                  borderRadius: 4,
+                  marginBottom: spacing[1],
                 }}
               >
-                <Text
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      ...typography.bodySmall,
+                      color: colors.text.primary,
+                      fontFamily: fonts.body.semiBold,
+                      fontSize: 11,
+                    }}
+                  >
+                    {ex.exerciseName}
+                  </Text>
+                  <Text
+                    style={{
+                      ...typography.bodySmall,
+                      color: colors.text.secondary,
+                      fontSize: 9,
+                      marginTop: 2,
+                    }}
+                    numberOfLines={1}
+                  >
+                    Avg {ex.averageReps} reps · Trend: {ex.recentTrend.toUpperCase()}
+                  </Text>
+                </View>
+                <View
                   style={{
-                    fontFamily: fonts.body.semiBold,
-                    fontSize: 12,
-                    color: colors.text.primary,
-                    flex: 1,
+                    backgroundColor: `${colors.success}20`,
+                    borderWidth: 1,
+                    borderColor: colors.success,
+                    borderRadius: 4,
+                    paddingHorizontal: spacing[2],
+                    paddingVertical: spacing[0],
+                    marginLeft: spacing[2],
                   }}
                 >
-                  {ex.exerciseName}
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: fonts.body.regular,
-                    fontSize: 9,
-                    color: colors.success,
-                  }}
-                >
-                  {ex.highEndPercentage}%
-                </Text>
+                  <Text style={{ ...typography.label, color: colors.success, fontSize: 7 }}>
+                    {ex.highEndPercentage}%
+                  </Text>
+                </View>
               </View>
             ))}
-          </View>
+          </SegmentedPanel>
         )}
-
-        {/* Workout Cards */}
-        {goalWorkouts.map((w) => {
-          const isActive = recommendation.recommendedId === w.id;
-          const sets = w.exercises?.length || 0;
-          // Determine difficulty from exercise difficulty tiers
-          const hasAdvanced = w.exercises.some((e) => e.difficulty === "advanced");
-          const hasIntermediate = w.exercises.some((e) => e.difficulty === "intermediate");
-          const dotColor = hasAdvanced ? colors.error : hasIntermediate ? colors.accent.DEFAULT : colors.success;
-
-          return (
-            <TouchableOpacity
-              key={w.id}
-              activeOpacity={0.8}
-              onPress={() => handleWorkoutSelect(w.id)}
-              style={{
-                backgroundColor: colors.bg.surface,
-                borderRadius: 16,
-                marginBottom: 16,
-                flexDirection: "row",
-                alignItems: "center",
-                padding: 16,
-                borderWidth: isActive ? 2 : 1,
-                borderColor: isActive ? colors.accent.DEFAULT : colors.border.subtle,
-              }}
-            >
-              <View
-                style={{
-                  width: 64,
-                  height: 64,
-                  backgroundColor: colors.border.subtle,
-                  borderRadius: 8,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginRight: 16,
-                }}
-              >
-                <Text style={{ fontSize: 28 }}>🏋️</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontFamily: fonts.body.bold,
-                    fontSize: 18,
-                    color: colors.text.primary,
-                  }}
-                >
-                  {w.name}
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: fonts.body.regular,
-                    fontSize: 13,
-                    color: colors.text.secondary,
-                    marginTop: 2,
-                  }}
-                >
-                  {sets} Exercises
-                </Text>
-              </View>
-              <View
-                style={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: 6,
-                  backgroundColor: dotColor,
-                }}
-              />
-            </TouchableOpacity>
-          );
-        })}
 
         {/* Deload notice */}
         {progressionSummary.deloadRecommended && (
-          <View
-            style={{
-              backgroundColor: colors.bg.surface,
-              borderRadius: 12,
-              padding: 16,
-              marginBottom: 20,
-              borderWidth: 1,
-              borderColor: colors.error,
-            }}
+          <SegmentedPanel
+            title="DELOAD WEEK SUGGESTED"
+            accent="red"
+            style={{ marginTop: spacing[2] }}
           >
             <Text
               style={{
-                fontFamily: fonts.body.bold,
-                fontSize: 10,
-                fontWeight: "bold",
-                color: colors.error,
-                textTransform: "uppercase",
-                letterSpacing: 1,
-                marginBottom: 8,
-              }}
-            >
-              DELOAD WEEK SUGGESTED
-            </Text>
-            <Text
-              style={{
-                fontFamily: fonts.body.regular,
-                fontSize: 13,
+                ...typography.body,
                 color: colors.text.secondary,
+                fontSize: 13,
                 lineHeight: 20,
               }}
             >
@@ -357,64 +226,159 @@ export default function TrainScreen() {
               Reduce volume by 40-50% this week: 2 sets per exercise, leave 4-5 reps in reserve.
               Your body will come back stronger.
             </Text>
-          </View>
+          </SegmentedPanel>
         )}
 
-        {/* CORE PROGRAMS */}
+        {/* Core Programs */}
         <Text
           style={{
-            fontFamily: fonts.body.semiBold,
-            fontSize: 11,
-            fontWeight: "bold",
+            ...typography.subtitle,
             color: colors.text.secondary,
-            textTransform: "uppercase",
-            letterSpacing: 1,
-            marginTop: 8,
-            marginBottom: 12,
+            fontSize: 11,
+            marginTop: spacing[2],
+            marginBottom: spacing[3],
           }}
         >
           CORE PROGRAMS
         </Text>
 
+        {goalWorkouts.map((w) => (
+          <WorkoutCard
+            key={w.id}
+            workout={w}
+            onPress={() => handleWorkoutSelect(w.id)}
+            isActive={recommendation.recommendedId === w.id}
+          />
+        ))}
+
         {/* Exercise Library Link */}
         <TouchableOpacity
-          activeOpacity={0.8}
+          activeOpacity={0.85}
           onPress={() => router.push("/exercises/catalog")}
+          accessibilityRole="button"
+          accessibilityLabel="Exercise Library"
+          accessibilityHint="Browse all exercises by muscle group"
           style={{
-            backgroundColor: colors.bg.surface,
-            borderRadius: 16,
-            padding: 20,
-            alignItems: "center",
-            borderWidth: 1,
-            borderStyle: "dashed",
+            backgroundColor: colors.bg.elevated,
+            borderWidth: 1.5,
             borderColor: colors.border.subtle,
+            borderRadius: 4,
+            borderStyle: "dashed",
+            padding: spacing[4],
+            marginBottom: spacing[3],
+            alignItems: "center",
           }}
         >
           <Text
             style={{
-              fontFamily: fonts.heading,
-              fontSize: 16,
-              fontWeight: "900",
+              ...typography.h4,
               color: colors.accent.DEFAULT,
-              textTransform: "uppercase",
-              letterSpacing: 2,
+              fontSize: 18,
+              marginBottom: spacing[1],
             }}
           >
             EXERCISE LIBRARY
           </Text>
           <Text
             style={{
-              fontFamily: fonts.body.regular,
-              fontSize: 11,
+              ...typography.bodySmall,
               color: colors.text.secondary,
+              fontSize: 11,
               textAlign: "center",
-              marginTop: 4,
             }}
           >
-            Browse all exercises · View form details · Track progression
+            Browse all exercises by muscle group · View form details · Track progression
           </Text>
+          <View
+            style={{
+              marginTop: spacing[2],
+              backgroundColor: colors.accent.DEFAULT,
+              borderRadius: 4,
+              paddingHorizontal: spacing[3],
+              paddingVertical: spacing[1],
+            }}
+          >
+            <Text
+              style={{
+                ...typography.label,
+                color: colors.bg.primary,
+                fontSize: 9,
+              }}
+            >
+              BROWSE →
+            </Text>
+          </View>
         </TouchableOpacity>
+
+        {/* Program Info */}
+        <SegmentedPanel title="PROGRAM STRUCTURE" accent="none">
+          <View style={{ gap: spacing[2] }}>
+            <InfoRow label="FREQUENCY" value="4 days/week, rotating A→B→C→D" />
+            <InfoRow label="PROGRAM" value={goalConfig.label} />
+            <InfoRow label="REST" value="Varies by goal (30-180s)" />
+            <InfoRow label="PROGRESSION" value="Double progression method" />
+            <InfoRow label="DELOAD" value="Every 4-6 weeks (-50% volume)" />
+          </View>
+        </SegmentedPanel>
+
+        {/* Difficulty selector */}
+        <SegmentedPanel title="DIFFICULTY" accent="none">
+          <Text
+            style={{
+              ...typography.body,
+              color: colors.text.secondary,
+              fontSize: 13,
+              lineHeight: 20,
+              marginBottom: spacing[3],
+            }}
+          >
+            Each exercise has built-in progression pathways. Start at the level that matches your
+            current capability and progress when you hit the upper rep range with perfect form.
+          </Text>
+          <View style={{ flexDirection: "row", gap: spacing[2] }}>
+            {["BEGINNER", "INTERMEDIATE", "ADVANCED"].map((level) => (
+              <View
+                key={level}
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.bg.highlight,
+                  borderWidth: 1,
+                  borderColor: colors.border.subtle,
+                  borderRadius: 4,
+                  padding: spacing[2],
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    ...typography.label,
+                    color: level === "INTERMEDIATE" ? colors.accent.DEFAULT : colors.text.secondary,
+                    fontSize: 8,
+                    textAlign: "center",
+                  }}
+                >
+                  {level}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </SegmentedPanel>
       </Animated.ScrollView>
     </SafeAreaView>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  const colors = useColors();
+
+  return (
+    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+      <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 9 }}>
+        {label}
+      </Text>
+      <Text style={{ ...typography.bodySmall, color: colors.text.primary, fontSize: 11 }}>
+        {value}
+      </Text>
+    </View>
   );
 }

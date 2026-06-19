@@ -24,8 +24,8 @@ function getChevrons(level: number): number {
   return 5;
 }
 
-function getRankColor(level: number, accentColor: string, textSecondary: string): string {
-  if (level <= 3) return textSecondary;
+function getRankColor(level: number, accentColor: string): string {
+  if (level <= 3) return "#9CA3AF";
   // Levels 4+ use the theme's accent color so it changes with theme switching
   return accentColor;
 }
@@ -56,7 +56,7 @@ export function LevelBadge({ level, size = "md" }: LevelBadgeProps) {
   };
   const s = sizes[size];
   const chevronCount = getChevrons(level);
-  const rankColor = getRankColor(level, colors.accent.DEFAULT, colors.text.secondary);
+  const rankColor = getRankColor(level, colors.accent.DEFAULT);
 
   const glowAnim = useRef(new Animated.Value(0.3)).current;
   useEffect(() => {

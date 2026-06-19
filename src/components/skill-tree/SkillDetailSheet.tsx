@@ -181,7 +181,7 @@ export function SkillDetailSheet({ node, onClose }: SkillDetailSheetProps) {
           </Text>
           {exercise.visualGuide!.checkpoints.map((cp, idx) => {
             const phaseColor =
-              cp.phase === "SETUP" ? "#3B82F6" : cp.phase === "EXECUTION" ? colors.success : colors.error;
+              cp.phase === "SETUP" ? "#3B82F6" : cp.phase === "EXECUTION" ? "#10B981" : "#EF4444";
             return (
               <View
                 key={idx}

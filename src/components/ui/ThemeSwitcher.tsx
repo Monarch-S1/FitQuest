@@ -109,7 +109,7 @@ export function ThemeSwitcher() {
                   <Text
                     style={{
                       fontSize: 14,
-                      color: colors.text.primary,
+                      color: "#fff",
                       fontWeight: "700",
                     }}
                   >

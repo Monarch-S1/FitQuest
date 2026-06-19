@@ -10,6 +10,12 @@ interface SkillNodeProps {
   onPress: () => void;
 }
 
+const DIFFICULTY_COLORS: Record<DifficultyTier, string> = {
+  beginner: "#10B981",
+  intermediate: "#F59E0B",
+  advanced: "#EF4444",
+};
+
 const DIFFICULTY_LABELS: Record<DifficultyTier, string> = {
   beginner: "BEGINNER",
   intermediate: "INTERMEDIATE",
@@ -25,7 +31,7 @@ export function SkillNode({ node, isCompleted, isUnlocked, isSelected, onPress }
       ? node.accent
       : colors.border.subtle;
 
-  const diffColor = node.difficulty === "beginner" ? colors.success : node.difficulty === "intermediate" ? colors.accent.DEFAULT : colors.error;
+  const diffColor = DIFFICULTY_COLORS[node.difficulty];
 
   return (
     <TouchableOpacity

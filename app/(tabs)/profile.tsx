@@ -1,18 +1,21 @@
 import { useMemo, useCallback, useState, useEffect, useRef } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Alert, TextInput, Image } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Alert, TextInput, Image, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useColors, typography, spacing, fonts } from "../../src/tokens";
+import { StatModule } from "../../src/components/ui/StatModule";
+import { SegmentedPanel } from "../../src/components/ui/SegmentedPanel";
+import { XpBar } from "../../src/components/ui/XpBar";
+import { ThemeSwitcher } from "../../src/components/ui/ThemeSwitcher";
+import { GlossyOverlay } from "../../src/components/ui/GlossyOverlay";
+import { SyncIndicator } from "../../src/components/ui/SyncIndicator";
+import { FeedbackSheet } from "../../src/components/ui/FeedbackSheet";
 import { useUserStore, FitnessGoal, FitnessLevel } from "../../src/stores/useUserStore";
 import { getProgressionSummary } from "../../src/utils/progression";
 import { signOut as supabaseSignOut } from "../../src/services/supabase";
 import { videoCache } from "../../src/services/videoCache";
-import { ThemeSwitcher } from "../../src/components/ui/ThemeSwitcher";
-import { FeedbackSheet } from "../../src/components/ui/FeedbackSheet";
-import { SyncIndicator } from "../../src/components/ui/SyncIndicator";
-import { XpBar } from "../../src/components/ui/XpBar";
-import { Animated, Easing } from "react-native";
 
 const GOAL_LABELS: Record<FitnessGoal, string> = {
   strength: "Strength",
@@ -46,33 +49,89 @@ function formatBytes(bytes: number): string {
   return `${(bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0)} ${units[i]}`;
 }
 
-function getAchievements(workoutHistoryLength: number, level: number, streak: number): Achievement[] {
+function getAchievements(
+  workoutHistoryLength: number,
+  level: number,
+  streak: number,
+): Achievement[] {
   return [
-    { id: "first-workout", name: "First Step", description: "Complete your first workout", icon: "●", unlocked: workoutHistoryLength >= 1 },
-    { id: "week-streak", name: "Committed", description: "7-day streak", icon: "⚡", unlocked: streak >= 7 },
-    { id: "month-streak", name: "Unstoppable", description: "30-day streak", icon: "🔥", unlocked: streak >= 30 },
-    { id: "level-5", name: "Operative", description: "Reach Level 5", icon: "▲", unlocked: level >= 5 },
-    { id: "level-10", name: "Veteran", description: "Reach Level 10", icon: "▲▲", unlocked: level >= 10 },
-    { id: "veteran-10", name: "Dedicated", description: "Complete 10 workouts", icon: "✦", unlocked: workoutHistoryLength >= 10 },
-    { id: "deloaded", name: "Smart Training", description: "Complete a deload week", icon: "◆", unlocked: level >= 10 && workoutHistoryLength >= 20 },
+    {
+      id: "first-workout",
+      name: "First Step",
+      description: "Complete your first workout",
+      icon: "●",
+      unlocked: workoutHistoryLength >= 1,
+    },
+    {
+      id: "week-streak",
+      name: "Committed",
+      description: "7-day streak",
+      icon: "⚡",
+      unlocked: streak >= 7,
+    },
+    {
+      id: "month-streak",
+      name: "Unstoppable",
+      description: "30-day streak",
+      icon: "🔥",
+      unlocked: streak >= 30,
+    },
+    {
+      id: "level-5",
+      name: "Operative",
+      description: "Reach Level 5",
+      icon: "▲",
+      unlocked: level >= 5,
+    },
+    {
+      id: "level-10",
+      name: "Veteran",
+      description: "Reach Level 10",
+      icon: "▲▲",
+      unlocked: level >= 10,
+    },
+    {
+      id: "veteran-10",
+      name: "Dedicated",
+      description: "Complete 10 workouts",
+      icon: "✦",
+      unlocked: workoutHistoryLength >= 10,
+    },
+    {
+      id: "deloaded",
+      name: "Smart Training",
+      description: "Complete a deload week",
+      icon: "◆",
+      unlocked: level >= 10 && workoutHistoryLength >= 20,
+    },
   ];
 }
 
 export default function ProfileScreen() {
   const colors = useColors();
-  const router = useRouter();
-  const {
-    level, totalXp, streakData, xpProgress, workoutHistory,
-    displayName, email, fitnessGoal, fitnessLevel,
-    isAuthenticated, avatarUri, updateProfile, clearAuth,
-  } = useUserStore();
 
+  const {
+    level,
+    totalXp,
+    streakData,
+    xpProgress,
+    workoutHistory,
+    displayName,
+    email,
+    fitnessGoal,
+    fitnessLevel,
+    isAuthenticated,
+    avatarUri,
+    updateProfile,
+    clearAuth,
+  } = useUserStore();
   const [showEditName, setShowEditName] = useState(false);
   const [editName, setEditName] = useState(displayName);
   const [showFeedback, setShowFeedback] = useState(false);
   const [cachedVideoCount, setCachedVideoCount] = useState(0);
   const [cachedVideoSize, setCachedVideoSize] = useState(0);
 
+  // Sync editName when displayName changes externally (e.g., onboarding completion)
   const prevDisplayNameRef = useRef(displayName);
   useEffect(() => {
     if (prevDisplayNameRef.current !== displayName && !showEditName) {
@@ -89,7 +148,15 @@ export default function ProfileScreen() {
   );
 
   const rank =
-    level <= 3 ? "Recruit" : level <= 6 ? "Operative" : level <= 10 ? "Veteran" : level <= 15 ? "Elite" : "Commander";
+    level <= 3
+      ? "Recruit"
+      : level <= 6
+        ? "Operative"
+        : level <= 10
+          ? "Veteran"
+          : level <= 15
+            ? "Elite"
+            : "Commander";
 
   const handleSaveName = useCallback(() => {
     if (editName.trim()) {
@@ -101,223 +168,820 @@ export default function ProfileScreen() {
   const handlePickAvatar = useCallback(async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission needed", "Please grant photo library access.");
+      Alert.alert("Permission needed", "Please grant photo library access to set a profile picture.");
       return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsEditing: true, aspect: [1, 1], quality: 0.8 });
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
     if (!result.canceled && result.assets[0]) {
       updateProfile({ avatarUri: result.assets[0].uri });
     }
   }, [updateProfile]);
 
   const handleChangeGoal = useCallback(() => {
-    Alert.alert("Change Goal", "Select your new training goal:", [
-      ...GOAL_OPTIONS.map((g) => ({ text: GOAL_LABELS[g], onPress: () => {
-        Alert.alert("Change Training Program", `Switching to ${GOAL_LABELS[g]} will update your workout program. Continue?`, [
+    const goalNames = GOAL_OPTIONS.map((g) => ({ text: GOAL_LABELS[g], onPress: () => {
+      Alert.alert(
+        "Change Training Program",
+        `Switching to ${GOAL_LABELS[g]} will update your workout program (rep ranges, sets, rest times). Your XP, streak, and workout history will be preserved. Continue?`,
+        [
           { text: "Cancel", style: "cancel" },
           { text: "CHANGE", onPress: () => updateProfile({ fitnessGoal: g }) },
-        ]);
-      }})),
+        ],
+      );
+    }}));
+    Alert.alert("Change Goal", "Select your new training goal:", [
+      ...goalNames.map((g) => ({ text: g.text, onPress: g.onPress })),
       { text: "Cancel", style: "cancel" },
     ], { cancelable: true });
   }, [updateProfile]);
 
   const handleChangeLevel = useCallback(() => {
-    Alert.alert("Change Level", "Select your current fitness level:", [
-      ...LEVEL_OPTIONS.map((l) => ({ text: LEVEL_LABELS[l], onPress: () => {
-        Alert.alert("Change Level", `Switching to ${LEVEL_LABELS[l]} will adjust exercise difficulty. Continue?`, [
+    const levelNames = LEVEL_OPTIONS.map((l) => ({ text: LEVEL_LABELS[l], onPress: () => {
+      Alert.alert(
+        "Change Level",
+        `Switching to ${LEVEL_LABELS[l]} will adjust exercise difficulty targets. Your progress will be preserved. Continue?`,
+        [
           { text: "Cancel", style: "cancel" },
           { text: "CHANGE", onPress: () => updateProfile({ fitnessLevel: l }) },
-        ]);
-      }})),
+        ],
+      );
+    }}));
+    Alert.alert("Change Level", "Select your current fitness level:", [
+      ...levelNames.map((l) => ({ text: l.text, onPress: l.onPress })),
       { text: "Cancel", style: "cancel" },
     ], { cancelable: true });
   }, [updateProfile]);
 
+  // Load cache info on mount with unmount guard
   const cacheMountedRef = useRef(true);
   useEffect(() => {
     cacheMountedRef.current = true;
-    videoCache.getCachedIds().then((ids) => { if (cacheMountedRef.current) setCachedVideoCount(ids.length); });
-    videoCache.getCacheSize().then((size) => { if (cacheMountedRef.current) setCachedVideoSize(size); });
-    return () => { cacheMountedRef.current = false; };
+    videoCache.getCachedIds().then((ids) => {
+      if (cacheMountedRef.current) setCachedVideoCount(ids.length);
+    });
+    videoCache.getCacheSize().then((size) => {
+      if (cacheMountedRef.current) setCachedVideoSize(size);
+    });
+    return () => {
+      cacheMountedRef.current = false;
+    };
   }, []);
 
   const handleClearCache = useCallback(() => {
-    Alert.alert("Clear Video Cache", `Remove ${cachedVideoCount} cached video(s) (${formatBytes(cachedVideoSize)})?`, [
-      { text: "Cancel", style: "cancel" },
-      { text: "CLEAR", style: "destructive", onPress: async () => { await videoCache.clearAll(); setCachedVideoCount(0); setCachedVideoSize(0); } },
-    ]);
+    Alert.alert(
+      "Clear Video Cache",
+      `Remove ${cachedVideoCount} cached video(s) (${formatBytes(cachedVideoSize)})? You can re-download them later.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "CLEAR",
+          style: "destructive",
+          onPress: async () => {
+            await videoCache.clearAll();
+            setCachedVideoCount(0);
+            setCachedVideoSize(0);
+          },
+        },
+      ],
+    );
   }, [cachedVideoCount, cachedVideoSize]);
 
+  const handleOpenFeedback = useCallback(() => {
+    setShowFeedback(true);
+  }, []);
+
   const handleSignOut = useCallback(() => {
-    Alert.alert("Sign Out", "Are you sure?", [
-      { text: "Cancel", style: "cancel" },
-      { text: "SIGN OUT", style: "destructive", onPress: async () => { await supabaseSignOut(); clearAuth(); } },
-    ]);
+    Alert.alert(
+      "Sign Out",
+      "Are you sure you want to sign out? Your workout data is stored locally and will be preserved.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "SIGN OUT",
+          style: "destructive",
+          onPress: async () => {
+            await supabaseSignOut();
+            clearAuth();
+          },
+        },
+      ],
+    );
   }, [clearAuth]);
 
-  const fadeIn = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    Animated.timing(fadeIn, { toValue: 1, duration: 200, easing: Easing.out(Easing.ease), useNativeDriver: true }).start();
-  }, []);
+  const router = useRouter();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
-      <Animated.ScrollView style={{ flex: 1, opacity: fadeIn }} contentContainerStyle={{ padding: spacing[4], paddingBottom: spacing[12] }} showsVerticalScrollIndicator={false}>
-        <SyncIndicator />
-        {/* Avatar & Identity */}
-        <View style={{ alignItems: "center", marginBottom: 24 }}>
-          <TouchableOpacity onPress={handlePickAvatar} activeOpacity={0.7}>
-            <View style={{ width: 96, height: 96, borderRadius: 48, borderWidth: 3, borderColor: colors.accent.DEFAULT, backgroundColor: colors.bg.surface, alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-              {avatarUri ? <Image source={{ uri: avatarUri }} style={{ width: 96, height: 96, borderRadius: 48 }} /> : <Text style={{ fontSize: 40, color: colors.accent.DEFAULT }}>+</Text>}
-            </View>
-          </TouchableOpacity>
-          <View style={{ marginTop: 16, alignItems: "center" }}>
-            {showEditName ? (
-              <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-                <TextInput value={editName} onChangeText={setEditName} autoFocus onSubmitEditing={handleSaveName} style={{ backgroundColor: colors.bg.surface, borderWidth: 1, borderColor: colors.accent.DEFAULT, borderRadius: 8, padding: 8, color: colors.text.primary, fontFamily: fonts.body.semiBold, fontSize: 16, minWidth: 120, textAlign: "center" }} />
-                <TouchableOpacity onPress={handleSaveName}><Text style={{ fontFamily: fonts.body.bold, fontSize: 10, color: colors.accent.DEFAULT }}>SAVE</Text></TouchableOpacity>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          padding: spacing[4],
+          paddingBottom: spacing[12],
+        }}
+      >
+        {/* Header */}
+        <View style={{ marginBottom: spacing[4], position: "relative" }}>
+          <SyncIndicator />
+          <Text
+            style={{
+              ...typography.label,
+              color: colors.text.secondary,
+              fontSize: 10,
+              marginBottom: spacing[1],
+            }}
+          >
+            PROFILE · COMMANDER
+          </Text>
+          <Text
+            style={{
+              ...typography.display,
+              color: colors.text.primary,
+            }}
+          >
+            PROFILE
+          </Text>
+        </View>
+
+        {/* Identity card */}
+        <SegmentedPanel title="IDENTITY" accent="amber">
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: spacing[4],
+            }}
+          >
+            {/* Avatar */}
+            <TouchableOpacity onPress={handlePickAvatar} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Change profile picture">
+              <View
+                style={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: 36,
+                  borderWidth: 2,
+                  borderColor: colors.accent.DEFAULT,
+                  backgroundColor: colors.bg.elevated,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                }}
+              >
+                {avatarUri ? (
+                  <Image
+                    source={{ uri: avatarUri }}
+                    style={{ width: 72, height: 72, borderRadius: 36 }}
+                  />
+                ) : (
+                  <Text style={{ fontSize: 28, color: colors.text.secondary }}>+</Text>
+                )}
               </View>
-            ) : (
-              <TouchableOpacity onPress={() => setShowEditName(true)}>
-                <Text style={{ fontFamily: fonts.heading, fontSize: 24, fontWeight: "900", color: colors.text.primary, textTransform: "uppercase" }}>{displayName || "ATHLETE"}</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-          <View style={{ backgroundColor: colors.accent.DEFAULT, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, marginTop: 8 }}>
-            <Text style={{ fontFamily: fonts.body.bold, fontSize: 10, fontWeight: "bold", color: colors.bg.primary, textTransform: "uppercase", letterSpacing: 1 }}>
-              LVL {level} — {rank.toUpperCase()}
-            </Text>
-          </View>
-        </View>
-
-        {/* Goal & Level badges */}
-        <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: 16 }}>
-          <TouchableOpacity onPress={handleChangeGoal} activeOpacity={0.7} style={{ flex: 1, backgroundColor: colors.bg.surface, borderWidth: 1, borderColor: colors.accent.DEFAULT, borderRadius: 8, padding: 12, alignItems: "center" }}>
-            <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 7, color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 1 }}>GOAL · TAP TO CHANGE</Text>
-            <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 10, color: colors.accent.DEFAULT, marginTop: 4 }}>{GOAL_LABELS[fitnessGoal]}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleChangeLevel} activeOpacity={0.7} style={{ flex: 1, backgroundColor: colors.bg.surface, borderWidth: 1, borderColor: colors.success, borderRadius: 8, padding: 12, alignItems: "center" }}>
-            <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 7, color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 1 }}>LEVEL · TAP TO CHANGE</Text>
-            <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 10, color: colors.success, marginTop: 4 }}>{LEVEL_LABELS[fitnessLevel]}</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Compact Stats Row */}
-        <View style={{ flexDirection: "row", justifyContent: "center", gap: 24, paddingVertical: 20, borderTopWidth: 1, borderBottomWidth: 1, borderColor: colors.border.subtle, marginBottom: 24 }}>
-          {[
-            { label: "Workouts", value: String(workoutHistory.length), icon: "🏋️" },
-            { label: "Streak", value: String(streakData.currentStreak), icon: "🔥" },
-            { label: "XP", value: totalXp >= 1000 ? `${(totalXp / 1000).toFixed(1)}K` : String(totalXp), icon: "⚡" },
-          ].map((stat) => (
-            <View key={stat.label} style={{ alignItems: "center" }}>
-              <Text style={{ fontSize: 14 }}>{stat.icon}</Text>
-              <Text style={{ fontFamily: fonts.body.bold, fontSize: 14, color: colors.text.primary, marginTop: 2 }}>{stat.value}</Text>
-              <Text style={{ fontFamily: fonts.body.regular, fontSize: 10, color: colors.text.secondary }}>{stat.label}</Text>
+              <View
+                style={{
+                  position: "absolute",
+                  bottom: -2,
+                  right: -2,
+                  width: 22,
+                  height: 22,
+                  borderRadius: 11,
+                  backgroundColor: colors.accent.DEFAULT,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderWidth: 2,
+                  borderColor: colors.bg.elevated,
+                }}
+              >
+                <Text style={{ fontSize: 10, color: colors.bg.primary }}>✎</Text>
+              </View>
+            </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              {showEditName ? (
+                <View style={{ flexDirection: "row", gap: spacing[2], alignItems: "center" }}>
+                  <TextInput
+                    value={editName}
+                    onChangeText={setEditName}
+                    autoFocus
+                    onSubmitEditing={handleSaveName}
+                    style={{
+                      flex: 1,
+                      backgroundColor: colors.bg.elevated,
+                      borderWidth: 1,
+                      borderColor: colors.accent.DEFAULT,
+                      borderRadius: 4,
+                      padding: spacing[2],
+                      color: colors.text.primary,
+                      fontFamily: fonts.body.semiBold,
+                      fontSize: 16,
+                    }}
+                  />
+                  <TouchableOpacity onPress={handleSaveName} accessibilityRole="button" accessibilityLabel="Save name">
+                    <Text
+                      style={{ ...typography.label, color: colors.accent.DEFAULT, fontSize: 9 }}
+                    >
+                      SAVE
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity onPress={() => setShowEditName(true)} accessibilityRole="button" accessibilityLabel="Edit display name" accessibilityHint="Double tap to edit your name">
+                  <Text
+                    style={{
+                      ...typography.h2,
+                      color: colors.text.primary,
+                      fontSize: 24,
+                    }}
+                  >
+                    {displayName}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              <Text
+                style={{
+                  ...typography.bodySmall,
+                  color: colors.text.secondary,
+                  marginTop: spacing[1],
+                }}
+              >
+                Rank: {rank}
+              </Text>
+              {email ? (
+                <Text
+                  style={{
+                    ...typography.bodySmall,
+                    color: colors.text.secondary,
+                    fontSize: 9,
+                    marginTop: 1,
+                  }}
+                >
+                  {email}
+                </Text>
+              ) : null}
+              <View style={{ marginTop: spacing[2] }}>
+                <XpBar
+                  currentXp={xpProgress.currentXp}
+                  requiredXp={xpProgress.requiredXp}
+                  level={level}
+                  nextLevel={level + 1}
+                />
+              </View>
             </View>
-          ))}
-        </View>
+          </View>
 
-        {/* Theme */}
-        <View style={{ backgroundColor: colors.bg.surface, borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.border.subtle }}>
-          <Text style={{ fontFamily: fonts.body.bold, fontSize: 10, fontWeight: "bold", color: colors.accent.DEFAULT, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>THEME</Text>
+          {/* Goal & Level badges — tappable to change */}
+          <View
+            style={{
+              flexDirection: "row",
+              gap: spacing[2],
+              marginTop: spacing[3],
+            }}
+          >
+            <TouchableOpacity
+              onPress={handleChangeGoal}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`Goal: ${GOAL_LABELS[fitnessGoal]}. Tap to change.`}
+              style={{
+                flex: 1,
+                backgroundColor: colors.bg.primary,
+                borderWidth: 1,
+                borderColor: colors.accent.DEFAULT,
+                borderRadius: 4,
+                padding: spacing[2],
+                overflow: "hidden",
+              }}
+            >
+              <GlossyOverlay highlightOpacity={0.1} showReflection={false} />
+              <Text
+                style={{
+                  ...typography.label,
+                  color: colors.text.secondary,
+                  fontSize: 7,
+                }}
+              >
+                GOAL · TAP TO CHANGE
+              </Text>
+              <Text
+                style={{
+                  ...typography.bodySmall,
+                  color: colors.accent.DEFAULT,
+                  fontSize: 10,
+                  marginTop: 2,
+                }}
+              >
+                {GOAL_LABELS[fitnessGoal]}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleChangeLevel}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`Level: ${LEVEL_LABELS[fitnessLevel]}. Tap to change.`}
+              style={{
+                flex: 1,
+                backgroundColor: colors.bg.primary,
+                borderWidth: 1,
+                borderColor: colors.success,
+                borderRadius: 4,
+                padding: spacing[2],
+                overflow: "hidden",
+              }}
+            >
+              <GlossyOverlay highlightOpacity={0.1} showReflection={false} />
+              <Text
+                style={{
+                  ...typography.label,
+                  color: colors.text.secondary,
+                  fontSize: 7,
+                }}
+              >
+                LEVEL · TAP TO CHANGE
+              </Text>
+              <Text
+                style={{
+                  ...typography.bodySmall,
+                  color: colors.success,
+                  fontSize: 10,
+                  marginTop: 2,
+                }}
+              >
+                {LEVEL_LABELS[fitnessLevel]}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </SegmentedPanel>
+
+        {/* ── Theme Settings ── */}
+        <SegmentedPanel title="THEME" accent="amber" style={{ marginTop: spacing[2] }}>
           <ThemeSwitcher />
+        </SegmentedPanel>
+
+        {/* Stats Grid */}
+        <Text
+          style={{
+            ...typography.subtitle,
+            color: colors.text.secondary,
+            fontSize: 11,
+            marginTop: spacing[2],
+            marginBottom: spacing[3],
+          }}
+        >
+          STATISTICS
+        </Text>
+
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[2] }}>
+          <View style={{ width: "31%" }}>
+            <StatModule label="TOTAL XP" value={totalXp} accent="amber" size="sm" />
+          </View>
+          <View style={{ width: "31%" }}>
+            <StatModule label="WORKOUTS" value={workoutHistory.length} accent="green" size="sm" />
+          </View>
+          <View style={{ width: "31%" }}>
+            <StatModule
+              label="STREAK"
+              value={streakData.currentStreak}
+              accent={streakData.currentStreak >= 3 ? "green" : "amber"}
+              size="sm"
+              subValue={`Best: ${streakData.longestStreak}`}
+            />
+          </View>
         </View>
 
         {/* Exercise Progression */}
         {progressionSummary.exercisesInProgress.length > 0 && (
           <>
-            <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 11, fontWeight: "bold", color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 1, marginTop: 8, marginBottom: 12 }}>EXERCISE PROGRESSION</Text>
+            <Text
+              style={{
+                ...typography.subtitle,
+                color: colors.text.secondary,
+                fontSize: 11,
+                marginTop: spacing[2],
+                marginBottom: spacing[3],
+              }}
+            >
+              EXERCISE PROGRESSION
+            </Text>
             {progressionSummary.exercisesReady.length > 0 && (
-              <View style={{ backgroundColor: colors.bg.surface, borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.success }}>
-                <Text style={{ fontFamily: fonts.body.bold, fontSize: 10, fontWeight: "bold", color: colors.success, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>
-                  READY TO PROGRESS ({progressionSummary.exercisesReady.length})
-                </Text>
+              <SegmentedPanel
+                title={`READY TO PROGRESS (${progressionSummary.exercisesReady.length})`}
+                accent="green"
+                style={{ marginBottom: spacing[2] }}
+              >
                 {progressionSummary.exercisesReady.map((ex) => (
-                  <View key={ex.exerciseId} style={{ paddingVertical: 8 }}>
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                      <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 11, color: colors.text.primary, flex: 1 }}>{ex.exerciseName}</Text>
-                      <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 9, color: colors.success }}>{ex.highEndPercentage}% UPPER RANGE</Text>
+                  <View key={ex.exerciseId}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={{
+                            ...typography.bodySmall,
+                            color: colors.text.primary,
+                            fontFamily: fonts.body.semiBold,
+                            fontSize: 11,
+                          }}
+                        >
+                          {ex.exerciseName}
+                        </Text>
+                        <Text
+                          style={{
+                            ...typography.bodySmall,
+                            color: colors.text.secondary,
+                            fontSize: 9,
+                            marginTop: 2,
+                          }}
+                        >
+                          Avg {ex.averageReps} reps · {ex.sessionsCompleted} sessions
+                        </Text>
+                      </View>
+                      <View style={{ alignItems: "flex-end", marginLeft: spacing[2] }}>
+                        <Text
+                          style={{
+                            ...typography.label,
+                            color: colors.success,
+                            fontSize: 7,
+                          }}
+                        >
+                          {ex.highEndPercentage}% UPPER RANGE
+                        </Text>
+                        <Text
+                          style={{
+                            ...typography.bodySmall,
+                            color: colors.text.secondary,
+                            fontSize: 8,
+                            marginTop: 2,
+                          }}
+                          numberOfLines={1}
+                        >
+                          Next: {ex.nextProgression.split("→")[0]?.trim() || "Advanced variation"}
+                        </Text>
+                      </View>
                     </View>
-                    <Text style={{ fontFamily: fonts.body.regular, fontSize: 9, color: colors.text.secondary, marginTop: 2 }}>
-                      Avg {ex.averageReps} reps · {ex.sessionsCompleted} sessions
-                    </Text>
-                    <View style={{ height: 1, backgroundColor: colors.border.subtle, marginTop: 8 }} />
+                    <View
+                      style={{
+                        height: 1,
+                        backgroundColor: colors.border.subtle,
+                        marginVertical: spacing[1],
+                      }}
+                    />
                   </View>
                 ))}
-              </View>
+              </SegmentedPanel>
             )}
-            <View style={{ backgroundColor: colors.bg.surface, borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.border.subtle }}>
-              <Text style={{ fontFamily: fonts.body.bold, fontSize: 10, fontWeight: "bold", color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>IN PROGRESS</Text>
+            <SegmentedPanel title="IN PROGRESS" accent="none" style={{ marginBottom: spacing[2] }}>
               {progressionSummary.exercisesInProgress.slice(0, 8).map((ex, i, arr) => (
                 <View key={ex.exerciseId}>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                    <Text style={{ fontFamily: fonts.body.regular, fontSize: 11, color: colors.text.primary }}>{ex.exerciseName}</Text>
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                      <Text style={{ fontFamily: fonts.body.regular, fontSize: 9, color: colors.text.secondary }}>Rep range: {ex.repRange[0]}-{ex.repRange[1]}</Text>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        ...typography.bodySmall,
+                        color: colors.text.primary,
+                        fontSize: 11,
+                      }}
+                    >
+                      {ex.exerciseName}
+                    </Text>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: spacing[1],
+                      }}
+                    >
+                      <Text
+                        style={{
+                          ...typography.bodySmall,
+                          color: colors.text.secondary,
+                          fontSize: 9,
+                        }}
+                      >
+                        Rep range: {ex.repRange[0]}-{ex.repRange[1]}
+                      </Text>
                       {ex.recentTrend !== "unknown" && (
-                        <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 7, color: ex.recentTrend === "up" ? colors.success : ex.recentTrend === "down" ? colors.error : colors.text.secondary }}>
+                        <Text
+                          style={{
+                            ...typography.label,
+                            fontSize: 7,
+                            color:
+                              ex.recentTrend === "up"
+                                ? colors.success
+                                : ex.recentTrend === "down"
+                                  ? colors.error
+                                  : colors.text.secondary,
+                          }}
+                        >
                           {ex.recentTrend === "up" ? "▲" : ex.recentTrend === "down" ? "▼" : "◆"}
                         </Text>
                       )}
                     </View>
                   </View>
-                  {i < arr.length - 1 && <View style={{ height: 1, backgroundColor: colors.border.subtle, marginVertical: 8 }} />}
+                  {i < arr.length - 1 && (
+                    <View
+                      style={{
+                        height: 1,
+                        backgroundColor: colors.border.subtle,
+                        marginVertical: spacing[1],
+                      }}
+                    />
+                  )}
                 </View>
               ))}
-            </View>
+            </SegmentedPanel>
           </>
         )}
 
+        {/* Recent Activity */}
+        <SegmentedPanel title="RECENT ACTIVITY" accent="none" style={{ marginTop: spacing[2] }}>
+          {workoutHistory.length === 0 ? (
+            <Text
+              style={{
+                ...typography.bodySmall,
+                color: colors.text.secondary,
+                fontSize: 12,
+                textAlign: "center",
+                padding: spacing[4],
+              }}
+            >
+              No workouts recorded yet. Complete your first training session to see activity here.
+            </Text>
+          ) : (
+            <View style={{ gap: spacing[2] }}>
+              {[...workoutHistory]
+                .reverse()
+                .slice(0, 5)
+                .map((session) => (
+                  <View
+                    key={session.id}
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      backgroundColor: colors.bg.primary,
+                      padding: spacing[2],
+                      borderWidth: 1,
+                      borderColor: colors.border.subtle,
+                      borderRadius: 4,
+                    }}
+                  >
+                    <View>
+                      <Text
+                        style={{
+                          ...typography.bodySmall,
+                          color: colors.text.primary,
+                          fontSize: 11,
+                          fontFamily: fonts.body.semiBold,
+                        }}
+                      >
+                        {session.workoutId.toUpperCase()}
+                      </Text>
+                      <Text
+                        style={{
+                          ...typography.bodySmall,
+                          color: colors.text.secondary,
+                          fontSize: 9,
+                        }}
+                      >
+                        {session.date}
+                      </Text>
+                    </View>
+                    <Text
+                      style={{
+                        ...typography.bodySmall,
+                        color: colors.accent.DEFAULT,
+                        fontSize: 11,
+                      }}
+                    >
+                      +{session.xpEarned} XP
+                    </Text>
+                  </View>
+                ))}
+            </View>
+          )}
+        </SegmentedPanel>
+
         {/* Achievements */}
-        <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 11, fontWeight: "bold", color: colors.text.secondary, textTransform: "uppercase", letterSpacing: 1, marginTop: 8, marginBottom: 12 }}>ACHIEVEMENTS</Text>
+        <Text
+          style={{
+            ...typography.subtitle,
+            color: colors.text.secondary,
+            fontSize: 11,
+            marginTop: spacing[2],
+            marginBottom: spacing[3],
+          }}
+        >
+          ACHIEVEMENTS
+        </Text>
+
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[2] }}>
-          {achievements.map((a) => (
-            <View key={a.id} style={{ width: "31%", backgroundColor: a.unlocked ? `${colors.success}15` : colors.bg.surface, borderWidth: 1, borderColor: a.unlocked ? colors.success : colors.border.subtle, borderRadius: 8, padding: 8, alignItems: "center", opacity: a.unlocked ? 1 : 0.5 }}>
-              <Text style={{ fontSize: 20, marginBottom: 4 }}>{a.unlocked ? a.icon : "○"}</Text>
-              <Text style={{ fontFamily: fonts.body.semiBold, fontSize: 7, color: a.unlocked ? colors.success : colors.text.secondary, textAlign: "center" }} numberOfLines={2}>{a.name.toUpperCase()}</Text>
+          {achievements.map((achievement) => (
+            <View
+              key={achievement.id}
+              style={{
+                width: "31%",
+                backgroundColor: achievement.unlocked ? `${colors.success}15` : colors.bg.elevated,
+                borderWidth: 1,
+                borderColor: achievement.unlocked ? colors.success : colors.border.subtle,
+                borderRadius: 4,
+                padding: spacing[2],
+                alignItems: "center",
+                opacity: achievement.unlocked ? 1 : 0.5,
+              }}
+            >
+              <Text style={{ fontSize: 20, marginBottom: spacing[1] }}>
+                {achievement.unlocked ? achievement.icon : "○"}
+              </Text>
+              <Text
+                style={{
+                  ...typography.label,
+                  color: achievement.unlocked ? colors.success : colors.text.secondary,
+                  fontSize: 7,
+                  textAlign: "center",
+                }}
+                numberOfLines={2}
+              >
+                {achievement.name.toUpperCase()}
+              </Text>
             </View>
           ))}
         </View>
 
         {/* Feedback */}
-        <TouchableOpacity onPress={() => setShowFeedback(true)} activeOpacity={0.7} style={{ flexDirection: "row", alignItems: "center", paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: colors.border.subtle, marginTop: 16 }}>
-          <Text style={{ fontSize: 18, marginRight: 16 }}>💬</Text>
-          <Text style={{ flex: 1, fontFamily: fonts.body.regular, fontSize: 14, color: colors.text.primary }}>Send Feedback / Report Bug</Text>
-          <Text style={{ fontSize: 16, color: colors.text.secondary }}>›</Text>
-        </TouchableOpacity>
+        <SegmentedPanel title="SUPPORT" accent="amber" style={{ marginTop: spacing[4] }}>
+          <TouchableOpacity
+            onPress={handleOpenFeedback}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Send feedback or report a bug"
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingVertical: spacing[2],
+            }}
+          >
+            <Text
+              style={{
+                ...typography.bodySmall,
+                color: colors.text.primary,
+                fontSize: 12,
+              }}
+            >
+              Send Feedback / Report Bug
+            </Text>
+            <Text
+              style={{
+                ...typography.label,
+                color: colors.accent.DEFAULT,
+                fontSize: 9,
+              }}
+            >
+              →
+            </Text>
+          </TouchableOpacity>
+        </SegmentedPanel>
+
+        {/* Feedback Modal */}
         <FeedbackSheet visible={showFeedback} onClose={() => setShowFeedback(false)} />
 
         {/* Storage */}
-        <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: colors.border.subtle }}>
-          <Text style={{ fontSize: 18, marginRight: 16 }}>📹</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: fonts.body.regular, fontSize: 14, color: colors.text.primary }}>Video Cache</Text>
-            <Text style={{ fontFamily: fonts.body.regular, fontSize: 10, color: colors.text.secondary, marginTop: 2 }}>
-              {cachedVideoCount} video{cachedVideoCount !== 1 ? "s" : ""} · {formatBytes(cachedVideoSize)}
-            </Text>
+        <SegmentedPanel title="STORAGE" accent="none" style={{ marginTop: spacing[2] }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingVertical: spacing[2],
+            }}
+          >
+            <View>
+              <Text
+                style={{
+                  ...typography.bodySmall,
+                  color: colors.text.primary,
+                  fontSize: 12,
+                }}
+              >
+                Cached Videos
+              </Text>
+              <Text
+                style={{
+                  ...typography.bodySmall,
+                  color: colors.text.secondary,
+                  fontSize: 9,
+                  marginTop: 2,
+                }}
+              >
+                {cachedVideoCount} video{cachedVideoCount !== 1 ? "s" : ""} · {formatBytes(cachedVideoSize)}
+              </Text>
+            </View>
+            {cachedVideoCount > 0 ? (
+              <TouchableOpacity
+                onPress={handleClearCache}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Clear all cached videos"
+              >
+                <Text
+                  style={{
+                    ...typography.label,
+                    color: colors.error,
+                    fontSize: 9,
+                  }}
+                >
+                  CLEAR
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <Text
+                style={{
+                  ...typography.label,
+                  color: colors.text.tertiary,
+                  fontSize: 8,
+                }}
+              >
+                NONE CACHED
+              </Text>
+            )}
           </View>
-          {cachedVideoCount > 0 ? (
-            <TouchableOpacity onPress={handleClearCache}><Text style={{ fontFamily: fonts.body.bold, fontSize: 9, color: colors.error }}>CLEAR</Text></TouchableOpacity>
-          ) : (
-            <Text style={{ fontFamily: fonts.body.regular, fontSize: 8, color: colors.text.tertiary }}>NONE</Text>
-          )}
-        </View>
+        </SegmentedPanel>
 
-        {/* Privacy */}
-        <TouchableOpacity activeOpacity={0.7} style={{ flexDirection: "row", alignItems: "center", paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: colors.border.subtle }}>
-          <Text style={{ fontSize: 18, marginRight: 16 }}>🔒</Text>
-          <Text style={{ flex: 1, fontFamily: fonts.body.regular, fontSize: 14, color: colors.text.primary }}>Privacy Policy</Text>
-          <Text style={{ fontSize: 16, color: colors.text.secondary }}>›</Text>
-        </TouchableOpacity>
+        {/* Legal */}
+        <SegmentedPanel title="LEGAL" accent="none" style={{ marginTop: spacing[2] }}>
+          <TouchableOpacity
+            onPress={() => router.push("/privacy-policy")}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Privacy Policy"
+            accessibilityHint="Opens privacy policy"
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingVertical: spacing[2],
+            }}
+          >
+            <Text
+              style={{
+                ...typography.bodySmall,
+                color: colors.text.primary,
+                fontSize: 12,
+              }}
+            >
+              Privacy Policy
+            </Text>
+            <Text
+              style={{
+                ...typography.label,
+                color: colors.text.secondary,
+                fontSize: 9,
+              }}
+            >
+              VIEW →
+            </Text>
+          </TouchableOpacity>
+        </SegmentedPanel>
 
         {/* Sign Out */}
         {isAuthenticated && (
-          <TouchableOpacity onPress={handleSignOut} activeOpacity={0.7} style={{ marginTop: 32, borderWidth: 1, borderColor: colors.error, borderRadius: 12, padding: 16, alignItems: "center" }}>
-            <Text style={{ fontFamily: fonts.body.bold, fontSize: 12, fontWeight: "bold", color: colors.error, letterSpacing: 2, textTransform: "uppercase" }}>Sign Out</Text>
+          <TouchableOpacity
+            onPress={handleSignOut}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Sign out of your account"
+            style={{
+              marginTop: spacing[4],
+              borderWidth: 1,
+              borderColor: colors.error,
+              borderRadius: 4,
+              padding: spacing[3],
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                ...typography.label,
+                color: colors.error,
+                fontSize: 10,
+                letterSpacing: 2,
+              }}
+            >
+              SIGN OUT
+            </Text>
           </TouchableOpacity>
         )}
-      </Animated.ScrollView>
+      </ScrollView>
     </SafeAreaView>
   );
 }

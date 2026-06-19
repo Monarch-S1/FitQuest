@@ -500,10 +500,10 @@ function getMuscleStyle(muscle: MuscleProgress | undefined, colors: ReturnType<t
   }
   if (muscle.level >= 3) {
     const intensity = 0.55 + Math.min(muscle.level * 0.08, 0.35);
-    return { color: colors.success, opacity: intensity };
+    return { color: "#10B981", opacity: intensity };
   }
   const intensity = 0.45 + muscle.level * 0.2;
-  return { color: colors.accent.DEFAULT, opacity: Math.min(intensity, 0.9) };
+  return { color: "#F59E0B", opacity: Math.min(intensity, 0.9) };
 }
 
 // ── Component ──────────────────────────────────
@@ -679,7 +679,7 @@ export function BodySilhouette({
             style={{
               width: 10,
               height: 3,
-              backgroundColor: colors.accent.DEFAULT,
+              backgroundColor: "#F59E0B",
               borderRadius: 1,
               opacity: 0.8,
             }}
@@ -693,7 +693,7 @@ export function BodySilhouette({
             style={{
               width: 10,
               height: 3,
-              backgroundColor: colors.success,
+              backgroundColor: "#10B981",
               borderRadius: 1,
               opacity: 0.8,
             }}

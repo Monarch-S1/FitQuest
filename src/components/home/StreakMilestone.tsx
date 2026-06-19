@@ -91,7 +91,7 @@ export function StreakMilestone({ tier, onDismiss }: StreakMilestoneProps) {
         zIndex: 9999,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: `${colors.bg.primary}EB`,
+        backgroundColor: "rgba(8, 10, 15, 0.92)",
       }}
     >
       {/* Background glow */}

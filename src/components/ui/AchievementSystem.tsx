@@ -10,15 +10,12 @@ export interface Achievement {
   xpReward: number;
 }
 
-function getRarityColors(rarity: string, colors: ReturnType<typeof useColors>) {
-  switch (rarity) {
-    case "common": return { bg: `${colors.text.secondary}1A`, border: colors.text.secondary, text: colors.text.secondary };
-    case "rare": return { bg: "rgba(6, 182, 212, 0.1)", border: "#06B6D4", text: "#06B6D4" };
-    case "epic": return { bg: "rgba(168, 85, 247, 0.1)", border: "#A855F7", text: "#A855F7" };
-    case "legendary": return { bg: `${colors.accent.DEFAULT}1A`, border: colors.accent.DEFAULT, text: colors.accent.DEFAULT };
-    default: return { bg: `${colors.text.secondary}1A`, border: colors.text.secondary, text: colors.text.secondary };
-  }
-}
+const RARITY_COLORS: Record<string, { bg: string; border: string; text: string }> = {
+  common: { bg: "rgba(156, 163, 175, 0.1)", border: "#9CA3AF", text: "#9CA3AF" },
+  rare: { bg: "rgba(6, 182, 212, 0.1)", border: "#06B6D4", text: "#06B6D4" },
+  epic: { bg: "rgba(168, 85, 247, 0.1)", border: "#A855F7", text: "#A855F7" },
+  legendary: { bg: "rgba(245, 158, 11, 0.1)", border: "#F59E0B", text: "#F59E0B" },
+};
 
 const ALL_ACHIEVEMENTS: Achievement[] = [
   // Streak achievements
@@ -131,7 +128,7 @@ interface AchievementBadgeProps {
 
 export function AchievementBadge({ achievement, size = "md" }: AchievementBadgeProps) {
   const colors = useColors();
-  const rarity = getRarityColors(achievement.rarity, colors);
+  const rarity = RARITY_COLORS[achievement.rarity];
 
   const sizes = {
     sm: { container: 60, icon: 20, title: 7, desc: 6 },
@@ -191,7 +188,7 @@ interface AchievementUnlockToastProps {
 
 export function AchievementUnlockToast({ achievement }: AchievementUnlockToastProps) {
   const colors = useColors();
-  const rarity = getRarityColors(achievement.rarity, colors);
+  const rarity = RARITY_COLORS[achievement.rarity];
 
   return (
     <View

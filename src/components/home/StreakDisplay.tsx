@@ -30,7 +30,7 @@ export function StreakDisplay({ streak }: StreakDisplayProps) {
           style={{
             width: 40,
             height: 40,
-            backgroundColor: isBurning ? `${colors.accent.DEFAULT}26` : colors.bg.primary,
+            backgroundColor: isBurning ? "rgba(245, 158, 11, 0.15)" : colors.bg.primary,
             alignItems: "center",
             justifyContent: "center",
             borderWidth: 1,
