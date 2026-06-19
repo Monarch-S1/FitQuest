@@ -14,6 +14,11 @@ import { TrainScreenSkeleton } from "../../src/components/ui/Skeleton";
 import { Animated, Easing } from "react-native";
 import { WORKOUT_CLASSES, getUnlockedClasses, getClassUnlockProgress } from "../../src/data/workoutClasses";
 import { GlossyOverlay } from "../../src/components/ui/GlossyOverlay";
+import {
+  checkAllExerciseProgressions,
+  confirmLevelUp,
+  getLevelUpReplacement,
+} from "../../src/utils/doubleProgression";
 
 export default function TrainScreen() {
   const colors = useColors();
@@ -38,6 +43,12 @@ export default function TrainScreen() {
   const storeMasteredIds = useUserStore((state) => state.masteredExerciseIds ?? []);
   const masteredIds = useMemo(() => new Set(storeMasteredIds), [storeMasteredIds]);
 
+  // Double progression — exercises ready to level up
+  const readyToLevelUp = useMemo(
+    () => checkAllExerciseProgressions(workoutHistory).filter((r) => r.canLevelUp),
+    [workoutHistory],
+  );
+
   // Unlocked workout classes based on mastered exercises
   const unlockedClasses = useMemo(
     () => getUnlockedClasses(masteredIds),
@@ -61,6 +72,16 @@ export default function TrainScreen() {
       router.push(`/workout/preview/${workoutId}`);
     },
     [router],
+  );
+
+  const handleLevelUp = useCallback(
+    (exerciseId: string) => {
+      const replacement = getLevelUpReplacement(exerciseId);
+      if (replacement) {
+        confirmLevelUp(exerciseId);
+      }
+    },
+    [],
   );
 
   // Fade-in animation when content loads
@@ -225,6 +246,153 @@ export default function TrainScreen() {
                   </Text>
                 </View>
               </View>
+            ))}
+          </SegmentedPanel>
+        )}
+
+        {/* Double Progression — READY TO LEVEL UP */}
+        {readyToLevelUp.length > 0 && (
+          <SegmentedPanel
+            title={`⬆ ${readyToLevelUp.length} READY TO LEVEL UP`}
+            accent="amber"
+            style={{ marginTop: spacing[2] }}
+          >
+            {readyToLevelUp.map((prog) => (
+              <TouchableOpacity
+                key={prog.exerciseId}
+                activeOpacity={0.85}
+                onPress={() => handleLevelUp(prog.exerciseId)}
+                style={{
+                  backgroundColor: `${colors.accent.DEFAULT}08`,
+                  borderWidth: 1,
+                  borderColor: prog.nextExercise ? `${colors.success}40` : colors.border.subtle,
+                  borderRadius: 4,
+                  padding: spacing[3],
+                  marginBottom: spacing[2],
+                  overflow: "hidden",
+                }}
+              >
+                <GlossyOverlay highlightOpacity={0.08} showReflection={false} />
+                <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[2] }}>
+                  <View
+                    style={{
+                      width: 32,
+                      height: 32,
+                      backgroundColor: `${colors.accent.DEFAULT}15`,
+                      borderRadius: 4,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text style={{ fontSize: 14 }}>⬆</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        ...typography.bodySmall,
+                        color: colors.text.primary,
+                        fontSize: 12,
+                        fontFamily: fonts.body.semiBold,
+                      }}
+                    >
+                      {prog.exerciseName}
+                    </Text>
+                    <Text
+                      style={{
+                        ...typography.bodySmall,
+                        color: colors.text.secondary,
+                        fontSize: 9,
+                        marginTop: 2,
+                      }}
+                    >
+                      {prog.pathwayLabel} · Lv {prog.currentLevel} → {prog.nextExercise ? `Lv ${prog.nextExercise.level}` : "MAX"}
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: "flex-end" }}>
+                    <Text
+                      style={{
+                        ...typography.label,
+                        color: colors.success,
+                        fontSize: 10,
+                      }}
+                    >
+                      {prog.highEndPercentage}%
+                    </Text>
+                    <Text
+                      style={{
+                        ...typography.bodySmall,
+                        color: colors.text.secondary,
+                        fontSize: 7,
+                        marginTop: 1,
+                      }}
+                    >
+                      {prog.averageReps} avg
+                    </Text>
+                  </View>
+                </View>
+                {prog.nextExercise && (
+                  <View
+                    style={{
+                      backgroundColor: `${colors.success}10`,
+                      borderWidth: 1,
+                      borderColor: `${colors.success}25`,
+                      borderRadius: 4,
+                      padding: spacing[2],
+                      marginTop: spacing[2],
+                    }}
+                  >
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[1] }}>
+                      <Text style={{ ...typography.label, color: colors.success, fontSize: 7 }}>
+                        NEXT LEVEL
+                      </Text>
+                      <View
+                        style={{ flex: 1, height: 1, backgroundColor: `${colors.success}20` }}
+                      />
+                    </View>
+                    <Text
+                      style={{
+                        ...typography.bodySmall,
+                        color: colors.text.primary,
+                        fontSize: 11,
+                        marginTop: spacing[0],
+                      }}
+                    >
+                      {prog.nextExercise.name}
+                    </Text>
+                    <Text
+                      style={{
+                        ...typography.bodySmall,
+                        color: colors.text.secondary,
+                        fontSize: 8,
+                        marginTop: 1,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {prog.nextExercise.overloadMechanism}
+                    </Text>
+                    <View
+                      style={{
+                        backgroundColor: colors.success,
+                        borderRadius: 4,
+                        paddingHorizontal: spacing[2],
+                        paddingVertical: spacing[0],
+                        alignSelf: "flex-start",
+                        marginTop: spacing[1],
+                      }}
+                    >
+                      <Text
+                        style={{
+                          ...typography.label,
+                          color: colors.bg.primary,
+                          fontSize: 7,
+                        }}
+                      >
+                        TAP TO LEVEL UP →
+                      </Text>
+                    </View>
+                  </View>
+                )}
+              </TouchableOpacity>
             ))}
           </SegmentedPanel>
         )}

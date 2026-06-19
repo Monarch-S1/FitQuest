@@ -15,6 +15,7 @@ import { useUserStore } from "../../src/stores/useUserStore";
 import { getWorkoutByIdForGoal } from "../../src/data/workouts";
 import { calculateWorkoutXp } from "../../src/utils/xp";
 import { extractCompletedIds, findNewUnlocks } from "../../src/utils/skillUnlocks";
+import { detectNewMastery } from "../../src/utils/doubleProgression";
 import { playLevelUpSound } from "../../src/services/levelUpSound";
 import { GlossyOverlay } from "../../src/components/ui/GlossyOverlay";
 
@@ -193,10 +194,17 @@ export default function WorkoutPlayerScreen() {
       addWorkoutSession(session);
 
       // Compute newly unlocked skill tree exercises and classes by diffing pre vs post
-      const freshState = useUserStore.getState();
-      const newCompleted = extractCompletedIds(freshState.workoutHistory);
+      const freshState = useUserStore.getState();      // Auto-detect mastered exercises (double progression) and mark them
+      const newMasteryIds = detectNewMastery(freshState.workoutHistory, session);
+      if (newMasteryIds.length > 0) {
+        freshState.markMastered(newMasteryIds);
+      }
+
+      // Re-read state after mastery marking so postMastered includes freshly marked
+      const postMarkState = useUserStore.getState();
+      const newCompleted = extractCompletedIds(postMarkState.workoutHistory);
       const preMastered = new Set(userStore.masteredExerciseIds ?? []);
-      const postMastered = new Set(freshState.masteredExerciseIds ?? []);
+      const postMastered = new Set(postMarkState.masteredExerciseIds ?? []);
       const unlocks = findNewUnlocks(preWorkoutCompletedRef.current, newCompleted, preMastered, postMastered);
       if (unlocks.skillUnlocks.length > 0 || unlocks.classUnlocks.length > 0) {
         setNewSkillUnlocks(unlocks.skillUnlocks);
