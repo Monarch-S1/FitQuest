@@ -117,6 +117,14 @@ export default function RootLayout() {
               presentation: "fullScreenModal",
             }}
           />
+          {/* Skill Tree */}
+          <Stack.Screen
+            name="skills/skill-tree"
+            options={{
+              animation: "slide_from_right",
+              presentation: "fullScreenModal",
+            }}
+          />
         </Stack>
       </ErrorBoundary>
     </>

@@ -250,64 +250,133 @@ export default function TrainScreen() {
           />
         ))}
 
-        {/* Exercise Library Link */}
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={() => router.push("/exercises/catalog")}
-          accessibilityRole="button"
-          accessibilityLabel="Skills Library"
-          accessibilityHint="Browse all exercises by muscle group"
-          style={{
-            backgroundColor: colors.bg.elevated,
-            borderWidth: 1.5,
-            borderColor: colors.border.subtle,
-            borderRadius: 4,
-            borderStyle: "dashed",
-            padding: spacing[4],
-            marginBottom: spacing[3],
-            alignItems: "center",
-          }}
-        >
-          <Text
+        {/* Skills Library + Skill Tree row */}
+        <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: spacing[3] }}>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => router.push("/exercises/catalog")}
+            accessibilityRole="button"
+            accessibilityLabel="Skills Library"
+            accessibilityHint="Browse all exercises by muscle group"
             style={{
-              ...typography.h4,
-              color: colors.accent.DEFAULT,
-              fontSize: 18,
-              marginBottom: spacing[1],
-            }}
-          >
-            SKILLS LIBRARY
-          </Text>
-          <Text
-            style={{
-              ...typography.bodySmall,
-              color: colors.text.secondary,
-              fontSize: 11,
-              textAlign: "center",
-            }}
-          >
-            Browse all skills by muscle group · View form details · Track progression
-          </Text>
-          <View
-            style={{
-              marginTop: spacing[2],
-              backgroundColor: colors.accent.DEFAULT,
+              flex: 1,
+              backgroundColor: colors.bg.elevated,
+              borderWidth: 1.5,
+              borderColor: colors.border.subtle,
               borderRadius: 4,
-              paddingHorizontal: spacing[3],
-              paddingVertical: spacing[1],
+              borderStyle: "dashed",
+              padding: spacing[3],
+              alignItems: "center",
             }}
           >
             <Text
               style={{
-                ...typography.label,
-                color: colors.bg.primary,
-                fontSize: 9,
+                ...typography.h4,
+                color: colors.accent.DEFAULT,
+                fontSize: 16,
+                marginBottom: spacing[1],
               }}
             >
-              BROWSE →
+              SKILLS LIBRARY
             </Text>
-          </View>
-        </TouchableOpacity>
+            <Text
+              style={{
+                ...typography.bodySmall,
+                color: colors.text.secondary,
+                fontSize: 9,
+                textAlign: "center",
+              }}
+            >
+              Browse all skills by muscle group
+            </Text>
+            <View
+              style={{
+                marginTop: spacing[2],
+                backgroundColor: colors.accent.DEFAULT,
+                borderRadius: 4,
+                paddingHorizontal: spacing[2],
+                paddingVertical: spacing[0],
+              }}
+            >
+              <Text
+                style={{
+                  ...typography.label,
+                  color: colors.bg.primary,
+                  fontSize: 8,
+                }}
+              >
+                BROWSE →
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => router.push("/skills/skill-tree")}
+            accessibilityRole="button"
+            accessibilityLabel="Skill Tree"
+            accessibilityHint="View exercise progression tree and unlock path"
+            style={{
+              flex: 1,
+              backgroundColor: `${colors.success}08`,
+              borderWidth: 1.5,
+              borderColor: `${colors.success}40`,
+              borderRadius: 4,
+              padding: spacing[3],
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: "BebasNeue-Regular",
+                fontSize: 24,
+                color: colors.success,
+                marginBottom: spacing[1],
+              }}
+            >
+              ⬆ ⬇ ⬍ ◈
+            </Text>
+            <Text
+              style={{
+                ...typography.h4,
+                color: colors.success,
+                fontSize: 16,
+                marginBottom: spacing[1],
+              }}
+            >
+              SKILL TREE
+            </Text>
+            <Text
+              style={{
+                ...typography.bodySmall,
+                color: colors.text.secondary,
+                fontSize: 9,
+                textAlign: "center",
+              }}
+            >
+              Movement families & progression
+            </Text>
+            <View
+              style={{
+                marginTop: spacing[2],
+                backgroundColor: colors.success,
+                borderRadius: 4,
+                paddingHorizontal: spacing[2],
+                paddingVertical: spacing[0],
+              }}
+            >
+              <Text
+                style={{
+                  ...typography.label,
+                  color: colors.bg.primary,
+                  fontSize: 8,
+                }}
+              >
+                VIEW →
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
 
         {/* Program Info */}
         <SegmentedPanel title="QUEST INFO" accent="none">
@@ -334,7 +403,7 @@ export default function TrainScreen() {
             Each exercise has built-in progression pathways. Start at the level that matches your
             current capability and progress when you hit the upper rep range with perfect form.
           </Text>
-          <View style={{ flexDirection: "row", gap: spacing[2] }}>
+          <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: spacing[3] }}>
             {["BEGINNER", "INTERMEDIATE", "ADVANCED"].map((level) => (
               <View
                 key={level}
@@ -361,6 +430,35 @@ export default function TrainScreen() {
               </View>
             ))}
           </View>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => router.push("/skills/skill-tree")}
+            accessibilityRole="button"
+            accessibilityLabel="Open Skill Tree"
+            style={{
+              backgroundColor: `${colors.accent.DEFAULT}10`,
+              borderWidth: 1,
+              borderColor: colors.accent.DEFAULT,
+              borderRadius: 4,
+              padding: spacing[3],
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: spacing[2],
+            }}
+          >
+            <Text style={{ fontSize: 16 }}>🌳</Text>
+            <Text
+              style={{
+                ...typography.label,
+                color: colors.accent.DEFAULT,
+                fontSize: 10,
+                letterSpacing: 1,
+              }}
+            >
+              VIEW FULL SKILL TREE
+            </Text>
+          </TouchableOpacity>
         </SegmentedPanel>
       </Animated.ScrollView>
     </SafeAreaView>

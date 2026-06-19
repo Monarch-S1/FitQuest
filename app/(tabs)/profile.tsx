@@ -805,6 +805,66 @@ export default function ProfileScreen() {
           )}
         </SegmentedPanel>
 
+        {/* Skill Tree shortcut */}
+        <SegmentedPanel title="SKILL PROGRESSION" accent="green" style={{ marginTop: spacing[2] }}>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => router.push("/skills/skill-tree")}
+            accessibilityRole="button"
+            accessibilityLabel="Open Skill Tree"
+            style={{
+              backgroundColor: `${colors.success}10`,
+              borderWidth: 1,
+              borderColor: `${colors.success}30`,
+              borderRadius: 4,
+              padding: spacing[3],
+              flexDirection: "row",
+              alignItems: "center",
+              gap: spacing[3],
+            }}
+          >
+            <View
+              style={{
+                width: 40,
+                height: 40,
+                backgroundColor: `${colors.success}15`,
+                borderWidth: 1,
+                borderColor: colors.success,
+                borderRadius: 4,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text style={{ fontSize: 20, color: colors.success }}>⬆</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  ...typography.label,
+                  color: colors.success,
+                  fontSize: 10,
+                  marginBottom: 2,
+                }}
+              >
+                SKILL TREE
+              </Text>
+              <Text
+                style={{
+                  ...typography.bodySmall,
+                  color: colors.text.secondary,
+                  fontSize: 9,
+                  lineHeight: 14,
+                }}
+              >
+                Track your movement progression · Push · Pull · Legs · Core
+              </Text>
+            </View>
+            <Text style={{ ...typography.label, color: colors.success, fontSize: 10 }}>
+              VIEW →
+            </Text>
+          </TouchableOpacity>
+        </SegmentedPanel>
+
         {/* Achievements */}
         <Text
           style={{
