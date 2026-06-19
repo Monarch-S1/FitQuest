@@ -5,14 +5,16 @@ import { Button } from "../ui/Button";
 
 interface SkillDetailSheetProps {
   node: SkillNode;
+  nodeState?: string;
   onClose: () => void;
 }
 
-export function SkillDetailSheet({ node, onClose }: SkillDetailSheetProps) {
+export function SkillDetailSheet({ node, nodeState, onClose }: SkillDetailSheetProps) {
   const colors = useColors();
 
   const { exercise } = node;
   const hasCheckpoints = exercise.visualGuide?.checkpoints?.length;
+  const state = nodeState ?? "locked";
 
   return (
     <ScrollView
@@ -48,17 +50,53 @@ export function SkillDetailSheet({ node, onClose }: SkillDetailSheetProps) {
                 marginBottom: spacing[1],
               }}
             >
-              {node.family.toUpperCase()} · {node.difficulty.toUpperCase()}
+              {node.family.toUpperCase()} · {node.pathwayId.toUpperCase()} Lv{node.pathwayLevel} · {node.difficulty.toUpperCase()}
             </Text>
-            <Text
-              style={{
-                ...typography.h2,
-                color: colors.text.primary,
-                fontSize: 22,
-              }}
-            >
-              {exercise.name.toUpperCase()}
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[2] }}>
+              <Text
+                style={{
+                  ...typography.h2,
+                  color: colors.text.primary,
+                  fontSize: 22,
+                  flex: 1,
+                }}
+              >
+                {exercise.name.toUpperCase()}
+              </Text>
+              <View
+                style={{
+                  backgroundColor:
+                    state === "mastered" ? `${colors.success}20` :
+                    state === "active" ? `${node.accent}20` :
+                    `${node.accent}10`,
+                  borderWidth: 1,
+                  borderColor:
+                    state === "mastered" ? colors.success :
+                    state === "active" ? node.accent :
+                    `${node.accent}30`,
+                  borderRadius: 4,
+                  paddingHorizontal: spacing[2],
+                  paddingVertical: spacing[0],
+                }}
+              >
+                <Text
+                  style={{
+                    ...typography.label,
+                    color:
+                      state === "mastered" ? colors.success :
+                      state === "active" ? node.accent :
+                      node.accent,
+                    fontSize: 8,
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  {state === "mastered" ? "★ MASTERED" :
+                   state === "active" ? "◆ ACTIVE" :
+                   state === "unlocked" ? "▷ UNLOCKED" :
+                   "◆ LOCKED"}
+                </Text>
+              </View>
+            </View>
           </View>
           <Button title="CLOSE" onPress={onClose} variant="secondary" size="sm" />
         </View>
@@ -253,9 +291,7 @@ export function SkillDetailSheet({ node, onClose }: SkillDetailSheetProps) {
             );
           })}
         </View>
-      )}
-
-      {/* Progression Pathway */}
+      )}        {/* Progression Pathway */}
       <View style={{ padding: spacing[4] }}>
         <Text
           style={{
@@ -270,13 +306,86 @@ export function SkillDetailSheet({ node, onClose }: SkillDetailSheetProps) {
         <View
           style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[1], alignItems: "center" }}
         >
-          {node.progressionPath.map((step, idx) => (
-            <View key={idx} style={{ flexDirection: "row", alignItems: "center", gap: spacing[1] }}>
+          {/* Pathway level progression */}
+          <View
+            style={{
+              backgroundColor: `${node.accent}15`,
+              borderWidth: 1,
+              borderColor: `${node.accent}30`,
+              borderRadius: 4,
+              paddingHorizontal: spacing[2],
+              paddingVertical: spacing[1],
+            }}
+          >
+            <Text
+              style={{
+                ...typography.bodySmall,
+                color: node.accent,
+                fontSize: 9,
+                letterSpacing: 0.3,
+              }}
+            >
+              Lv {Math.max(1, node.pathwayLevel - 1)} → Lv {node.pathwayLevel} → Lv {Math.min(12, node.pathwayLevel + 1)}
+            </Text>
+          </View>
+        </View>
+
+        {/* Overload mechanism */}
+        {exercise.overloadMechanism && (
+          <View
+            style={{
+              marginTop: spacing[2],
+              backgroundColor: `${node.accent}08`,
+              borderLeftWidth: 2,
+              borderLeftColor: node.accent,
+              padding: spacing[2],
+            }}
+          >
+            <Text
+              style={{
+                ...typography.bodySmall,
+                color: node.accent,
+                fontSize: 9,
+                marginBottom: 2,
+              }}
+            >
+              OVERLOAD MECHANISM
+            </Text>
+            <Text
+              style={{
+                ...typography.bodySmall,
+                color: colors.text.secondary,
+                fontSize: 10,
+                lineHeight: 16,
+              }}
+            >
+              {exercise.overloadMechanism}
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* Hard prerequisites */}
+      {node.hardPrerequisites.length > 0 && (
+        <View style={{ paddingHorizontal: spacing[4], paddingBottom: spacing[3] }}>
+          <Text
+            style={{
+              ...typography.label,
+              color: colors.accent.DEFAULT,
+              fontSize: 9,
+              marginBottom: spacing[2],
+            }}
+          >
+            REQUIRED TO UNLOCK
+          </Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[1] }}>
+            {node.hardPrerequisites.map((prereqId) => (
               <View
+                key={prereqId}
                 style={{
-                  backgroundColor: `${node.accent}15`,
+                  backgroundColor: `${colors.warning ?? "#F59E0B"}15`,
                   borderWidth: 1,
-                  borderColor: `${node.accent}30`,
+                  borderColor: `${colors.warning ?? "#F59E0B"}30`,
                   borderRadius: 4,
                   paddingHorizontal: spacing[2],
                   paddingVertical: spacing[1],
@@ -285,21 +394,17 @@ export function SkillDetailSheet({ node, onClose }: SkillDetailSheetProps) {
                 <Text
                   style={{
                     ...typography.bodySmall,
-                    color: node.accent,
+                    color: colors.warning ?? "#F59E0B",
                     fontSize: 9,
-                    letterSpacing: 0.3,
                   }}
                 >
-                  {step}
+                  {prereqId}
                 </Text>
               </View>
-              {idx < node.progressionPath.length - 1 && (
-                <Text style={{ color: colors.text.secondary, fontSize: 10, opacity: 0.4 }}>→</Text>
-              )}
-            </View>
-          ))}
+            ))}
+          </View>
         </View>
-      </View>
+      )}
 
       {/* Bottom spacer */}
       <View style={{ height: spacing[6] }} />

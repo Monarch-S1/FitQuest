@@ -1,211 +1,204 @@
-import {
-  Exercise,
-  MovementCategory,
-  DifficultyTier,
-  workoutA,
-  workoutB,
-  workoutC,
-  workoutD,
-} from "./exercises";
+/**
+ * Skill Tree Data Model — 8-Branch Version
+ *
+ * Organizes all 96 exercises into 8 movement pathways
+ * (HP, VP, HPLL, VPLL, AQL, HPL, AC, PLC) with
+ * node states: LOCKED → UNLOCKED → ACTIVE → MASTERED
+ */
 
-export type { DifficultyTier } from "./exercises";
+import type { DifficultyTier } from "./exercises";
+import { ALL_EXERCISES_96, Exercise96 } from "./exercises96";
+import { PATHWAYS, PathwayId, PATHWAY_LIST, levelToDifficulty } from "./pathways";
 
-// ──────────────────────────────────────────────
-// Skill Tree Data Model
-// Organizes all 24 exercises into movement families
-// with difficulty tiers and progression chains
-// ──────────────────────────────────────────────
+export type { DifficultyTier };
 
-export type MovementFamily = "push" | "pull" | "legs" | "core";
+// ─── Node state (RPG progression) ──────────────
+
+export type NodeState = "locked" | "unlocked" | "active" | "mastered";
+
+// ─── Skill node ─────────────────────────────────
 
 export interface SkillNode {
-  exercise: Exercise;
+  exercise: Exercise96;
+  pathwayId: PathwayId;
+  pathwayLevel: number; // 1-12
   difficulty: DifficultyTier;
-  family: MovementFamily;
-  /** Human-readable progression path from this exercise */
+  family: string; // parent family: "push" | "pull" | "legs" | "core"
   progressionPath: string[];
-  /** IDs of prerequisite exercises (must complete before this unlocks) */
+  /** Cross-pathway prerequisites (e.g., AC5 before HP8) */
   prerequisites: string[];
-  /** Color accent for the family */
+  /** Hard prerequisites that must be mastered, not just completed */
+  hardPrerequisites: string[];
   accent: string;
+  /** Default state before any user data is applied */
+  defaultState: NodeState;
 }
 
+// ─── Skill branch (one pathway) ────────────────
+
 export interface SkillBranch {
-  family: MovementFamily;
+  id: PathwayId;
   label: string;
   icon: string;
   description: string;
   accent: string;
+  parentFamily: string;
   nodes: SkillNode[];
 }
 
-// ── Family config ──────────────────────────────
+// ─── Build 8-branch skill tree ─────────────────
 
-const FAMILY_CONFIG: Record<
-  MovementFamily,
-  { label: string; icon: string; description: string; accent: string }
-> = {
-  push: {
-    label: "PUSH",
-    icon: "⬆",
-    description: "Horizontal & vertical pressing, elbow extension",
-    accent: "#EF4444",
-  },
-  pull: {
-    label: "PULL",
-    icon: "⬇",
-    description: "Horizontal & vertical pulling, elbow flexion",
-    accent: "#3B82F6",
-  },
-  legs: {
-    label: "LEGS",
-    icon: "⬍",
-    description: "Squatting, hinging, lunging & explosive power",
-    accent: "#10B981",
-  },
-  core: {
-    label: "CORE",
-    icon: "◈",
-    description: "Isometric holds, dynamic stability & scapular control",
-    accent: "#F59E0B",
-  },
-};
-
-// ── Category → Family mapping ──────────────────
-
-function categoryToFamily(cat: MovementCategory): MovementFamily {
-  if (
-    cat === "horizontal_push" ||
-    cat === "vertical_push" ||
-    cat === "elbow_extension" ||
-    cat === "horizontal_adduction"
-  )
-    return "push";
-  if (
-    cat === "horizontal_pull" ||
-    cat === "vertical_pull" ||
-    cat === "elbow_flexion" ||
-    cat === "unilateral_horizontal_pull"
-  )
-    return "pull";
-  if (
-    cat === "unilateral_lower_push" ||
-    cat === "closed_chain_lower_pull" ||
-    cat === "lower_body_pull" ||
-    cat === "lateral_mobility"
-  )
-    return "legs";
-  if (cat === "core_isometric" || cat === "dynamic_core" || cat === "scapular_mobility")
-    return "core";
-  return "core"; // fallback
-}
-
-// ── Difficulty resolution: uses exercise.difficulty if set, falls back to heuristic ──
-
-function resolveDifficulty(exercise: Exercise): DifficultyTier {
-  if (exercise.difficulty) return exercise.difficulty;
-
-  // Fallback heuristic for exercises without explicit difficulty
-  const name = exercise.name.toLowerCase();
-  const [low] = exercise.repRange;
-
-  // Advanced moves
-  if (
-    name.includes("archer") ||
-    name.includes("dragon flag") ||
-    name.includes("l-sit") ||
-    name.includes("pike")
-  ) {
-    return "advanced";
-  }
-
-  // Beginner-friendly indicators
-  if (
-    name.includes("dead bug") ||
-    name.includes("prone") ||
-    name.includes("glute bridge") ||
-    name.includes("reverse plank") ||
-    name.includes("hollow body") ||
-    low <= 6
-  ) {
-    return "beginner";
-  }
-
-  // Intermediate
-  return "intermediate";
-}
-
-// ── Parse progression pathway into steps ──────
-
-function parsePathway(pathway: string): string[] {
-  return pathway
-    .split("→")
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
-
-// ── Build full skill tree ─────────────────────
-
-const ALL_EXERCISES = [
-  ...workoutA.exercises,
-  ...workoutB.exercises,
-  ...workoutC.exercises,
-  ...workoutD.exercises,
-];
-
-export function buildSkillTree(): SkillBranch[] {
-  const grouped: Record<MovementFamily, SkillNode[]> = {
-    push: [],
-    pull: [],
-    legs: [],
-    core: [],
+function buildEightBranchTree(): SkillBranch[] {
+  const groups: Record<PathwayId, SkillNode[]> = {
+    hp: [], vp: [], hpll: [], vpll: [],
+    aql: [], hpl: [], ac: [], plc: [],
   };
 
-  // Prerequisite mapping: some exercises depend on easier versions
-  const prereqMap: Record<string, string[]> = {
-    "decline-pike-push-up": ["decline-push-up"],
-    "archer-push-up-progression": ["decline-push-up"],
-    "one-arm-towel-row": ["doorway-row"],
-    "doorframe-pull-up-negative": ["table-row"],
-    "dragon-flag-progression": ["hollow-body-hold"],
-    "l-sit-progression": ["hollow-body-hold", "reverse-plank"],
-    "single-leg-glute-bridge": ["glute-bridge-march"],
-    "cossack-squat": ["bulgarian-split-squat"],
-    "nordic-hamstring-curl": ["sliding-hamstring-curl"],
+  // Cross-pathway hard prerequisites (must be mastered to unlock)
+  const hardPrereqs: Record<string, string[]> = {
+    HP10: ["HP8"],       // Archer needs Pseudo-Planche
+    VP10: ["VP7", "AC5"], // Back-to-Wall HSPU needs Handstand Hold + Hollow Body
+    VP11: ["VP10"],      // Chest-to-Wall needs Back-to-Wall
+    VP12: ["VP11"],      // Freestanding needs Chest-to-Wall
+    AC12: ["AC11"],      // Full Dragon Flag needs Straight-Leg negative
+    HPLL10: ["HPLL8"],   // One-arm towel row needs double-arm towel row
+    VPLL11: ["VPLL10"],  // Strict pull-up needs negative
+    VPLL12: ["VPLL11"],  // L-sit pull-up needs strict pull-up
+    AQL12: ["AQL9"],     // Pistol squat needs assisted pistol
+    HPL12: ["HPL11"],    // Unassisted Nordic needs assisted
   };
 
-  for (const exercise of ALL_EXERCISES) {
-    const family = categoryToFamily(exercise.category);
-    const difficulty = resolveDifficulty(exercise);
+  for (const exercise of ALL_EXERCISES_96) {
+    const pathway = PATHWAYS[exercise.pathwayId];
+    const level = exercise.pathwayLevel;
+    const difficulty = levelToDifficulty(level);
 
-    grouped[family].push({
+    groups[exercise.pathwayId].push({
       exercise,
+      pathwayId: exercise.pathwayId,
+      pathwayLevel: level,
       difficulty,
-      family,
-      progressionPath: parsePathway(exercise.progressionPathway),
-      prerequisites: prereqMap[exercise.id] || [],
-      accent: FAMILY_CONFIG[family].accent,
+      family: pathway.parentFamily,
+      progressionPath: [`Level ${level} → Level ${Math.min(level + 1, 12)}`],
+      prerequisites: [],
+      hardPrerequisites: hardPrereqs[exercise.id] ?? [],
+      accent: pathway.accent,
+      defaultState: level <= 1 ? "unlocked" : "locked",
     });
   }
 
-  // Sort within each family: beginner → intermediate → advanced
-  const tierOrder: Record<DifficultyTier, number> = {
-    beginner: 0,
-    intermediate: 1,
-    advanced: 2,
-  };
-
-  for (const family of Object.keys(grouped) as MovementFamily[]) {
-    grouped[family].sort((a, b) => tierOrder[a.difficulty] - tierOrder[b.difficulty]);
+  // Sort each pathway by level
+  for (const id of Object.keys(groups) as PathwayId[]) {
+    groups[id].sort((a, b) => a.pathwayLevel - b.pathwayLevel);
   }
 
-  return (
-    Object.entries(FAMILY_CONFIG) as [MovementFamily, (typeof FAMILY_CONFIG)[MovementFamily]][]
-  ).map(([family, config]) => ({
-    family,
-    ...config,
-    nodes: grouped[family],
+  return PATHWAY_LIST.map((config) => ({
+    id: config.id,
+    label: config.label,
+    icon: config.icon,
+    description: config.description,
+    accent: config.accent,
+    parentFamily: config.parentFamily,
+    nodes: groups[config.id],
   }));
 }
 
-export const SKILL_TREE = buildSkillTree();
+export const SKILL_TREE_8 = buildEightBranchTree();
+
+// ─── Legacy compatibility ──────────────────────
+// Re-export SKILL_TREE so existing imports and tests still work.
+// The old tree used 4 families; the new one uses 8 pathways.
+
+export const SKILL_TREE = SKILL_TREE_8;
+
+import { LEGACY_TO_PATHWAY } from "./exercises96";
+
+/** Map a legacy exercise ID to its SkillNode in the new tree */
+export function findNodeByLegacyId(legacyId: string): SkillNode | undefined {
+  const pathwayId = LEGACY_TO_PATHWAY[legacyId];
+  if (!pathwayId || pathwayId === "supplementary") return undefined;
+  for (const branch of SKILL_TREE_8) {
+    const found = branch.nodes.find((n) => n.exercise.id === pathwayId);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+/** Map a pathway exercise ID (e.g. "HP6") to its node */
+export function findNodeById(id: string): SkillNode | undefined {
+  for (const branch of SKILL_TREE_8) {
+    const found = branch.nodes.find((n) => n.exercise.id === id);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+// ─── Node state computation ────────────────────
+
+/**
+ * Compute the state of every node in the tree based on:
+ * - completedIds: exercises that have been done at least once
+ * - masteredIds: exercises that have met the upper rep range target
+ */
+export function computeNodeStates(
+  completedIds: Set<string>,
+  masteredIds: Set<string>,
+): Map<string, NodeState> {
+  const states = new Map<string, NodeState>();
+
+  for (const branch of SKILL_TREE_8) {
+    for (const node of branch.nodes) {
+      const id = node.exercise.id;
+      const masterId = id; // use pathway ID (e.g. "HP6")
+
+      if (masteredIds.has(masterId)) {
+        states.set(id, "mastered");
+      } else if (completedIds.has(masterId)) {
+        states.set(id, "active");
+      } else {
+        states.set(id, "locked");
+      }
+    }
+  }
+
+  // Auto-unlock: Level 1 of every pathway is always unlocked
+  for (const branch of SKILL_TREE_8) {
+    const firstNode = branch.nodes[0];
+    if (firstNode && states.get(firstNode.exercise.id) === "locked") {
+      states.set(firstNode.exercise.id, "unlocked");
+    }
+  }
+
+  // Pathway-level unlock: if any exercise in a pathway is completed,
+  // the entire pathway unlocks (but doesn't become active/mastered)
+  for (const branch of SKILL_TREE_8) {
+    const anyCompleted = branch.nodes.some((n) =>
+      completedIds.has(n.exercise.id) || masteredIds.has(n.exercise.id),
+    );
+    if (anyCompleted) {
+      for (const node of branch.nodes) {
+        if (states.get(node.exercise.id) === "locked") {
+          states.set(node.exercise.id, "unlocked");
+        }
+      }
+    }
+  }
+
+  // Cross-pathway hard prerequisites: if a node requires mastering
+  // certain exercises, check those and unlock the node
+  for (const branch of SKILL_TREE_8) {
+    for (const node of branch.nodes) {
+      if (states.get(node.exercise.id) !== "locked") continue;
+      if (node.hardPrerequisites.length === 0) continue;
+
+      const allMet = node.hardPrerequisites.every((prereqId) =>
+        masteredIds.has(prereqId) || states.get(prereqId) === "mastered",
+      );
+      if (allMet) {
+        states.set(node.exercise.id, "unlocked");
+      }
+    }
+  }
+
+  return states;
+}

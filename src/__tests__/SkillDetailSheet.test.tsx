@@ -2,7 +2,7 @@ import React from "react";
 import { act } from "react";
 import renderer from "react-test-renderer";
 import { SkillDetailSheet } from "../components/skill-tree/SkillDetailSheet";
-import { SKILL_TREE } from "../data/skillTree";
+import { SKILL_TREE_8 } from "../data/skillTree";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────
 
@@ -10,6 +10,7 @@ jest.mock("../tokens", () => ({
   useColors: () => ({
     success: "#10B981",
     accent: { DEFAULT: "#F59E0B" },
+    warning: "#F59E0B",
     text: { primary: "#EDE7D9", secondary: "#9B8E7A", tertiary: "#5A4F42" },
     bg: { primary: "#070814", elevated: "#0D1021", highlight: "#151A30" },
     border: { subtle: "#1C1F33" },
@@ -45,27 +46,13 @@ jest.mock("../components/ui/Button", () => ({
   },
 }));
 
-// Find nodes with specific properties for targeted testing
-let fullNode: (typeof SKILL_TREE)[0]["nodes"][0] | null = null;
-let simpleNode: (typeof SKILL_TREE)[0]["nodes"][0] | null = null;
-for (const branch of SKILL_TREE) {
-  if (!fullNode) {
-    fullNode =
-      branch.nodes.find(
-        (n) =>
-          n.exercise.visualGuide?.checkpoints?.length &&
-          n.exercise.biomechanicalNotes,
-      ) || null;
-  }
-  if (!simpleNode) {
-    simpleNode =
-      branch.nodes.find(
-        (n) =>
-          !n.exercise.visualGuide?.checkpoints?.length &&
-          !n.exercise.biomechanicalNotes,
-      ) || null;
-  }
-}
+// Use the first node from the HP branch (Wall Push-up) — it's simple with no checkpoints
+const hpBranch = SKILL_TREE_8.find((b) => b.id === "hp")!;
+const testNode = hpBranch.nodes[0];
+
+// The AC branch has some nodes with rectus_abdominis target and reasonable detail
+const acBranch = SKILL_TREE_8.find((b) => b.id === "ac")!;
+const acNode = acBranch.nodes[4]; // AC5 - Hollow Body Hold, one of the most detailed
 
 // Helper: render component inside act() and return the tree
 function renderInAct(element: React.ReactElement) {
@@ -88,31 +75,31 @@ function getAllText(instance: renderer.ReactTestInstance): string {
 }
 
 describe("SkillDetailSheet", () => {
-  describe("with full detail node (has checkpoints + biomechanical notes)", () => {
-    const node = fullNode!;
+  describe("with HP branch node", () => {
+    const node = testNode;
 
     it("renders the exercise name in uppercase", () => {
-      const tree = renderInAct(<SkillDetailSheet node={node} onClose={() => {}} />);
+      const tree = renderInAct(<SkillDetailSheet node={node} nodeState="unlocked" onClose={() => {}} />);
       const text = getAllText(tree.root);
       expect(text).toContain(node.exercise.name.toUpperCase());
     });
 
-    it("renders family and difficulty badge", () => {
-      const tree = renderInAct(<SkillDetailSheet node={node} onClose={() => {}} />);
+    it("renders pathway ID and level in header", () => {
+      const tree = renderInAct(<SkillDetailSheet node={node} nodeState="unlocked" onClose={() => {}} />);
       const text = getAllText(tree.root);
-      const badge = `${node.family.toUpperCase()} · ${node.difficulty.toUpperCase()}`;
-      expect(text).toContain(badge);
+      expect(text).toContain(node.pathwayId.toUpperCase());
+      expect(text).toContain(`Lv${node.pathwayLevel}`);
     });
 
     it("renders description section", () => {
-      const tree = renderInAct(<SkillDetailSheet node={node} onClose={() => {}} />);
+      const tree = renderInAct(<SkillDetailSheet node={node} nodeState="unlocked" onClose={() => {}} />);
       const text = getAllText(tree.root);
       expect(text).toContain("DESCRIPTION");
       expect(text).toContain(node.exercise.description);
     });
 
-    it("renders rep scheme stats labels", () => {
-      const tree = renderInAct(<SkillDetailSheet node={node} onClose={() => {}} />);
+    it("renders rep scheme stat labels", () => {
+      const tree = renderInAct(<SkillDetailSheet node={node} nodeState="unlocked" onClose={() => {}} />);
       const text = getAllText(tree.root);
       expect(text).toContain("SETS");
       expect(text).toContain("REPS");
@@ -121,68 +108,50 @@ describe("SkillDetailSheet", () => {
     });
 
     it("renders sets value", () => {
-      const tree = renderInAct(<SkillDetailSheet node={node} onClose={() => {}} />);
+      const tree = renderInAct(<SkillDetailSheet node={node} nodeState="unlocked" onClose={() => {}} />);
       const text = getAllText(tree.root);
       expect(text).toContain(String(node.exercise.defaultSets));
     });
 
     it("renders rep range", () => {
-      const tree = renderInAct(<SkillDetailSheet node={node} onClose={() => {}} />);
+      const tree = renderInAct(<SkillDetailSheet node={node} nodeState="unlocked" onClose={() => {}} />);
       const text = getAllText(tree.root);
       const repRange = `${node.exercise.repRange[0]}–${node.exercise.repRange[1]}`;
       expect(text).toContain(repRange);
     });
 
     it("renders rest interval", () => {
-      const tree = renderInAct(<SkillDetailSheet node={node} onClose={() => {}} />);
+      const tree = renderInAct(<SkillDetailSheet node={node} nodeState="unlocked" onClose={() => {}} />);
       const text = getAllText(tree.root);
       expect(text).toContain(`${node.exercise.restInterval}s`);
     });
 
     it("renders tempo", () => {
-      const tree = renderInAct(<SkillDetailSheet node={node} onClose={() => {}} />);
+      const tree = renderInAct(<SkillDetailSheet node={node} nodeState="unlocked" onClose={() => {}} />);
       const text = getAllText(tree.root);
       expect(text).toContain(node.exercise.tempo);
     });
 
     it("renders SKILL PATH section", () => {
-      const tree = renderInAct(<SkillDetailSheet node={node} onClose={() => {}} />);
+      const tree = renderInAct(<SkillDetailSheet node={node} nodeState="unlocked" onClose={() => {}} />);
       const text = getAllText(tree.root);
       expect(text).toContain("SKILL PATH");
     });
 
-    it("renders progression path steps", () => {
-      const tree = renderInAct(<SkillDetailSheet node={node} onClose={() => {}} />);
+    it("renders OVERLOAD MECHANISM section", () => {
+      const tree = renderInAct(<SkillDetailSheet node={node} nodeState="unlocked" onClose={() => {}} />);
       const text = getAllText(tree.root);
-      for (const step of node.progressionPath) {
-        expect(text).toContain(step);
-      }
+      expect(text).toContain("OVERLOAD MECHANISM");
     });
 
-    it("renders ANATOMY NOTE when biomechanicalNotes exist", () => {
-      const tree = renderInAct(<SkillDetailSheet node={node} onClose={() => {}} />);
+    it("renders state badge", () => {
+      const tree = renderInAct(<SkillDetailSheet node={node} nodeState="unlocked" onClose={() => {}} />);
       const text = getAllText(tree.root);
-      expect(text).toContain("ANATOMY NOTE");
-      expect(text).toContain(node.exercise.biomechanicalNotes!);
-    });
-
-    it("renders FORM CHECKPOINTS section", () => {
-      const tree = renderInAct(<SkillDetailSheet node={node} onClose={() => {}} />);
-      const text = getAllText(tree.root);
-      expect(text).toContain("FORM CHECKPOINTS");
-    });
-
-    it("renders checkpoint instructions", () => {
-      const tree = renderInAct(<SkillDetailSheet node={node} onClose={() => {}} />);
-      const text = getAllText(tree.root);
-      const checkpoints = node.exercise.visualGuide!.checkpoints;
-      for (const cp of checkpoints) {
-        expect(text).toContain(cp.instruction);
-      }
+      expect(text).toContain("UNLOCKED");
     });
 
     it("renders CLOSE button", () => {
-      const tree = renderInAct(<SkillDetailSheet node={node} onClose={() => {}} />);
+      const tree = renderInAct(<SkillDetailSheet node={node} nodeState="unlocked" onClose={() => {}} />);
       const text = getAllText(tree.root);
       expect(text).toContain("CLOSE");
     });
@@ -191,7 +160,7 @@ describe("SkillDetailSheet", () => {
       const onClose = jest.fn();
       let tree: renderer.ReactTestRenderer;
       act(() => {
-        tree = renderer.create(<SkillDetailSheet node={node} onClose={onClose} />);
+        tree = renderer.create(<SkillDetailSheet node={node} nodeState="unlocked" onClose={onClose} />);
       });
       act(() => {
         const closeButton = tree!.root.find((n) => {
@@ -207,22 +176,22 @@ describe("SkillDetailSheet", () => {
     });
   });
 
-  describe("with simple node", () => {
-    const node = simpleNode || fullNode!;
+  describe("with AC branch node (has hard prerequisites)", () => {
+    const node = acNode;
 
     it("renders without crashing", () => {
-      const tree = renderInAct(<SkillDetailSheet node={node} onClose={() => {}} />);
+      const tree = renderInAct(<SkillDetailSheet node={node} nodeState="active" onClose={() => {}} />);
       expect(tree).toBeDefined();
     });
 
-    it("still renders exercise name", () => {
-      const tree = renderInAct(<SkillDetailSheet node={node} onClose={() => {}} />);
+    it("renders exercise name", () => {
+      const tree = renderInAct(<SkillDetailSheet node={node} nodeState="active" onClose={() => {}} />);
       const text = getAllText(tree.root);
       expect(text).toContain(node.exercise.name.toUpperCase());
     });
 
-    it("still renders basic stat labels", () => {
-      const tree = renderInAct(<SkillDetailSheet node={node} onClose={() => {}} />);
+    it("renders basic stat labels", () => {
+      const tree = renderInAct(<SkillDetailSheet node={node} nodeState="active" onClose={() => {}} />);
       const text = getAllText(tree.root);
       expect(text).toContain("SETS");
       expect(text).toContain("REPS");

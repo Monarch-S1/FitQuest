@@ -11,7 +11,7 @@ import {
   playCompletionSound,
   cleanupSound,
 } from "../../services/levelUpSound";
-import { NewSkillUnlock } from "../../utils/skillUnlocks";
+import { NewSkillUnlock, NewClassUnlock } from "../../utils/skillUnlocks";
 
 interface CompletionAnimationProps {
   xpBreakdown: XpBreakdown;
@@ -34,6 +34,8 @@ interface CompletionAnimationProps {
   };
   /** Newly unlocked skill tree exercises from this workout */
   newSkillUnlocks?: NewSkillUnlock[];
+  /** Newly unlocked workout classes from this workout */
+  newClassUnlocks?: NewClassUnlock[];
 }
 
 export function CompletionAnimation({
@@ -45,6 +47,7 @@ export function CompletionAnimation({
   onContinue,
   achievementContext,
   newSkillUnlocks,
+  newClassUnlocks,
 }: CompletionAnimationProps) {
   const colors = useColors();
   const [showContent, setShowContent] = useState(false);
@@ -486,6 +489,127 @@ export function CompletionAnimation({
               </Text>
             </View>
           </MotiView>
+        )}
+
+        {/* Class unlock notifications — appear before skills */}
+        {showSkillUnlocks && newClassUnlocks && newClassUnlocks.length > 0 && (
+          <View style={{ width: "100%", marginTop: spacing[4] }}>
+            <MotiView
+              from={{ opacity: 0, translateY: 10 }}
+              animate={{ opacity: 1, translateY: 0 }}
+              transition={{ type: "spring", damping: 15 }}
+            >
+              <Text
+                style={{
+                  ...typography.label,
+                  color: colors.success,
+                  fontSize: 9,
+                  marginBottom: spacing[2],
+                  textAlign: "center",
+                }}
+              >
+                ★ CLASS UNLOCKED
+              </Text>
+            </MotiView>
+            {newClassUnlocks.map((unlock, i) => (
+              <MotiView
+                key={unlock.classDef.id}
+                from={{ opacity: 0, scale: 0.8, translateY: 20 }}
+                animate={{ opacity: 1, scale: 1, translateY: 0 }}
+                transition={{
+                  delay: i * 200,
+                  type: "spring",
+                  damping: 12,
+                  stiffness: 100,
+                }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: `${unlock.classDef.accent}15`,
+                  borderWidth: 2,
+                  borderColor: unlock.classDef.accent,
+                  borderRadius: 4,
+                  padding: spacing[4],
+                  gap: spacing[3],
+                  marginBottom: spacing[2],
+                  overflow: "hidden",
+                }}
+              >
+                <GlossyOverlay highlightOpacity={0.15} showReflection={true} />
+                <MotiView
+                  from={{ scale: 0, rotate: "-180deg" }}
+                  animate={{ scale: 1, rotate: "0deg" }}
+                  transition={{ delay: i * 200 + 300, type: "spring", damping: 10 }}
+                >
+                  <Text style={{ fontSize: 36 }}>{unlock.classDef.icon}</Text>
+                </MotiView>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ ...typography.h3, color: unlock.classDef.accent, fontSize: 16 }}>
+                    {unlock.classDef.name}
+                  </Text>
+                  <Text
+                    style={{
+                      ...typography.bodySmall,
+                      color: colors.text.secondary,
+                      fontSize: 11,
+                      lineHeight: 16,
+                      marginTop: spacing[1],
+                    }}
+                  >
+                    {unlock.classDef.description}
+                  </Text>
+                  <View style={{ flexDirection: "row", gap: spacing[2], marginTop: spacing[2] }}>
+                    {unlock.classDef.focus.slice(0, 3).map((f) => (
+                      <View
+                        key={f}
+                        style={{
+                          backgroundColor: `${unlock.classDef.accent}15`,
+                          borderRadius: 1,
+                          paddingHorizontal: spacing[1],
+                          paddingVertical: 1,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            ...typography.bodySmall,
+                            color: unlock.classDef.accent,
+                            fontSize: 7,
+                          }}
+                        >
+                          {f}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+                <MotiView
+                  from={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: i * 200 + 500, type: "spring", damping: 8 }}
+                >
+                  <View
+                    style={{
+                      backgroundColor: colors.success,
+                      borderRadius: 4,
+                      paddingHorizontal: spacing[2],
+                      paddingVertical: spacing[1],
+                    }}
+                  >
+                    <Text
+                      style={{
+                        ...typography.label,
+                        color: colors.bg.primary,
+                        fontSize: 8,
+                        letterSpacing: 1,
+                      }}
+                    >
+                      NEW
+                    </Text>
+                  </View>
+                </MotiView>
+              </MotiView>
+            ))}
+          </View>
         )}
 
         {/* Skill unlock notifications */}

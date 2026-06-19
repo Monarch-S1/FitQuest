@@ -6,9 +6,17 @@ interface SkillNodeProps {
   node: SkillNodeData;
   isCompleted: boolean;
   isUnlocked: boolean;
+  isMastered: boolean;
   isSelected: boolean;
   onPress: () => void;
 }
+
+const NODE_STATE_CONFIG = {
+  mastered: { icon: "★", label: "MASTERED" },
+  active: { icon: "◆", label: "ACTIVE" },
+  unlocked: { icon: "▷", label: "UNLOCKED" },
+  locked: { icon: "◈", label: "LOCKED" },
+} as const;
 
 const DIFFICULTY_COLORS: Record<DifficultyTier, string> = {
   beginner: "#10B981",
@@ -22,14 +30,22 @@ const DIFFICULTY_LABELS: Record<DifficultyTier, string> = {
   advanced: "ADVANCED",
 };
 
-export function SkillNode({ node, isCompleted, isUnlocked, isSelected, onPress }: SkillNodeProps) {
+export function SkillNode({ node, isCompleted, isUnlocked, isMastered, isSelected, onPress }: SkillNodeProps) {
   const colors = useColors();
 
-  const accentColor = isCompleted
-    ? colors.success
-    : isUnlocked
-      ? node.accent
-      : colors.border.subtle;
+  const state =
+    isMastered ? "mastered" :
+    isCompleted ? "active" :
+    isUnlocked ? "unlocked" :
+    "locked";
+
+  const stateCfg = NODE_STATE_CONFIG[state];
+
+  const accentColor =
+    state === "mastered" ? colors.success :
+    state === "active" ? node.accent :
+    state === "unlocked" ? node.accent :
+    colors.border.subtle;
 
   const diffColor = DIFFICULTY_COLORS[node.difficulty];
 
@@ -42,21 +58,25 @@ export function SkillNode({ node, isCompleted, isUnlocked, isSelected, onPress }
         alignItems: "center",
         backgroundColor: isSelected
           ? `${accentColor}15`
-          : isCompleted
+          : state === "mastered"
             ? `${colors.success}10`
-            : colors.bg.elevated,
+            : state === "active"
+              ? `${node.accent}10`
+              : colors.bg.elevated,
         borderWidth: 1,
         borderColor: isSelected
           ? accentColor
-          : isCompleted
+          : state === "mastered"
             ? `${colors.success}40`
-            : colors.border.subtle,
+            : state === "active"
+              ? `${node.accent}40`
+              : colors.border.subtle,
         borderRadius: 4,
         paddingLeft: 0,
         paddingRight: spacing[3],
         marginBottom: spacing[2],
         overflow: "hidden",
-        opacity: isUnlocked ? 1 : 0.45,
+        opacity: state === "locked" ? 0.45 : 1,
       }}
     >
       {/* Accent stripe */}
@@ -65,19 +85,19 @@ export function SkillNode({ node, isCompleted, isUnlocked, isSelected, onPress }
           width: 3,
           alignSelf: "stretch",
           backgroundColor: accentColor,
-          opacity: isCompleted ? 1 : isUnlocked ? 0.8 : 0.2,
+          opacity: state === "mastered" || state === "active" ? 1 : 0.4,
           marginRight: spacing[2],
         }}
       />
 
       {/* Content */}
       <View style={{ flex: 1, paddingVertical: spacing[2] }}>
-        {/* Exercise name */}
+        {/* Exercise name + pathway level badge */}
         <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[2] }}>
           <Text
             style={{
               ...typography.h3,
-              color: isUnlocked ? colors.text.primary : colors.text.secondary,
+              color: state !== "locked" ? colors.text.primary : colors.text.secondary,
               fontSize: 14,
               flex: 1,
               letterSpacing: 0.5,
@@ -86,13 +106,38 @@ export function SkillNode({ node, isCompleted, isUnlocked, isSelected, onPress }
           >
             {node.exercise.name.toUpperCase()}
           </Text>
-          {isCompleted && <Text style={{ fontSize: 14, color: colors.success }}>✓</Text>}
-          {!isUnlocked && !isCompleted && (
-            <Text style={{ fontSize: 12, color: colors.text.secondary }}>🔒</Text>
-          )}
+
+          {/* Level badge */}
+          <View
+            style={{
+              backgroundColor: `${node.accent}15`,
+              borderWidth: 1,
+              borderColor: `${node.accent}30`,
+              borderRadius: 1,
+              paddingHorizontal: spacing[1],
+            }}
+          >
+            <Text style={{ ...typography.bodySmall, color: node.accent, fontSize: 7 }}>
+              Lv{node.pathwayLevel}
+            </Text>
+          </View>
+
+          {/* State icon */}
+          <Text style={{
+            fontSize: 12,
+            color:
+              state === "mastered" ? colors.success :
+              state === "active" ? node.accent :
+              state === "unlocked" ? colors.text.secondary :
+              colors.text.tertiary,
+          }}>
+            {state === "mastered" ? "★" :
+             state === "active" ? "◇" :
+             state === "unlocked" ? "▷" : "◆"}
+          </Text>
         </View>
 
-        {/* Difficulty & rep range */}
+        {/* State label + difficulty + rep range */}
         <View
           style={{
             flexDirection: "row",
@@ -101,6 +146,29 @@ export function SkillNode({ node, isCompleted, isUnlocked, isSelected, onPress }
             marginTop: spacing[1],
           }}
         >
+          {/* State badge */}
+          <View
+            style={{
+              backgroundColor: `${accentColor}20`,
+              borderWidth: 1,
+              borderColor: `${accentColor}40`,
+              borderRadius: 1,
+              paddingHorizontal: spacing[1],
+              paddingVertical: 1,
+            }}
+          >
+            <Text
+              style={{
+                ...typography.bodySmall,
+                color: accentColor,
+                fontSize: 7,
+                letterSpacing: 0.8,
+              }}
+            >
+              {stateCfg.label}
+            </Text>
+          </View>
+
           <View
             style={{
               backgroundColor: `${diffColor}20`,
@@ -131,18 +199,6 @@ export function SkillNode({ node, isCompleted, isUnlocked, isSelected, onPress }
           >
             {node.exercise.repRange[0]}–{node.exercise.repRange[1]} reps
           </Text>
-          {node.exercise.tempo !== "isometric" && (
-            <Text
-              style={{
-                ...typography.bodySmall,
-                color: colors.text.secondary,
-                fontSize: 8,
-                opacity: 0.6,
-              }}
-            >
-              {node.exercise.tempo} tempo
-            </Text>
-          )}
         </View>
 
         {/* Muscle targets */}
@@ -162,9 +218,9 @@ export function SkillNode({ node, isCompleted, isUnlocked, isSelected, onPress }
               <Text
                 style={{
                   ...typography.bodySmall,
-                  color: isUnlocked ? accentColor : colors.text.secondary,
+                  color: state !== "locked" ? accentColor : colors.text.secondary,
                   fontSize: 6,
-                  opacity: isUnlocked ? 0.8 : 0.4,
+                  opacity: state !== "locked" ? 0.8 : 0.4,
                   textTransform: "uppercase",
                   letterSpacing: 0.5,
                 }}

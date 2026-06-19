@@ -113,10 +113,11 @@ describe("SkillTreeView", () => {
     }
   });
 
-  it("shows legend with COMPLETED, UNLOCKED, LOCKED", () => {
+  it("shows legend with MASTERED, ACTIVE, UNLOCKED, LOCKED", () => {
     const tree = renderInAct(<SkillTreeView />);
     const text = getAllText(tree.root);
-    expect(text).toContain("COMPLETED");
+    expect(text).toContain("MASTERED");
+    expect(text).toContain("ACTIVE");
     expect(text).toContain("UNLOCKED");
     expect(text).toContain("LOCKED");
   });

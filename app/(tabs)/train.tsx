@@ -12,6 +12,8 @@ import { getRecommendation } from "../../src/utils/recommendations";
 import { getProgressionSummary } from "../../src/utils/progression";
 import { TrainScreenSkeleton } from "../../src/components/ui/Skeleton";
 import { Animated, Easing } from "react-native";
+import { WORKOUT_CLASSES, getUnlockedClasses, getClassUnlockProgress } from "../../src/data/workoutClasses";
+import { GlossyOverlay } from "../../src/components/ui/GlossyOverlay";
 
 export default function TrainScreen() {
   const colors = useColors();
@@ -32,6 +34,27 @@ export default function TrainScreen() {
   );
 
   const progressionSummary = useMemo(() => getProgressionSummary(workoutHistory), [workoutHistory]);
+
+  const storeMasteredIds = useUserStore((state) => state.masteredExerciseIds ?? []);
+  const masteredIds = useMemo(() => new Set(storeMasteredIds), [storeMasteredIds]);
+
+  // Unlocked workout classes based on mastered exercises
+  const unlockedClasses = useMemo(
+    () => getUnlockedClasses(masteredIds),
+    [masteredIds],
+  );
+
+  // Classes still locked with progress
+  const lockedClassesWithProgress = useMemo(
+    () =>
+      WORKOUT_CLASSES.filter((wc) => !unlockedClasses.find((u) => u.id === wc.id))
+        .map((wc) => ({
+          classDef: wc,
+          progress: getClassUnlockProgress(wc, masteredIds),
+        }))
+        .filter(({ progress }) => progress.unlocked > 0),
+    [masteredIds, unlockedClasses],
+  );
 
   const handleWorkoutSelect = useCallback(
     (workoutId: string) => {
@@ -377,6 +400,186 @@ export default function TrainScreen() {
             </View>
           </TouchableOpacity>
         </View>
+
+        {/* Workout Classes — unlocked and in-progress */}
+        {unlockedClasses.length > 0 && (
+          <View style={{ marginBottom: spacing[3] }}>
+            <Text
+              style={{
+                ...typography.subtitle,
+                color: colors.success,
+                fontSize: 11,
+                marginBottom: spacing[2],
+              }}
+            >
+              ★ UNLOCKED CLASSES
+            </Text>
+            {unlockedClasses.map((wc) => (
+              <TouchableOpacity
+                key={wc.id}
+                activeOpacity={0.85}
+                onPress={() => handleWorkoutSelect(wc.id)}
+                style={{
+                  backgroundColor: `${wc.accent}10`,
+                  borderWidth: 1.5,
+                  borderColor: `${wc.accent}40`,
+                  borderRadius: 4,
+                  padding: spacing[3],
+                  marginBottom: spacing[2],
+                  overflow: "hidden",
+                }}
+              >
+                <GlossyOverlay highlightOpacity={0.1} showReflection={false} />
+                <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[2] }}>
+                  <Text style={{ fontSize: 24 }}>{wc.icon}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ ...typography.h4, color: wc.accent, fontSize: 14 }}>
+                      {wc.name}
+                    </Text>
+                    <Text
+                      style={{
+                        ...typography.bodySmall,
+                        color: colors.text.secondary,
+                        fontSize: 10,
+                        marginTop: 2,
+                      }}
+                      numberOfLines={2}
+                    >
+                      {wc.description}
+                    </Text>
+                    <View style={{ flexDirection: "row", gap: spacing[2], marginTop: spacing[2] }}>
+                      {wc.focus.slice(0, 3).map((f) => (
+                        <View
+                          key={f}
+                          style={{
+                            backgroundColor: `${wc.accent}15`,
+                            borderRadius: 1,
+                            paddingHorizontal: spacing[1],
+                            paddingVertical: 1,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              ...typography.bodySmall,
+                              color: wc.accent,
+                              fontSize: 7,
+                            }}
+                          >
+                            {f}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                  <Text
+                    style={{
+                      ...typography.label,
+                      color: colors.success,
+                      fontSize: 8,
+                      letterSpacing: 1,
+                    }}
+                  >
+                    UNLOCKED
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        {/* In-progress class unlocks */}
+        {lockedClassesWithProgress.length > 0 && (
+          <View style={{ marginBottom: spacing[3] }}>
+            <Text
+              style={{
+                ...typography.subtitle,
+                color: colors.text.secondary,
+                fontSize: 11,
+                marginBottom: spacing[2],
+              }}
+            >
+              LOCKED CLASSES
+            </Text>
+            {lockedClassesWithProgress.map(({ classDef: wc, progress }) => (
+              <View
+                key={wc.id}
+                style={{
+                  backgroundColor: colors.bg.elevated,
+                  borderWidth: 1,
+                  borderColor: colors.border.subtle,
+                  borderRadius: 4,
+                  padding: spacing[3],
+                  marginBottom: spacing[2],
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: spacing[2],
+                }}
+              >
+                <View
+                  style={{
+                    width: 36,
+                    height: 36,
+                    backgroundColor: colors.bg.primary,
+                    borderWidth: 1,
+                    borderColor: colors.border.subtle,
+                    borderRadius: 4,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text style={{ fontSize: 16, opacity: 0.5 }}>{wc.icon}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      ...typography.bodySmall,
+                      color: colors.text.secondary,
+                      fontSize: 11,
+                    }}
+                  >
+                    {wc.name}
+                  </Text>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: spacing[1],
+                      marginTop: spacing[1],
+                    }}
+                  >
+                    <View
+                      style={{
+                        flex: 1,
+                        height: 3,
+                        backgroundColor: colors.bg.primary,
+                        borderRadius: 1,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: `${(progress.unlocked / progress.required) * 100}%` as any,
+                          height: "100%",
+                          backgroundColor: colors.accent.DEFAULT,
+                          borderRadius: 1,
+                        }}
+                      />
+                    </View>
+                    <Text
+                      style={{
+                        ...typography.bodySmall,
+                        color: colors.text.secondary,
+                        fontSize: 7,
+                      }}
+                    >
+                      {progress.unlocked}/{progress.required}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
 
         {/* Program Info */}
         <SegmentedPanel title="QUEST INFO" accent="none">

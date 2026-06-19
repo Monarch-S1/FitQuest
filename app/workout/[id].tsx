@@ -61,6 +61,9 @@ export default function WorkoutPlayerScreen() {
   const [newSkillUnlocks, setNewSkillUnlocks] = useState<
     import("../../src/utils/skillUnlocks").NewSkillUnlock[]
   >([]);
+  const [newClassUnlocks, setNewClassUnlocks] = useState<
+    import("../../src/utils/skillUnlocks").NewClassUnlock[]
+  >([]);
 
   // Rep counter state — user enters actual reps per set
   const preWorkoutLevelRef = useRef(1);
@@ -189,16 +192,17 @@ export default function WorkoutPlayerScreen() {
 
       addWorkoutSession(session);
 
-      // Compute newly unlocked skill tree exercises by diffing pre vs post
+      // Compute newly unlocked skill tree exercises and classes by diffing pre vs post
       const freshState = useUserStore.getState();
       const newCompleted = extractCompletedIds(freshState.workoutHistory);
-      const unlocks = findNewUnlocks(preWorkoutCompletedRef.current, newCompleted);
-      if (unlocks.length > 0) {
-        setNewSkillUnlocks(unlocks);
-        // Play unlock sound for the first unlock
-        if (unlocks.length >= 1) {
-          playLevelUpSound();
-        }
+      const preMastered = new Set(userStore.masteredExerciseIds ?? []);
+      const postMastered = new Set(freshState.masteredExerciseIds ?? []);
+      const unlocks = findNewUnlocks(preWorkoutCompletedRef.current, newCompleted, preMastered, postMastered);
+      if (unlocks.skillUnlocks.length > 0 || unlocks.classUnlocks.length > 0) {
+        setNewSkillUnlocks(unlocks.skillUnlocks);
+        setNewClassUnlocks(unlocks.classUnlocks);
+        // Play unlock sound
+        playLevelUpSound();
       }
 
       setWorkoutComplete(true);
@@ -324,6 +328,7 @@ export default function WorkoutPlayerScreen() {
           lastWorkoutAllComplete: exerciseProgress.every((ep) => ep.isComplete),
         }}
         newSkillUnlocks={newSkillUnlocks}
+        newClassUnlocks={newClassUnlocks}
       />
     );
   }

@@ -14,7 +14,19 @@ export type MuscleGroup =
   | "obliques"
   | "rotator_cuff"
   | "forearms"
-  | "calves";
+  | "calves"
+  | "upper_chest"
+  | "mid_back"
+  | "rear_deltoids"
+  | "grip"
+  | "upper_rectus_abdominis"
+  | "lower_rectus_abdominis"
+  | "hip_flexors"
+  | "hip_abductors"
+  | "serratus_anterior"
+  | "hip_adductors"
+  | "scapular_stabilizers"
+  | "rectus_abdominis";
 
 export type MovementCategory =
   | "unilateral_lower_push"

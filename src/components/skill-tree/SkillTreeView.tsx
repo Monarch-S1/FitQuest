@@ -1,32 +1,61 @@
+/**
+ * SkillTreeView — 8-Branch Version
+ *
+ * Displays all 96 exercises organized into 8 movement pathways
+ * with filterable tabs (ALL, PUSH, PULL, LEGS, CORE) and
+ * mastery-progression states per node.
+ */
+
 import { useState, useMemo } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { useColors, typography, spacing } from "../../tokens";
 import {
-  SKILL_TREE,
+  SKILL_TREE_8,
   SkillBranch,
   SkillNode as SkillNodeData,
-  MovementFamily,
+  computeNodeStates,
 } from "../../data/skillTree";
+import { PARENT_FAMILIES, getPathwayByParent, ParentFamily } from "../../data/pathways";
 import { SkillNode } from "./SkillNode";
 import { SkillDetailSheet } from "./SkillDetailSheet";
 import { useUserStore } from "../../stores/useUserStore";
+import { extractCompletedIds, getUnlockSummary } from "../../utils/skillUnlocks";
 
-type FamilyFilter = "all" | MovementFamily;
+type FamilyFilter = "all" | ParentFamily;
 
-const FAMILY_FILTERS: { key: FamilyFilter; label: string }[] = [
-  { key: "all", label: "ALL" },
-  { key: "push", label: "PUSH" },
-  { key: "pull", label: "PULL" },
-  { key: "legs", label: "LEGS" },
-  { key: "core", label: "CORE" },
+const FAMILY_FILTERS: { key: FamilyFilter; label: string; icon: string }[] = [
+  { key: "all", label: "ALL", icon: "✦" },
+  { key: "push", label: "PUSH", icon: "⬆" },
+  { key: "pull", label: "PULL", icon: "⬇" },
+  { key: "legs", label: "LEGS", icon: "⬍" },
+  { key: "core", label: "CORE", icon: "◈" },
 ];
 
-interface BranchHeaderProps {
-  branch: SkillBranch;
+function getFamilyAccent(family: ParentFamily): string {
+  const map: Record<ParentFamily, string> = {
+    push: "#EF4444",
+    pull: "#3B82F6",
+    legs: "#10B981",
+    core: "#F59E0B",
+  };
+  return map[family];
 }
 
-function BranchHeader({ branch }: BranchHeaderProps) {
+// ── Branch Header ──────────────────────────────
+
+function BranchHeader({ branch }: { branch: SkillBranch }) {
   const colors = useColors();
+
+  // Count states within this branch
+  const [completedCount, masteredCount] = useMemo(() => {
+    let completed = 0, mastered = 0;
+    for (const node of branch.nodes) {
+      if (node.exercise.id) {
+        // We don't have the full state here, pass from parent
+      }
+    }
+    return [0, 0];
+  }, [branch]);
 
   return (
     <View
@@ -40,12 +69,11 @@ function BranchHeader({ branch }: BranchHeaderProps) {
         borderBottomColor: `${branch.accent}30`,
       }}
     >
-      {/* Colored icon circle */}
       <View
         style={{
-          width: 32,
-          height: 32,
-          borderRadius: 16,
+          width: 36,
+          height: 36,
+          borderRadius: 18,
           backgroundColor: `${branch.accent}15`,
           borderWidth: 1,
           borderColor: `${branch.accent}30`,
@@ -58,16 +86,31 @@ function BranchHeader({ branch }: BranchHeaderProps) {
       </View>
 
       <View style={{ flex: 1 }}>
-        <Text
-          style={{
-            ...typography.h3,
-            color: branch.accent,
-            fontSize: 13,
-            letterSpacing: 1.5,
-          }}
-        >
-          {branch.label}
-        </Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[2] }}>
+          <Text
+            style={{
+              ...typography.h3,
+              color: branch.accent,
+              fontSize: 12,
+              letterSpacing: 1.5,
+            }}
+          >
+            {branch.label}
+          </Text>
+          <View
+            style={{
+              backgroundColor: `${branch.accent}10`,
+              borderWidth: 1,
+              borderColor: `${branch.accent}20`,
+              borderRadius: 1,
+              paddingHorizontal: spacing[1],
+            }}
+          >
+            <Text style={{ ...typography.bodySmall, color: branch.accent, fontSize: 7 }}>
+              Lv 1–12
+            </Text>
+          </View>
+        </View>
         <Text
           style={{
             ...typography.bodySmall,
@@ -106,42 +149,47 @@ function BranchHeader({ branch }: BranchHeaderProps) {
   );
 }
 
-// ── Empty state ────────────────────────────────
+// ── Mastery Progress Bar per branch ──────────
 
-function EmptyState({ family }: { family: string }) {
+function BranchProgress({
+  branch,
+  nodeStates,
+}: {
+  branch: SkillBranch;
+  nodeStates: Map<string, string>;
+}) {
   const colors = useColors();
+  const total = branch.nodes.length;
+  const mastered = branch.nodes.filter(
+    (n) => nodeStates.get(n.exercise.id) === "mastered",
+  ).length;
+  const active = branch.nodes.filter(
+    (n) => nodeStates.get(n.exercise.id) === "active",
+  ).length;
+  const pct = total > 0 ? (mastered / total) * 100 : 0;
+
   return (
-    <View
-      style={{
-        alignItems: "center",
-        paddingVertical: spacing[8],
-        paddingHorizontal: spacing[4],
-      }}
-    >
-      <Text style={{ fontSize: 32, marginBottom: spacing[3], opacity: 0.3 }}>
-        {family === "push" ? "⬆" : family === "pull" ? "⬇" : family === "legs" ? "⬍" : "◈"}
-      </Text>
-      <Text
+    <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[2], marginBottom: spacing[2] }}>
+      <View
         style={{
-          ...typography.h3,
-          color: colors.text.secondary,
-          fontSize: 16,
-          textAlign: "center",
+          flex: 1,
+          height: 4,
+          backgroundColor: colors.bg.elevated,
+          borderRadius: 2,
+          overflow: "hidden",
         }}
       >
-        No exercises match this filter
-      </Text>
-      <Text
-        style={{
-          ...typography.body,
-          color: colors.text.secondary,
-          fontSize: 11,
-          textAlign: "center",
-          marginTop: spacing[1],
-          opacity: 0.6,
-        }}
-      >
-        All exercises in this family are hidden
+        <View
+          style={{
+            width: `${pct}%` as any,
+            height: "100%",
+            backgroundColor: branch.accent,
+            borderRadius: 2,
+          }}
+        />
+      </View>
+      <Text style={{ ...typography.bodySmall, color: colors.text.secondary, fontSize: 7 }}>
+        {mastered}/{total}
       </Text>
     </View>
   );
@@ -154,60 +202,32 @@ export function SkillTreeView() {
   const [activeFilter, setActiveFilter] = useState<FamilyFilter>("all");
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const workoutHistory = useUserStore((state) => state.workoutHistory);
+  const masteredIds = useUserStore((state) =>
+    new Set(state.masteredExerciseIds ?? []),
+  );
 
   // Derive completed exercise IDs from workout history
-  const completedExercises = useMemo(() => {
-    const completed = new Set<string>();
-    for (const session of workoutHistory) {
-      for (const ex of session.exercises || []) {
-        if (ex.repsCompleted?.length) {
-          completed.add(ex.exerciseId);
-        }
-      }
-    }
-    return completed;
-  }, [workoutHistory]);
+  const completedExercises = useMemo(
+    () => extractCompletedIds(workoutHistory),
+    [workoutHistory],
+  );
 
-  // Derive attempted (unlocked) exercises — ones whose family has at least one completed exercise,
-  // or exercises that share a muscle group with a completed one
-  const unlockedExercises = useMemo(() => {
-    const unlocked = new Set<string>();
+  // Compute node states using full 8-branch logic
+  const nodeStates = useMemo(
+    () => computeNodeStates(completedExercises, masteredIds),
+    [completedExercises, masteredIds],
+  );
 
-    // All exercises in a family are unlocked if at least one in that family is completed
-    for (const branch of SKILL_TREE) {
-      const anyCompleted = branch.nodes.some((n) => completedExercises.has(n.exercise.id));
-      if (anyCompleted) {
-        for (const node of branch.nodes) {
-          unlocked.add(node.exercise.id);
-        }
-      }
-    }
+  // Unlock summary
+  const summary = useMemo(
+    () => getUnlockSummary(completedExercises, masteredIds),
+    [completedExercises, masteredIds],
+  );
 
-    // If nothing is completed yet, unlock all beginner exercises
-    if (completedExercises.size === 0) {
-      for (const branch of SKILL_TREE) {
-        for (const node of branch.nodes) {
-          if (node.difficulty === "beginner") {
-            unlocked.add(node.exercise.id);
-          }
-        }
-      }
-    }
-
-    // Always unlock the first exercise in each family
-    for (const branch of SKILL_TREE) {
-      if (branch.nodes.length > 0) {
-        unlocked.add(branch.nodes[0].exercise.id);
-      }
-    }
-
-    return unlocked;
-  }, [completedExercises]);
-
-  // Filtered branches
+  // Filter branches
   const filteredBranches = useMemo(() => {
-    if (activeFilter === "all") return SKILL_TREE;
-    return SKILL_TREE.filter((b) => b.family === activeFilter);
+    if (activeFilter === "all") return SKILL_TREE_8;
+    return SKILL_TREE_8.filter((b) => b.parentFamily === activeFilter);
   }, [activeFilter]);
 
   const handleNodePress = (node: SkillNodeData) => {
@@ -220,7 +240,7 @@ export function SkillTreeView() {
 
   const selectedNode = useMemo(() => {
     if (!selectedNodeId) return null;
-    for (const branch of SKILL_TREE) {
+    for (const branch of SKILL_TREE_8) {
       const found = branch.nodes.find((n) => n.exercise.id === selectedNodeId);
       if (found) return found;
     }
@@ -242,9 +262,7 @@ export function SkillTreeView() {
         {FAMILY_FILTERS.map((f) => {
           const isActive = activeFilter === f.key;
           const accentColor =
-            f.key === "all"
-              ? colors.text.secondary
-              : SKILL_TREE.find((b) => b.family === f.key)?.accent || colors.accent.DEFAULT;
+            f.key === "all" ? colors.text.secondary : getFamilyAccent(f.key);
 
           return (
             <TouchableOpacity
@@ -264,11 +282,14 @@ export function SkillTreeView() {
                 borderRadius: 4,
               }}
             >
+              <Text style={{ fontSize: 10, marginBottom: 2 }}>
+                {f.icon}
+              </Text>
               <Text
                 style={{
                   ...typography.bodySmall,
                   color: isActive ? accentColor : colors.text.secondary,
-                  fontSize: 9,
+                  fontSize: 8,
                   letterSpacing: 0.8,
                 }}
               >
@@ -279,6 +300,25 @@ export function SkillTreeView() {
         })}
       </View>
 
+      {/* Mastery summary bar */}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "center",
+          gap: spacing[3],
+          paddingVertical: spacing[2],
+          paddingHorizontal: spacing[4],
+          backgroundColor: colors.bg.elevated,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border.subtle,
+        }}
+      >
+        <Stat label="TOTAL" value={summary.total.toString()} color={colors.text.secondary} />
+        <Stat label="MASTERED" value={summary.mastered.toString()} color={colors.success} />
+        <Stat label="ACTIVE" value={summary.active.toString()} color={colors.accent.DEFAULT} />
+        <Stat label="LOCKED" value={summary.locked.toString()} color={colors.text.tertiary} />
+      </View>
+
       {/* Scrollable tree */}
       <ScrollView
         style={{ flex: 1 }}
@@ -286,39 +326,50 @@ export function SkillTreeView() {
         showsVerticalScrollIndicator={false}
       >
         {filteredBranches.map((branch) => (
-          <View key={branch.family} style={{ marginBottom: spacing[4] }}>
+          <View key={branch.id} style={{ marginBottom: spacing[4] }}>
             <BranchHeader branch={branch} />
+            <BranchProgress branch={branch} nodeStates={nodeStates} />
 
             {branch.nodes.length === 0 ? (
-              <EmptyState family={branch.family} />
+              <EmptyState />
             ) : (
-              branch.nodes.map((node) => (
-                <View key={node.exercise.id}>
-                  {/* Connector line (except for first node) */}
-                  {branch.nodes.indexOf(node) > 0 && (
-                    <View style={{ alignItems: "center", paddingVertical: 2 }}>
-                      <View
-                        style={{
-                          width: 1,
-                          height: 12,
-                          backgroundColor: completedExercises.has(node.exercise.id)
-                            ? colors.success
-                            : colors.border.subtle,
-                          opacity: 0.4,
-                        }}
-                      />
-                    </View>
-                  )}
+              branch.nodes.map((node) => {
+                const state = nodeStates.get(node.exercise.id) ?? "locked";
+                const isCompleted =
+                  state === "active" || state === "mastered";
+                const isUnlocked =
+                  state === "unlocked" || state === "active" || state === "mastered";
+                const isMastered = state === "mastered";
 
-                  <SkillNode
-                    node={node}
-                    isCompleted={completedExercises.has(node.exercise.id)}
-                    isUnlocked={unlockedExercises.has(node.exercise.id)}
-                    isSelected={selectedNodeId === node.exercise.id}
-                    onPress={() => handleNodePress(node)}
-                  />
-                </View>
-              ))
+                return (
+                  <View key={node.exercise.id}>
+                    {/* Connector line */}
+                    {branch.nodes.indexOf(node) > 0 && (
+                      <View style={{ alignItems: "center", paddingVertical: 2 }}>
+                        <View
+                          style={{
+                            width: 1,
+                            height: 12,
+                            backgroundColor: isCompleted
+                              ? colors.success
+                              : colors.border.subtle,
+                            opacity: 0.4,
+                          }}
+                        />
+                      </View>
+                    )}
+
+                    <SkillNode
+                      node={node}
+                      isCompleted={isCompleted}
+                      isUnlocked={isUnlocked}
+                      isMastered={isMastered}
+                      isSelected={selectedNodeId === node.exercise.id}
+                      onPress={() => handleNodePress(node)}
+                    />
+                  </View>
+                );
+              })
             )}
           </View>
         ))}
@@ -335,44 +386,14 @@ export function SkillTreeView() {
             marginTop: spacing[2],
           }}
         >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[1] }}>
-            <View
-              style={{ width: 10, height: 3, backgroundColor: colors.success, borderRadius: 1 }}
-            />
-            <Text style={{ ...typography.bodySmall, color: colors.text.secondary, fontSize: 7 }}>
-              COMPLETED
-            </Text>
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[1] }}>
-            <View
-              style={{
-                width: 10,
-                height: 3,
-                backgroundColor: colors.accent.DEFAULT,
-                borderRadius: 1,
-              }}
-            />
-            <Text style={{ ...typography.bodySmall, color: colors.text.secondary, fontSize: 7 }}>
-              UNLOCKED
-            </Text>
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[1] }}>
-            <View
-              style={{
-                width: 10,
-                height: 3,
-                backgroundColor: colors.border.subtle,
-                borderRadius: 1,
-              }}
-            />
-            <Text style={{ ...typography.bodySmall, color: colors.text.secondary, fontSize: 7 }}>
-              LOCKED
-            </Text>
-          </View>
+          <LegendItem color={colors.success} label="MASTERED" />
+          <LegendItem color={colors.accent.DEFAULT} label="ACTIVE" />
+          <LegendItem color={colors.text.secondary} label="UNLOCKED" />
+          <LegendItem color={colors.border.subtle} label="LOCKED" />
         </View>
       </ScrollView>
 
-      {/* Detail Sheet (slides up from bottom) */}
+      {/* Detail Sheet */}
       {selectedNode && (
         <View
           style={{
@@ -383,11 +404,63 @@ export function SkillTreeView() {
             backgroundColor: colors.bg.primary,
             borderTopWidth: 1,
             borderTopColor: selectedNode.accent,
+            maxHeight: "60%",
           }}
         >
-          <SkillDetailSheet node={selectedNode} onClose={() => setSelectedNodeId(null)} />
+          <SkillDetailSheet
+            node={selectedNode}
+            nodeState={nodeStates.get(selectedNode.exercise.id) ?? "locked"}
+            onClose={() => setSelectedNodeId(null)}
+          />
         </View>
       )}
+    </View>
+  );
+}
+
+// ── Small helpers ──────────────────────────────
+
+function Stat({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <View style={{ alignItems: "center" }}>
+      <Text style={{ ...typography.label, color, fontSize: 10 }}>{value}</Text>
+      <Text style={{ ...typography.bodySmall, color, fontSize: 6, opacity: 0.6 }}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+function LegendItem({ color, label }: { color: string; label: string }) {
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+      <View style={{ width: 10, height: 3, backgroundColor: color, borderRadius: 1 }} />
+      <Text style={{ ...typography.bodySmall, color, fontSize: 7 }}>{label}</Text>
+    </View>
+  );
+}
+
+function EmptyState() {
+  const colors = useColors();
+  return (
+    <View
+      style={{
+        alignItems: "center",
+        paddingVertical: spacing[8],
+        paddingHorizontal: spacing[4],
+      }}
+    >
+      <Text style={{ fontSize: 32, marginBottom: spacing[3], opacity: 0.3 }}>◇</Text>
+      <Text
+        style={{
+          ...typography.h3,
+          color: colors.text.secondary,
+          fontSize: 16,
+          textAlign: "center",
+        }}
+      >
+        No exercises match this filter
+      </Text>
     </View>
   );
 }

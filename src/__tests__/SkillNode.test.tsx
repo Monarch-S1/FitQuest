@@ -2,7 +2,7 @@ import React from "react";
 import { act } from "react";
 import renderer from "react-test-renderer";
 import { SkillNode } from "../components/skill-tree/SkillNode";
-import { SKILL_TREE } from "../data/skillTree";
+import { SKILL_TREE_8 } from "../data/skillTree";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────
 
@@ -10,7 +10,7 @@ jest.mock("../tokens", () => ({
   useColors: () => ({
     success: "#10B981",
     accent: { DEFAULT: "#F59E0B" },
-    text: { primary: "#EDE7D9", secondary: "#9B8E7A" },
+    text: { primary: "#EDE7D9", secondary: "#9B8E7A", tertiary: "#5A4F42" },
     bg: { elevated: "#0D1021" },
     border: { subtle: "#1C1F33" },
   }),
@@ -32,11 +32,11 @@ jest.mock("../tokens", () => ({
   },
 }));
 
-// Get a test node from the skill tree
-const pushBranch = SKILL_TREE.find((b) => b.family === "push")!;
-const testNode = pushBranch.nodes[0];
+// Get a test node from the 8-branch skill tree
+const hpBranch = SKILL_TREE_8.find((b) => b.id === "hp")!;
+const testNode = hpBranch.nodes[0];
 
-// Helper: render component inside act() and return the tree + helper
+// Helper: render component inside act()
 function renderInAct(element: React.ReactElement) {
   let tree: renderer.ReactTestRenderer;
   act(() => {
@@ -63,6 +63,7 @@ describe("SkillNode", () => {
         node={testNode}
         isCompleted={false}
         isUnlocked={true}
+        isMastered={false}
         isSelected={false}
         onPress={() => {}}
       />,
@@ -71,60 +72,34 @@ describe("SkillNode", () => {
     expect(text).toContain(testNode.exercise.name.toUpperCase());
   });
 
-  it("shows checkmark when completed", () => {
+  it("shows ★ when mastered", () => {
     const tree = renderInAct(
       <SkillNode
         node={testNode}
         isCompleted={true}
         isUnlocked={true}
+        isMastered={true}
         isSelected={false}
         onPress={() => {}}
       />,
     );
     const text = getAllText(tree.root);
-    expect(text).toContain("✓");
+    expect(text).toContain("★");
   });
 
-  it("shows lock icon when locked", () => {
+  it("shows ◇ when active (completed but not mastered)", () => {
     const tree = renderInAct(
       <SkillNode
         node={testNode}
-        isCompleted={false}
-        isUnlocked={false}
-        isSelected={false}
-        onPress={() => {}}
-      />,
-    );
-    const text = getAllText(tree.root);
-    expect(text).toContain("🔒");
-  });
-
-  it("does not show lock icon when unlocked", () => {
-    const tree = renderInAct(
-      <SkillNode
-        node={testNode}
-        isCompleted={false}
+        isCompleted={true}
         isUnlocked={true}
+        isMastered={false}
         isSelected={false}
         onPress={() => {}}
       />,
     );
     const text = getAllText(tree.root);
-    expect(text).not.toContain("🔒");
-  });
-
-  it("does not show checkmark when not completed", () => {
-    const tree = renderInAct(
-      <SkillNode
-        node={testNode}
-        isCompleted={false}
-        isUnlocked={true}
-        isSelected={false}
-        onPress={() => {}}
-      />,
-    );
-    const text = getAllText(tree.root);
-    expect(text).not.toContain("✓");
+    expect(text).toContain("◇");
   });
 
   it("shows difficulty badge", () => {
@@ -133,6 +108,7 @@ describe("SkillNode", () => {
         node={testNode}
         isCompleted={false}
         isUnlocked={true}
+        isMastered={false}
         isSelected={false}
         onPress={() => {}}
       />,
@@ -147,6 +123,7 @@ describe("SkillNode", () => {
         node={testNode}
         isCompleted={false}
         isUnlocked={true}
+        isMastered={false}
         isSelected={false}
         onPress={() => {}}
       />,
@@ -162,6 +139,7 @@ describe("SkillNode", () => {
         node={testNode}
         isCompleted={false}
         isUnlocked={true}
+        isMastered={false}
         isSelected={true}
         onPress={() => {}}
       />,
@@ -176,12 +154,43 @@ describe("SkillNode", () => {
         node={testNode}
         isCompleted={false}
         isUnlocked={true}
+        isMastered={false}
         isSelected={false}
         onPress={() => {}}
       />,
     );
     const text = getAllText(tree.root);
     expect(text).toContain("▶");
+  });
+
+  it("shows level badge (Lv1, Lv2, etc.)", () => {
+    const tree = renderInAct(
+      <SkillNode
+        node={testNode}
+        isCompleted={false}
+        isUnlocked={true}
+        isMastered={false}
+        isSelected={false}
+        onPress={() => {}}
+      />,
+    );
+    const text = getAllText(tree.root);
+    expect(text).toContain(`Lv${testNode.pathwayLevel}`);
+  });
+
+  it("shows state badge (UNLOCKED, ACTIVE, etc.)", () => {
+    const tree = renderInAct(
+      <SkillNode
+        node={testNode}
+        isCompleted={true}
+        isUnlocked={true}
+        isMastered={false}
+        isSelected={false}
+        onPress={() => {}}
+      />,
+    );
+    const text = getAllText(tree.root);
+    expect(text).toContain("ACTIVE");
   });
 
   it("calls onPress when pressed", () => {
@@ -193,18 +202,15 @@ describe("SkillNode", () => {
           node={testNode}
           isCompleted={false}
           isUnlocked={true}
+          isMastered={false}
           isSelected={false}
           onPress={onPress}
         />,
       );
     });
     act(() => {
-      // Find any host component with an onPress function prop
-      const button = tree!.root.find((node) => {
-        return (
-          node.props &&
-          typeof node.props.onPress === "function"
-        );
+      const button = tree!.root.find((n) => {
+        return n.props && typeof n.props.onPress === "function";
       });
       button.props.onPress();
     });
@@ -217,6 +223,7 @@ describe("SkillNode", () => {
         node={testNode}
         isCompleted={false}
         isUnlocked={true}
+        isMastered={false}
         isSelected={false}
         onPress={() => {}}
       />,
@@ -232,6 +239,7 @@ describe("SkillNode", () => {
         node={testNode}
         isCompleted={false}
         isUnlocked={true}
+        isMastered={false}
         isSelected={false}
         onPress={() => {}}
       />,
@@ -240,7 +248,7 @@ describe("SkillNode", () => {
   });
 
   it("renders different node types without crashing", () => {
-    for (const branch of SKILL_TREE) {
+    for (const branch of SKILL_TREE_8) {
       for (const node of branch.nodes) {
         act(() => {
           const tree = renderer.create(
@@ -248,6 +256,7 @@ describe("SkillNode", () => {
               node={node}
               isCompleted={false}
               isUnlocked={true}
+              isMastered={false}
               isSelected={false}
               onPress={() => {}}
             />,

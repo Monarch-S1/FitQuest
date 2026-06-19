@@ -37,6 +37,18 @@ const MUSCLE_GROUP_LABELS: Record<MuscleGroup, string> = {
   rotator_cuff: "Rotator Cuff",
   forearms: "Forearms",
   calves: "Calves",
+  upper_chest: "Upper Chest",
+  mid_back: "Mid Back",
+  rear_deltoids: "Rear Delts",
+  grip: "Grip",
+  upper_rectus_abdominis: "Upper Abs",
+  lower_rectus_abdominis: "Lower Abs",
+  hip_flexors: "Hip Flexors",
+  hip_abductors: "Hip Abductors",
+  serratus_anterior: "Serratus",
+  hip_adductors: "Hip Adductors",
+  scapular_stabilizers: "Scapular",
+  rectus_abdominis: "Abs",
 };
 
 const MUSCLE_GROUP_COLORS: Record<MuscleGroup, string> = {
@@ -56,6 +68,18 @@ const MUSCLE_GROUP_COLORS: Record<MuscleGroup, string> = {
   rotator_cuff: "#0EA5E9",
   forearms: "#78716C",
   calves: "#2DD4BF",
+  upper_chest: "#10B981",
+  mid_back: "#14B8A6",
+  rear_deltoids: "#8B5CF6",
+  grip: "#78716C",
+  upper_rectus_abdominis: "#06B6D4",
+  lower_rectus_abdominis: "#06B6D4",
+  hip_flexors: "#F59E0B",
+  hip_abductors: "#2DD4BF",
+  serratus_anterior: "#3B82F6",
+  hip_adductors: "#2DD4BF",
+  scapular_stabilizers: "#6366F1",
+  rectus_abdominis: "#06B6D4",
 };
 
 // Map exercise IDs back to their workout for context

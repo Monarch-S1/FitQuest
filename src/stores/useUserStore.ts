@@ -63,6 +63,9 @@ interface UserState {
   // Milestone tracking
   lastShownMilestone: number;
 
+  // Mastery tracking — IDs of exercises where upper rep range was hit
+  masteredExerciseIds: string[];
+
   // Actions
   setAuth: (userId: string, email: string) => void;
   clearAuth: () => void;
@@ -76,6 +79,8 @@ interface UserState {
   setThemeMode: (mode: ThemeMode) => void;
   setAccentColor: (accent: AccentKey) => void;
   addWorkoutSession: (session: WorkoutSession) => void;
+  /** Mark exercises as mastered when upper rep range is met */
+  markMastered: (exerciseIds: string[]) => void;
   recalculate: () => void;
   setLastShownMilestone: (days: number) => void;
 }
@@ -153,6 +158,9 @@ export const useUserStore = create<UserState>()(
 
   // Milestone defaults
   lastShownMilestone: 0,
+
+  // Mastery defaults
+  masteredExerciseIds: [],
 
       // Training data defaults
       totalXp: 0,
@@ -312,6 +320,12 @@ export const useUserStore = create<UserState>()(
         });
       },
 
+      markMastered: (exerciseIds) => {
+        const state = get();
+        const updated = new Set([...state.masteredExerciseIds, ...exerciseIds]);
+        set({ masteredExerciseIds: Array.from(updated) });
+      },
+
       setLastShownMilestone: (days) => {
         set({ lastShownMilestone: days });
       },
@@ -337,6 +351,7 @@ export const useUserStore = create<UserState>()(
         themeMode: state.themeMode,
         accentColor: state.accentColor,
         lastShownMilestone: state.lastShownMilestone,
+        masteredExerciseIds: state.masteredExerciseIds,
       }),
       // Recompute all derived values after loading persisted data
       // (streak, recovery, and level may have changed since last save)
