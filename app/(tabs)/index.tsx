@@ -132,7 +132,7 @@ export default function HomeScreen() {
                 marginBottom: spacing[1],
               }}
             >
-              HOME · COMMAND CENTER
+              Dashboard
             </Text>
             <Text
               style={{
@@ -305,7 +305,7 @@ export default function HomeScreen() {
 
         {/* ── Quick Start CTA ── */}
         <Button
-          title={`TRAIN ${recommendation.recommendedName}`}
+          title={`${recommendation.recommendedName}`}
           onPress={handleQuickTrain}
           size="lg"
           fullWidth
@@ -321,7 +321,7 @@ export default function HomeScreen() {
             marginBottom: spacing[3],
           }}
         >
-          YOUR PROGRAM
+          Program
         </Text>
 
         {/* Row 1: Two equal stat cards */}
@@ -386,7 +386,7 @@ export default function HomeScreen() {
                 marginBottom: spacing[2],
               }}
             >
-              <Text style={{ fontSize: 16 }}>📚</Text>
+              <Text style={{ fontSize: 14, color: colors.accent.DEFAULT }}>▤</Text>
             </View>
             <Text
               style={{
@@ -467,12 +467,12 @@ export default function HomeScreen() {
               marginBottom: spacing[2],
             }}
           >
-            PROGRAM STRUCTURE
+            Program
           </Text>
           <View style={{ gap: spacing[2] }}>
-            <InfoRow label="FREQUENCY" value="4 days/week, rotating A→B→C→D" />
-            <InfoRow label="PROGRESSION" value="Double progression method" />
-            <InfoRow label="DELOAD" value="Every 4-6 weeks (-50% volume)" />
+            <InfoRow label="Frequency" value="4 days/week" />
+            <InfoRow label="Progression" value="Double progression method" />
+            <InfoRow label="Deload" value="Every 4-6 weeks" />
           </View>
         </View>
       </Animated.ScrollView>

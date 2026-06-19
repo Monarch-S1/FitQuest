@@ -35,7 +35,7 @@ export function SegmentedPanel({
         backgroundColor: colors.bg.elevated,
         borderWidth: 1,
         borderColor: accentColor,
-        borderRadius: 4,
+        borderRadius: 12,
         marginBottom: spacing[3],
         overflow: "hidden",
         ...style,

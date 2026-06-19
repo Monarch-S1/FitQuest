@@ -42,7 +42,7 @@ export function WorkoutCard({ workout, onPress, isActive = false }: WorkoutCardP
         backgroundColor: isActive ? colors.bg.highlight : colors.bg.elevated,
         borderWidth: 1.5,
         borderColor: isActive ? colors.accent.DEFAULT : colors.border.subtle,
-        borderRadius: 4,
+        borderRadius: 12,
         padding: spacing[4],
         marginBottom: spacing[3],
         position: "relative",
@@ -133,7 +133,7 @@ export function WorkoutCard({ workout, onPress, isActive = false }: WorkoutCardP
             backgroundColor: isActive ? colors.accent.DEFAULT : "transparent",
             borderWidth: 1.5,
             borderColor: isActive ? colors.accent.DEFAULT : colors.border.subtle,
-            borderRadius: 4,
+            borderRadius: 12,
             paddingHorizontal: spacing[2],
             paddingVertical: spacing[1],
           }}
@@ -161,7 +161,7 @@ export function WorkoutCard({ workout, onPress, isActive = false }: WorkoutCardP
               backgroundColor: isActive ? `${colors.accent.DEFAULT}10` : colors.bg.primary,
               borderWidth: 1,
               borderColor: isActive ? `${colors.accent.DEFAULT}30` : colors.border.subtle,
-              borderRadius: 4,
+              borderRadius: 12,
               paddingHorizontal: spacing[2],
               paddingVertical: spacing[0],
             }}
@@ -184,7 +184,7 @@ export function WorkoutCard({ workout, onPress, isActive = false }: WorkoutCardP
               backgroundColor: colors.bg.primary,
               borderWidth: 1,
               borderColor: colors.border.subtle,
-              borderRadius: 4,
+              borderRadius: 12,
               paddingHorizontal: spacing[2],
               paddingVertical: spacing[0],
             }}

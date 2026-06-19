@@ -114,7 +114,12 @@ export const voiceCoach = new VoiceCoachEngine();
  * Build voice cue text for the start of a workout
  */
 export function getWorkoutStartCue(workoutName: string, exerciseCount: number): string {
-  return `${workoutName}. ${exerciseCount} exercises. Let's begin.`;
+  const cues = [
+    `${exerciseCount} exercises — let's go.`,
+    `Ready? ${exerciseCount} exercises ahead.`,
+    `Let's get started. ${exerciseCount} exercises today.`,
+  ];
+  return cues[Math.floor(Math.random() * cues.length)];
 }
 
 /**
@@ -131,17 +136,17 @@ export function getExerciseStartCue(
   const parts: string[] = [];
 
   if (isFirstSet) {
-    parts.push(`Exercise ${index + 1} of ${total}. ${exercise.name}.`);
+    parts.push(`Now: ${exercise.name}.`);
     parts.push(`${totalSets} sets.`);
   } else {
-    parts.push(`${exercise.name}. Set ${currentSet + 1} of ${totalSets}.`);
+    parts.push(`${exercise.name}. Set ${currentSet + 1}.`);
   }
 
   if (exercise.tempo === "isometric") {
     parts.push(`Hold for ${exercise.repRange[0]} to ${exercise.repRange[1]} seconds.`);
   } else {
     const mid = Math.round((exercise.repRange[0] + exercise.repRange[1]) / 2);
-    parts.push(`Target ${mid} reps. Range ${exercise.repRange[0]} to ${exercise.repRange[1]}.`);
+    parts.push(`Aim for ${mid}. Range ${exercise.repRange[0]} to ${exercise.repRange[1]}.`);
   }
 
   // Add form checkpoint on first set of new exercise
@@ -164,18 +169,22 @@ export function getSetCompleteCue(
   restInterval: number,
   isLastSet: boolean,
 ): string {
+  const restCues = ["Rest up.", "Take a breather.", "Good. Rest now."];
+  const doneCues = ["Nice work.", "Good set.", "Well done."];
+  const completeCues = ["Exercise done.", "Finished. Moving on."];
+  
   if (isTimeBased) {
     const seconds = reps;
     if (isLastSet) {
-      return `Hold complete. ${seconds} seconds. Exercise done.`;
+      return `${completeCues[Math.floor(Math.random() * completeCues.length)]} ${seconds} seconds.`;
     }
-    return `Set ${currentSet} complete. ${seconds} seconds. Rest ${restInterval} seconds.`;
+    return `${doneCues[Math.floor(Math.random() * doneCues.length)]} ${seconds} seconds. ${restCues[Math.floor(Math.random() * restCues.length)]}`;
   }
 
   if (isLastSet) {
-    return `Set ${currentSet} complete. ${reps} reps. Exercise finished.`;
+    return `${completeCues[Math.floor(Math.random() * completeCues.length)]} ${reps} reps.`;
   }
-  return `Set ${currentSet} complete. ${reps} reps. Rest ${restInterval} seconds.`;
+  return `${doneCues[Math.floor(Math.random() * doneCues.length)]} ${reps} reps. ${restCues[Math.floor(Math.random() * restCues.length)]}`;
 }
 
 /**
@@ -186,7 +195,12 @@ export function getWorkoutCompleteCue(
   setsCompleted: number,
   durationMinutes: number,
 ): string {
-  return `Workout complete. ${setsCompleted} sets in ${durationMinutes} minutes. Great work today.`;
+  const cues = [
+    `Done. ${setsCompleted} sets in ${durationMinutes} minutes. Solid session.`,
+    `Workout complete. ${setsCompleted} sets, ${durationMinutes} minutes. You crushed it.`,
+    `All done. ${setsCompleted} sets in ${durationMinutes} minutes. Great work.`,
+  ];
+  return cues[Math.floor(Math.random() * cues.length)];
 }
 
 /**
@@ -194,13 +208,14 @@ export function getWorkoutCompleteCue(
  */
 export function getRestWarningCue(secondsRemaining: number): string {
   if (secondsRemaining <= 5 && secondsRemaining > 0) {
-    return `${secondsRemaining}`;
+    const words = ["", "One", "Two", "Three", "Four", "Five"];
+    return `${words[secondsRemaining]}...`;
   }
   if (secondsRemaining === 10) {
-    return "10 seconds.";
+    return "Ten seconds.";
   }
   if (secondsRemaining === 30) {
-    return "30 seconds remaining.";
+    return "Thirty seconds left.";
   }
   return "";
 }

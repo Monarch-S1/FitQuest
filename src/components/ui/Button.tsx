@@ -64,7 +64,7 @@ export function Button({
       className={fullWidth ? "w-full" : ""}
       style={{
         borderWidth: variant === "ghost" ? 0 : 1.5,
-        borderRadius: 4,
+        borderRadius: 10,
         alignItems: "center",
         justifyContent: "center",
         flexDirection: "row",

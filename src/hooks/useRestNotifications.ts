@@ -74,7 +74,11 @@ async function getNotifModule(): Promise<NotifModule | null> {
 
 let permissionRequested = false;
 
-async function ensurePermissions(): Promise<boolean> {
+/**
+ * Request notification permissions — now exposed publicly so the UI can 
+ * call it at a user-action-driven moment instead of automatically.
+ */
+export async function requestRestNotificationPermission(): Promise<boolean> {
   if (permissionRequested) return true;
 
   const mod = await getNotifModule();
@@ -96,6 +100,13 @@ async function ensurePermissions(): Promise<boolean> {
     console.log("Failed to request notification permissions");
   }
   return false;
+}
+
+async function ensurePermissions(): Promise<boolean> {
+  // Deferred — no longer called automatically.
+  // Permissions should be requested via requestRestNotificationPermission()
+  // at an opportune moment in the UI.
+  return permissionRequested;
 }
 
 // ---------------------------------------------------------------------------

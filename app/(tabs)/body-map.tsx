@@ -69,7 +69,7 @@ export default function BodyMapScreen() {
               marginBottom: spacing[1],
             }}
           >
-            BODY MAP · MUSCLE EVOLUTION
+            Body
           </Text>
           <Text
             style={{
@@ -77,7 +77,7 @@ export default function BodyMapScreen() {
               color: colors.text.primary,
             }}
           >
-            BODY EVOLUTION
+            Body Map
           </Text>
         </View>
 
@@ -151,7 +151,7 @@ export default function BodyMapScreen() {
             marginBottom: spacing[3],
           }}
         >
-          MUSCLE DEVELOPMENT
+          Muscles
         </Text>
 
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[2] }}>

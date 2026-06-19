@@ -42,7 +42,7 @@ export function StatModule({
         backgroundColor: colors.bg.elevated,
         borderWidth: 1,
         borderColor: accentColor[accent],
-        borderRadius: 4,
+        borderRadius: 10,
         padding: sizes[size].padding,
         minHeight: sizes[size].minHeight,
         overflow: "hidden",

@@ -77,7 +77,7 @@ export default function TrainScreen() {
               marginBottom: spacing[1],
             }}
           >
-            TRAIN · WORKOUT SYSTEM
+            Train
           </Text>
           <Text
             style={{
@@ -85,12 +85,12 @@ export default function TrainScreen() {
               color: colors.text.primary,
             }}
           >
-            TRAINING GRID
+            Workouts
           </Text>
         </View>
 
         {/* Intelligence-Driven Recommendation */}
-        <SegmentedPanel title="TODAY'S RECOMMENDATION" accent="amber">
+        <SegmentedPanel title="            Pick a workout" accent="amber">
           <Text
             style={{
               ...typography.body,
@@ -239,7 +239,7 @@ export default function TrainScreen() {
             marginBottom: spacing[3],
           }}
         >
-          CORE PROGRAMS
+          Programs
         </Text>
 
         {goalWorkouts.map((w) => (

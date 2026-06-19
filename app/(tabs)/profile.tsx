@@ -59,35 +59,35 @@ function getAchievements(
       id: "first-workout",
       name: "First Step",
       description: "Complete your first workout",
-      icon: "●",
+      icon: "▴",
       unlocked: workoutHistoryLength >= 1,
     },
     {
       id: "week-streak",
       name: "Committed",
       description: "7-day streak",
-      icon: "⚡",
+      icon: "▬",
       unlocked: streak >= 7,
     },
     {
       id: "month-streak",
       name: "Unstoppable",
       description: "30-day streak",
-      icon: "🔥",
+      icon: "■",
       unlocked: streak >= 30,
     },
     {
       id: "level-5",
       name: "Operative",
       description: "Reach Level 5",
-      icon: "▲",
+      icon: "◆",
       unlocked: level >= 5,
     },
     {
       id: "level-10",
       name: "Veteran",
       description: "Reach Level 10",
-      icon: "▲▲",
+      icon: "◆◆",
       unlocked: level >= 10,
     },
     {
@@ -294,7 +294,7 @@ export default function ProfileScreen() {
               marginBottom: spacing[1],
             }}
           >
-            PROFILE · COMMANDER
+            Profile
           </Text>
           <Text
             style={{
@@ -302,7 +302,7 @@ export default function ProfileScreen() {
               color: colors.text.primary,
             }}
           >
-            PROFILE
+            Profile
           </Text>
         </View>
 
@@ -461,7 +461,7 @@ export default function ProfileScreen() {
                   fontSize: 7,
                 }}
               >
-                GOAL · TAP TO CHANGE
+                Goal
               </Text>
               <Text
                 style={{
@@ -497,7 +497,7 @@ export default function ProfileScreen() {
                   fontSize: 7,
                 }}
               >
-                LEVEL · TAP TO CHANGE
+                Level
               </Text>
               <Text
                 style={{
@@ -528,7 +528,7 @@ export default function ProfileScreen() {
             marginBottom: spacing[3],
           }}
         >
-          STATISTICS
+          Stats
         </Text>
 
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[2] }}>
@@ -561,7 +561,7 @@ export default function ProfileScreen() {
                 marginBottom: spacing[3],
               }}
             >
-              EXERCISE PROGRESSION
+              Exercise Progression
             </Text>
             {progressionSummary.exercisesReady.length > 0 && (
               <SegmentedPanel
@@ -781,7 +781,7 @@ export default function ProfileScreen() {
             marginBottom: spacing[3],
           }}
         >
-          ACHIEVEMENTS
+          Achievements
         </Text>
 
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[2] }}>

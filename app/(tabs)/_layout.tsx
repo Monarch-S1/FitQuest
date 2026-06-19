@@ -28,34 +28,34 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon icon="⌂" label="HOME" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon icon="▴" label="HOME" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="train"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon icon="⚔" label="TRAIN" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon icon="●" label="TRAIN" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon icon="◈" label="HISTORY" focused={focused} />
+            <TabIcon icon="▬" label="HISTORY" focused={focused} />
           ),
         }}
       />
       <Tabs.Screen
         name="body-map"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon icon="◇" label="BODY" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon icon="◆" label="BODY" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon icon="■" label="PROFILE" focused={focused} />
+            <TabIcon icon="▪" label="PROFILE" focused={focused} />
           ),
         }}
       />

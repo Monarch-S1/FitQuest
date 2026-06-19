@@ -8,8 +8,6 @@ import { HUDModule } from "../../src/components/ui/HUDModule";
 import { CompletionAnimation } from "../../src/components/workout/CompletionAnimation";
 import { ExerciseDemo } from "../../src/components/workout/ExerciseDemo";
 import { TempoTimer } from "../../src/components/workout/TempoTimer";
-import { VoiceCoachToggle } from "../../src/components/workout/VoiceCoachToggle";
-import { RepCounterPanel } from "../../src/components/workout/RepCounterPanel";
 import { useVoiceCoach } from "../../src/hooks/useVoiceCoach";
 import { useWorkoutStore } from "../../src/stores/useWorkoutStore";
 import { useRestNotifications } from "../../src/hooks/useRestNotifications";
@@ -346,13 +344,7 @@ export default function WorkoutPlayerScreen() {
             justifyContent: "flex-end",
           }}
         >
-          <VoiceCoachToggle
-            initialEnabled={isVoiceEnabled.current}
-            onToggle={(enabled) => {
-              isVoiceEnabled.current = enabled;
-            }}
-          />
-          <View
+<View
             style={{
               backgroundColor: colors.bg.elevated,
               borderWidth: 1,
@@ -718,15 +710,6 @@ export default function WorkoutPlayerScreen() {
         ) : (
           <>
             {/* Rep-based exercise interface */}
-            {/* Auto rep counter panel */}
-            <View style={{ marginBottom: spacing[3] }}>
-              <RepCounterPanel
-                phase={phase}
-                manualCount={currentRepInput}
-                onSyncCount={(autoCount) => setCurrentRepInput(autoCount)}
-              />
-            </View>
-
             {/* Manual rep input label */}
             <View
               style={{

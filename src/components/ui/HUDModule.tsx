@@ -27,7 +27,7 @@ export function HUDModule({ children, label, accent = "none", style }: HUDModule
         backgroundColor: colors.bg.elevated,
         borderWidth: 1,
         borderColor: accentColor,
-        borderRadius: 4,
+        borderRadius: 12,
         padding: spacing[3],
         position: "relative",
         ...style,
