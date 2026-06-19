@@ -332,8 +332,7 @@ export default function WorkoutPlayerScreen() {
             flex: 1,
             textAlign: "center",
           }}
-        >
-          {workout.name}
+        >            QUEST: {workout.name}
         </Text>
         <View
           style={{
@@ -835,7 +834,7 @@ export default function WorkoutPlayerScreen() {
 
         {phase === "exercise" && (
           <Button
-            title="FINISH WORKOUT"
+            title="            COMPLETE QUEST"
             onPress={handleCompleteWorkout}
             variant="secondary"
             fullWidth

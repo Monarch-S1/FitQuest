@@ -130,7 +130,7 @@ export default function BodyMapScreen() {
 
         {/* Interactive SVG Body Silhouette */}
         <HUDModule
-          label="BODY SILHOUETTE"
+          label="          MUSCLE MAP"
           accent="amber"
           style={{ alignItems: "center", padding: spacing[4] }}
         >
@@ -151,7 +151,7 @@ export default function BodyMapScreen() {
             marginBottom: spacing[3],
           }}
         >
-          Muscles
+          Attributes
         </Text>
 
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[2] }}>
@@ -262,7 +262,7 @@ export default function BodyMapScreen() {
             }}
           >
             <Text style={{ ...typography.bodySmall, color: colors.text.secondary, fontSize: 10 }}>
-              Tap a muscle to see its XP progression chart
+              Select an attribute to view XP progression
             </Text>
           </View>
         )}

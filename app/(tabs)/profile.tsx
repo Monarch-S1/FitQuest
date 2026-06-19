@@ -280,7 +280,7 @@ export default function ProfileScreen() {
               marginBottom: spacing[1],
             }}
           >
-            Profile
+            Character
           </Text>
           <Text
             style={{
@@ -288,12 +288,60 @@ export default function ProfileScreen() {
               color: colors.text.primary,
             }}
           >
-            Profile
+            Character Sheet
           </Text>
         </View>
 
         {/* Identity card */}
         <SegmentedPanel title="IDENTITY" accent="amber">
+          {/* Rank Emblem */}
+          <View
+            style={{
+              alignItems: "center",
+              paddingVertical: spacing[2],
+              marginBottom: spacing[2],
+              borderBottomWidth: 1,
+              borderBottomColor: colors.border.subtle,
+            }}
+          >
+            <View
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                borderWidth: 2,
+                borderColor: colors.accent.DEFAULT,
+                backgroundColor: `${colors.accent.DEFAULT}10`,
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: spacing[1],
+              }}
+            >
+              <Text style={{ fontFamily: fonts.heading, fontSize: 28, color: colors.accent.DEFAULT }}>
+                {level}
+              </Text>
+            </View>
+            <Text
+              style={{
+                fontFamily: fonts.heading,
+                fontSize: 18,
+                color: colors.accent.DEFAULT,
+                letterSpacing: 2,
+              }}
+            >
+              {rank.toUpperCase()}
+            </Text>
+            <Text
+              style={{
+                ...typography.bodySmall,
+                color: colors.text.secondary,
+                fontSize: 9,
+                marginTop: 1,
+              }}
+            >
+              LEVEL {level} · {totalXp} TOTAL XP
+            </Text>
+          </View>
           <View
             style={{
               flexDirection: "row",
@@ -514,7 +562,7 @@ export default function ProfileScreen() {
             marginBottom: spacing[3],
           }}
         >
-          Stats
+          Attributes
         </Text>
 
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[2] }}>
@@ -767,7 +815,7 @@ export default function ProfileScreen() {
             marginBottom: spacing[3],
           }}
         >
-          Achievements
+          Trophies
         </Text>
 
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[2] }}>

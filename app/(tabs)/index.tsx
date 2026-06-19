@@ -132,7 +132,7 @@ export default function HomeScreen() {
                 marginBottom: spacing[1],
               }}
             >
-              Dashboard
+              Command Center
             </Text>
             <Text
               style={{
@@ -321,7 +321,7 @@ export default function HomeScreen() {
             marginBottom: spacing[3],
           }}
         >
-          Program
+          Quest Log
         </Text>
 
         {/* Row 1: Two equal stat cards */}
@@ -467,12 +467,12 @@ export default function HomeScreen() {
               marginBottom: spacing[2],
             }}
           >
-            Program
+            Quest Info
           </Text>
           <View style={{ gap: spacing[2] }}>
-            <InfoRow label="Frequency" value="4 days/week" />
+            <InfoRow label="Schedule" value="4 days/week" />
             <InfoRow label="Progression" value="Double progression method" />
-            <InfoRow label="Deload" value="Every 4-6 weeks" />
+            <InfoRow label="Recovery" value="Every 4-6 weeks" />
           </View>
         </View>
       </Animated.ScrollView>

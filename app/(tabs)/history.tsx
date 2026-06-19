@@ -95,7 +95,7 @@ export default function HistoryScreen() {
               marginBottom: spacing[1],
             }}
           >
-            HISTORY · ANALYTICS
+            Adventure Log
           </Text>
           <Text
             style={{
@@ -103,7 +103,7 @@ export default function HistoryScreen() {
               color: colors.text.primary,
             }}
           >
-            HISTORY
+            Adventure Log
           </Text>
         </View>
 
@@ -196,7 +196,7 @@ export default function HistoryScreen() {
                 marginBottom: spacing[2],
               }}
             >
-              NO WORKOUT DATA
+              NO RECORDS
             </Text>
             <Text
               style={{
@@ -207,7 +207,7 @@ export default function HistoryScreen() {
                 lineHeight: 18,
               }}
             >
-              Complete your first workout to unlock analytics, charts, and performance tracking.
+              Complete your first quest to unlock the adventure log.
             </Text>
           </View>
         ) : (
@@ -299,7 +299,7 @@ export default function HistoryScreen() {
 
             {/* ── Streak Calendar ── */}
             <SegmentedPanel
-              title={`STREAK CALENDAR · ${streakData.currentStreak}d`}
+              title={`            STREAK CALENDAR · ${streakData.currentStreak}-DAY CHAIN`}
               accent="green"
               style={{ marginBottom: spacing[2] }}
             >
@@ -318,7 +318,7 @@ export default function HistoryScreen() {
             )}
 
             {/* ── Recent Sessions List ── */}
-            <SegmentedPanel title="ALL SESSIONS" accent="none">
+            <SegmentedPanel title="            ALL RECORDS" accent="none">
               {[...workoutHistory].reverse().map((session) => (
                 <View
                   key={session.id}

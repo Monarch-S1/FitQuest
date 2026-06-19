@@ -90,21 +90,20 @@ export default function TrainScreen() {
         </View>
 
         {/* Intelligence-Driven Recommendation */}
-        <SegmentedPanel title="            Pick a workout" accent="amber">
-          <Text
-            style={{
-              ...typography.body,
-              color: colors.text.secondary,
-              fontSize: 13,
-              lineHeight: 20,
-            }}
-          >
-            {recommendation.reasoning}
-          </Text>
+        <SegmentedPanel title="            Pick a workout" accent="amber">          <Text
+              style={{
+                ...typography.body,
+                color: colors.text.secondary,
+                fontSize: 13,
+                lineHeight: 20,
+              }}
+            >
+              {recommendation.reasoning}
+            </Text>
           {recommendation.recommendedId !== "rest" && (
             <View style={{ marginTop: spacing[3] }}>
               <Button
-                title={recommendation.recommendedName}
+                title={`ACCEPT QUEST: ${recommendation.recommendedName}`}
                 onPress={() => handleWorkoutSelect(recommendation.recommendedId)}
                 fullWidth
               />
@@ -239,7 +238,7 @@ export default function TrainScreen() {
             marginBottom: spacing[3],
           }}
         >
-          Programs
+          Active Quests
         </Text>
 
         {goalWorkouts.map((w) => (
@@ -311,7 +310,7 @@ export default function TrainScreen() {
         </TouchableOpacity>
 
         {/* Program Info */}
-        <SegmentedPanel title="PROGRAM STRUCTURE" accent="none">
+        <SegmentedPanel title="QUEST INFO" accent="none">
           <View style={{ gap: spacing[2] }}>
             <InfoRow label="FREQUENCY" value="4 days/week, rotating A→B→C→D" />
             <InfoRow label="PROGRAM" value={goalConfig.label} />
@@ -322,7 +321,7 @@ export default function TrainScreen() {
         </SegmentedPanel>
 
         {/* Difficulty selector */}
-        <SegmentedPanel title="DIFFICULTY" accent="none">
+        <SegmentedPanel title="DIFFICULTY TIERS" accent="none">
           <Text
             style={{
               ...typography.body,

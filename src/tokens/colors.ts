@@ -1,9 +1,9 @@
 export const colors = {
   bg: {
-    primary: "#080A0F",
-    elevated: "#10131A",
-    highlight: "#181C26",
-    surface: "#0C0F16",
+    primary: "#070814",
+    elevated: "#0D1021",
+    highlight: "#151A30",
+    surface: "#0A0D1A",
   },
   accent: {
     DEFAULT: "#F59E0B",
@@ -17,13 +17,13 @@ export const colors = {
   errorGlow: "rgba(239, 68, 68, 0.2)",
   warning: "#F59E0B",
   text: {
-    primary: "#F3F4F6",
-    secondary: "#9CA3AF",
-    tertiary: "#4B5563",
+    primary: "#EDE7D9",
+    secondary: "#9B8E7A",
+    tertiary: "#5A4F42",
     accent: "#F59E0B",
   },
   border: {
-    subtle: "#1E2130",
+    subtle: "#1C1F33",
     accent: "#F59E0B",
   },
 } as const;

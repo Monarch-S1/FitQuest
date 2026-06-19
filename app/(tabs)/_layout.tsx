@@ -2,8 +2,6 @@ import { Tabs } from "expo-router";
 import { View, Text } from "react-native";
 import { useColors, typography, spacing, fonts } from "../../src/tokens";
 
-
-
 export default function TabLayout() {
   const colors = useColors();
 
@@ -16,9 +14,9 @@ export default function TabLayout() {
           backgroundColor: colors.bg.primary,
           borderTopWidth: 1,
           borderTopColor: colors.border.subtle,
-          height: 60,
+          height: 62,
           paddingBottom: 6,
-          paddingTop: 6,
+          paddingTop: 8,
         },
         tabBarActiveTintColor: colors.accent.DEFAULT,
         tabBarInactiveTintColor: colors.text.secondary,
@@ -28,34 +26,34 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon icon="▴" label="HOME" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon icon="⚔" label="QUEST" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="train"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon icon="●" label="TRAIN" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon icon="◈" label="TRAIN" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon icon="▬" label="HISTORY" focused={focused} />
+            <TabIcon icon="▤" label="LOG" focused={focused} />
           ),
         }}
       />
       <Tabs.Screen
         name="body-map"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon icon="◆" label="BODY" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon icon="✦" label="BODY" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon icon="▪" label="PROFILE" focused={focused} />
+            <TabIcon icon="♛" label="CHARACTER" focused={focused} />
           ),
         }}
       />
@@ -69,8 +67,8 @@ function TabIcon({ icon, label, focused }: { icon: string; label: string; focuse
     <View style={{ alignItems: "center", justifyContent: "center", width: 64 }}>
       <View
         style={{
-          width: 32,
-          height: 24,
+          width: 36,
+          height: 26,
           alignItems: "center",
           justifyContent: "center",
           borderBottomWidth: focused ? 2 : 0,
@@ -79,7 +77,7 @@ function TabIcon({ icon, label, focused }: { icon: string; label: string; focuse
       >
         <Text
           style={{
-            fontSize: 16,
+            fontSize: 18,
             color: focused ? colors.accent.DEFAULT : colors.text.secondary,
           }}
         >
@@ -92,8 +90,8 @@ function TabIcon({ icon, label, focused }: { icon: string; label: string; focuse
           fontFamily: fonts.body.semiBold,
           fontSize: 9,
           color: focused ? colors.accent.DEFAULT : colors.text.secondary,
-          letterSpacing: 0.3,
-          marginTop: 1,
+          letterSpacing: 0.5,
+          marginTop: 2,
         }}
       >
         {label}
