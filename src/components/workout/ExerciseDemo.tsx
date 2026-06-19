@@ -7,6 +7,7 @@ import { Exercise } from "../../data/exercises";
 import { exerciseVideoIds, exerciseMp4Urls, hasMp4Source } from "../../data/exerciseVideos";
 import { videoCache } from "../../services/videoCache";
 import { useDialog } from "../ui/Dialog";
+import { VideoPlayerModal } from "./VideoPlayerModal";
 
 interface ExerciseDemoProps {
   exercise: Exercise;
@@ -17,6 +18,7 @@ export function ExerciseDemo({ exercise }: ExerciseDemoProps) {
   const dialog = useDialog();
 
   const [expanded, setExpanded] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
 
   // Fallback checkpoints in case exercise guide is missing
   const checkpoints = useMemo(() => {
@@ -88,19 +90,20 @@ export function ExerciseDemo({ exercise }: ExerciseDemoProps) {
     setCachedUri(null);
   }, [exercise.id]);
 
-  const handleWatchVideo = useCallback(async () => {
-    const url = videoId
-      ? `https://www.youtube.com/embed/${videoId}?playsinline=1&autoplay=0`
-      : `https://www.youtube.com/results?search_query=${encodeURIComponent(
-          `${exercise.name} calisthenics exercise form`
-        )}`;
-    try {
-      await WebBrowser.openBrowserAsync(url, {
+  const handleWatchVideo = useCallback(() => {
+    if (videoId) {
+      setShowVideo(true);
+    } else {
+      // No video ID — open YouTube search in browser
+      const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(
+        `${exercise.name} calisthenics exercise form`
+      )}`;
+      WebBrowser.openBrowserAsync(url, {
         toolbarColor: '#0F1115',
         controlsColor: '#F59E0B',
+      }).catch(() => {
+        dialog.alert({ title: "Unable to open browser", message: "Please check your device settings." });
       });
-    } catch {
-      dialog.alert({ title: "Unable to open browser", message: "Please check your device settings." });
     }
   }, [exercise.name, videoId]);
 
@@ -443,6 +446,12 @@ export function ExerciseDemo({ exercise }: ExerciseDemoProps) {
         </MotiView>
       )}
       <dialog.Dialog />
+      <VideoPlayerModal
+        exerciseName={exercise.name}
+        exerciseId={exercise.id}
+        visible={showVideo}
+        onClose={() => setShowVideo(false)}
+      />
     </View>
   );
 }
