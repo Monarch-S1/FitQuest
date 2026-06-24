@@ -236,7 +236,11 @@ export default function WorkoutPlayerScreen() {
       const xp = calculateWorkoutXp(result.totalSets, streak, allComplete);
       setXpBreakdown(xp);
       const session = {
-        id: `session-${Date.now()}`,
+        id: `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`.replace(/[xy]/g, (c) => {
+          const r = (Math.random() * 16) | 0;
+          const v = c === "x" ? r : (r & 0x3) | 0x8;
+          return v.toString(16);
+        }),
         workoutId: id || "unknown",
         date: getLocalDate(),
         duration: result.totalDuration,
