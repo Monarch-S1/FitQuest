@@ -532,7 +532,7 @@ export function BodySilhouette({
   const viewBox = viewSide === "front" ? "0 0 35 93" : "37 0 35 93";
 
   return (
-    <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: spacing[2] }}>
+    <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: spacing.sm }}>
       {/* View toggle */}
       <View
         style={{
@@ -540,7 +540,7 @@ export function BodySilhouette({
           backgroundColor: colors.bg.highlight,
           borderRadius: 4,
           padding: 2,
-          marginBottom: spacing[2],
+          marginBottom: spacing.sm,
           width: 140,
           overflow: "hidden",
         }}
@@ -607,8 +607,8 @@ export function BodySilhouette({
         style={{
           flexDirection: "row",
           flexWrap: "wrap",
-          gap: spacing[1],
-          marginTop: spacing[2],
+          gap: spacing.xs,
+          marginTop: spacing.sm,
           justifyContent: "center",
           maxWidth: 300,
         }}
@@ -636,7 +636,7 @@ export function BodySilhouette({
                 borderWidth: 1,
                 borderColor: isSelected ? zoneColor : "transparent",
                 borderRadius: 4,
-                paddingHorizontal: spacing[1],
+                paddingHorizontal: spacing.xs,
                 paddingVertical: 2,
               }}
             >
@@ -669,8 +669,8 @@ export function BodySilhouette({
       <View
         style={{
           flexDirection: "row",
-          gap: spacing[3],
-          marginTop: spacing[3],
+          gap: spacing.md,
+          marginTop: spacing.md,
           justifyContent: "center",
         }}
       >

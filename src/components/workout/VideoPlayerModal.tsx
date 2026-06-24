@@ -75,7 +75,7 @@ export function VideoPlayerModal({
   const searchUrl = hasVideo
     ? null
     : `https://www.youtube.com/results?search_query=${encodeURIComponent(
-        `${exerciseName} calisthenics exercise form`
+        `${exerciseName} exercise form`,
       )}`;
 
   return (
@@ -86,7 +86,7 @@ export function VideoPlayerModal({
           backgroundColor: "rgba(0, 0, 0, 0.92)",
           justifyContent: "center",
           alignItems: "center",
-          padding: spacing[4],
+          padding: spacing.lg,
           opacity: fadeAnim,
         }}
       >
@@ -131,8 +131,8 @@ export function VideoPlayerModal({
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingHorizontal: spacing[3],
-                paddingVertical: spacing[2],
+                paddingHorizontal: spacing.md,
+                paddingVertical: spacing.sm,
                 borderBottomWidth: 1,
                 borderBottomColor: colors.border.subtle,
               }}
@@ -198,7 +198,7 @@ export function VideoPlayerModal({
                           ...typography.label,
                           color: colors.text.secondary,
                           fontSize: 8,
-                          marginTop: spacing[2],
+                          marginTop: spacing.sm,
                           textAlign: "center",
                         }}
                       >
@@ -218,7 +218,7 @@ export function VideoPlayerModal({
                           ...typography.bodySmall,
                           color: colors.text.secondary,
                           fontSize: 11,
-                          marginTop: spacing[1],
+                          marginTop: spacing.xs,
                           textAlign: "center",
                         }}
                       >
@@ -259,8 +259,8 @@ export function VideoPlayerModal({
             {/* Footer */}
             <View
               style={{
-                paddingHorizontal: spacing[3],
-                paddingVertical: spacing[2],
+                paddingHorizontal: spacing.md,
+                paddingVertical: spacing.sm,
                 borderTopWidth: 1,
                 borderTopColor: colors.border.subtle,
                 flexDirection: "row",
@@ -268,9 +268,7 @@ export function VideoPlayerModal({
                 alignItems: "center",
               }}
             >
-              <Text
-                style={{ ...typography.bodySmall, color: colors.text.secondary, fontSize: 9 }}
-              >
+              <Text style={{ ...typography.bodySmall, color: colors.text.secondary, fontSize: 9 }}>
                 {hasVideo ? `${exerciseName} — form guide` : `Searching: ${exerciseName}`}
               </Text>
               <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 7 }}>

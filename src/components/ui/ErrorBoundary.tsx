@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { useColors, typography, spacing } from "../../tokens";
+import { useColors, spacing, H3, Label, Body } from "../../tokens";
 import { captureError } from "../../services/sentry";
 
 interface ErrorBoundaryProps {
@@ -18,7 +18,7 @@ interface ErrorBoundaryState {
 
 /**
  * ErrorBoundary — catches React render errors and displays a crash recovery UI.
- * Wraps children with error detection and a tactical ARCH-styled fallback.
+ * Wraps children with error detection and a tactical FitQuest-styled fallback.
  *
  * Usage:
  *   <ErrorBoundary>
@@ -68,7 +68,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 }
 
-/** Internal — tactical ARCH-styled crash fallback */
+/** Internal — tactical FitQuest-styled crash fallback */
 function DefaultFallback({ error, retry }: { error: Error; retry: () => void }) {
   const router = useRouter();
   const colors = useColors();
@@ -79,7 +79,7 @@ function DefaultFallback({ error, retry }: { error: Error; retry: () => void }) 
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          padding: spacing[6],
+          padding: spacing.xl,
         }}
       >
         {/* Error icon */}
@@ -93,78 +93,58 @@ function DefaultFallback({ error, retry }: { error: Error; retry: () => void }) 
             borderRadius: 4,
             alignItems: "center",
             justifyContent: "center",
-            marginBottom: spacing[5],
+            marginBottom: spacing.lg + spacing.xs,
           }}
         >
           <Text style={{ fontSize: 32, color: colors.error }}>!</Text>
         </View>
 
         {/* Title */}
-        <Text
-          style={{
-            ...typography.h2,
-            color: colors.text.primary,
-            fontSize: 28,
-            textAlign: "center",
-            marginBottom: spacing[2],
-          }}
-        >
+        <H3 variant="primary" style={{ textAlign: "center", marginBottom: spacing.sm }}>
           SYSTEM ERROR
-        </Text>
+        </H3>
 
         {/* Subtitle */}
-        <Text
+        <Body
+          variant="secondary"
           style={{
-            ...typography.body,
-            color: colors.text.secondary,
             fontSize: 13,
             lineHeight: 20,
             textAlign: "center",
-            marginBottom: spacing[5],
+            marginBottom: spacing.lg + spacing.xs,
             maxWidth: 300,
           }}
         >
-          ARCH encountered an unexpected error. The system is stable and your data is preserved.
-        </Text>
+          FitQuest encountered an unexpected error. The system is stable and your data is preserved.
+        </Body>
 
         {/* Error detail — only show message in production, no stack traces */}
         <ScrollView
           style={{
             maxHeight: 100,
             width: "100%",
-            backgroundColor: colors.bg.elevated,
+            backgroundColor: colors.bg.card,
             borderWidth: 1,
             borderColor: colors.border.subtle,
             borderRadius: 4,
-            padding: spacing[3],
-            marginBottom: spacing[6],
+            padding: spacing.md,
+            marginBottom: spacing.xl,
           }}
         >
-          <Text
-            style={{
-              ...typography.bodySmall,
-              color: colors.error,
-              fontSize: 10,
-              fontFamily: "monospace",
-            }}
-          >
+          <Body variant="error" size="sm" style={{ fontSize: 10, fontFamily: "monospace" }}>
             {__DEV__
               ? `${error.name}: ${error.message}`
               : "An unexpected error occurred. Please try again."}
-          </Text>
+          </Body>
           {__DEV__ && error.stack && (
-            <Text
-              style={{
-                ...typography.bodySmall,
-                color: colors.text.secondary,
-                fontSize: 8,
-                fontFamily: "monospace",
-                marginTop: spacing[1],
-              }}
+            <Body
+              variant="secondary"
+              size="sm"
+              style={{ fontSize: 8, fontFamily: "monospace", marginTop: spacing.xs }}
               numberOfLines={6}
             >
               {error.stack.split("\n").slice(0, 6).join("\n")}
-            </Text>
+            </Body>
           )}
         </ScrollView>
 
@@ -175,24 +155,15 @@ function DefaultFallback({ error, retry }: { error: Error; retry: () => void }) 
           style={{
             backgroundColor: colors.accent.DEFAULT,
             borderRadius: 4,
-            paddingVertical: spacing[3],
-            paddingHorizontal: spacing[10],
+            paddingVertical: spacing.md,
+            paddingHorizontal: 40,
             alignItems: "center",
             width: "100%",
             maxWidth: 280,
-            marginBottom: spacing[2],
+            marginBottom: spacing.sm,
           }}
         >
-          <Text
-            style={{
-              ...typography.label,
-              color: colors.bg.primary,
-              fontSize: 12,
-              letterSpacing: 2,
-            }}
-          >
-            RETRY
-          </Text>
+          <Label style={{ color: colors.bg.primary, fontSize: 12, letterSpacing: 2 }}>RETRY</Label>
         </TouchableOpacity>
 
         {/* Navigate home — breaks infinite retry loops */}
@@ -203,23 +174,16 @@ function DefaultFallback({ error, retry }: { error: Error; retry: () => void }) 
             borderWidth: 1,
             borderColor: colors.border.subtle,
             borderRadius: 4,
-            paddingVertical: spacing[3],
-            paddingHorizontal: spacing[10],
+            paddingVertical: spacing.md,
+            paddingHorizontal: 40,
             alignItems: "center",
             width: "100%",
             maxWidth: 280,
           }}
         >
-          <Text
-            style={{
-              ...typography.label,
-              color: colors.text.secondary,
-              fontSize: 11,
-              letterSpacing: 1,
-            }}
-          >
+          <Label variant="secondary" style={{ fontSize: 11, letterSpacing: 1 }}>
             GO HOME
-          </Text>
+          </Label>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

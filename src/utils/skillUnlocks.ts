@@ -5,7 +5,7 @@
  * by comparing pre/post-workout completion state.
  */
 
-import { SKILL_TREE_8, SkillNode, computeNodeStates, NodeState } from "../data/skillTree";
+import { getSkillTree8, SkillNode, computeNodeStates, NodeState } from "../data/skillTree";
 import { getNewlyUnlockedClasses, WorkoutClass, WORKOUT_CLASSES } from "../data/workoutClasses";
 import type { WorkoutSession } from "../stores/useUserStore";
 import { LEGACY_TO_PATHWAY } from "../data/exercises96";
@@ -26,9 +26,7 @@ export function toPathwayId(exerciseId: string): string {
  * Extract completed exercise IDs from workout history.
  * For legacy IDs, maps to pathway IDs first.
  */
-export function extractCompletedIds(
-  workoutHistory: WorkoutSession[],
-): Set<string> {
+export function extractCompletedIds(workoutHistory: WorkoutSession[]): Set<string> {
   const completed = new Set<string>();
   for (const session of workoutHistory) {
     for (const ex of session.exercises || []) {
@@ -48,9 +46,7 @@ export function extractCompletedIds(
  * For now, we mark an exercise as mastered if it has been completed
  * in 3+ sessions with the highest rep count hitting the upper range.
  */
-export function detectMasteredExercises(
-  workoutHistory: WorkoutSession[],
-): Set<string> {
+export function detectMasteredExercises(workoutHistory: WorkoutSession[]): Set<string> {
   const repTracking = new Map<string, number[]>();
 
   for (const session of workoutHistory) {
@@ -140,7 +136,7 @@ export function findNewUnlocks(
   // Skill unlocks
   const skillUnlocks: NewSkillUnlock[] = [];
 
-  for (const branch of SKILL_TREE_8) {
+  for (const branch of getSkillTree8()) {
     for (const node of branch.nodes) {
       const id = node.exercise.id;
       const wasUnlocked = oldUnlocked.has(id);
@@ -159,10 +155,9 @@ export function findNewUnlocks(
   }
 
   // Class unlocks — diff old vs new mastered state
-  const classUnlocks: NewClassUnlock[] = getNewlyUnlockedClasses(
-    oldMastered,
-    newMastered,
-  ).map((classDef) => ({ classDef }));
+  const classUnlocks: NewClassUnlock[] = getNewlyUnlockedClasses(oldMastered, newMastered).map(
+    (classDef) => ({ classDef }),
+  );
 
   return { skillUnlocks, classUnlocks };
 }
@@ -175,7 +170,10 @@ export function getUnlockSummary(
   masteredIds: Set<string>,
 ): { total: number; mastered: number; active: number; unlocked: number; locked: number } {
   const states = computeNodeStates(completedIds, masteredIds);
-  let mastered = 0, active = 0, unlocked = 0, locked = 0;
+  let mastered = 0,
+    active = 0,
+    unlocked = 0,
+    locked = 0;
 
   for (const state of states.values()) {
     if (state === "mastered") mastered++;

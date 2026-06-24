@@ -1,9 +1,8 @@
 import { useState, useMemo } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useColors, typography, spacing, fonts } from "../../src/tokens";
-import { HUDModule } from "../../src/components/ui/HUDModule";
-import { StatModule } from "../../src/components/ui/StatModule";
+import { useColors, typography, spacing, fonts, Label, H4, Body } from "../../src/tokens";
+import { Card } from "../../src/components/ui/Card";
 import { BodySilhouette } from "../../src/components/ui/BodySilhouette";
 import { MuscleXpChart } from "../../src/components/workout/MuscleXpChart";
 import { useUserStore } from "../../src/stores/useUserStore";
@@ -57,16 +56,16 @@ export default function BodyMapScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: spacing[4], paddingBottom: spacing[12] }}
+        contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing[12] }}
       >
         {/* Header */}
-        <View style={{ marginBottom: spacing[4] }}>
+        <View style={{ marginBottom: spacing.lg }}>
           <Text
             style={{
               ...typography.label,
               color: colors.text.secondary,
               fontSize: 10,
-              marginBottom: spacing[1],
+              marginBottom: spacing.xs,
             }}
           >
             Body
@@ -91,24 +90,27 @@ export default function BodyMapScreen() {
               borderColor: colors.border.subtle,
               borderRadius: 4,
               padding: 2,
-              marginBottom: spacing[3],
+              marginBottom: spacing.md,
               alignSelf: "flex-start",
             }}
           >
-            {([
+            {[
               { key: "latest" as ViewMode, label: "LATEST SESSION" },
               { key: "all" as ViewMode, label: "ALL TIME" },
-            ]).map((opt) => (
+            ].map((opt) => (
               <TouchableOpacity
                 key={opt.key}
-                onPress={() => { setViewMode(opt.key); setSelectedMuscle(null); }}
+                onPress={() => {
+                  setViewMode(opt.key);
+                  setSelectedMuscle(null);
+                }}
                 activeOpacity={0.7}
                 accessibilityRole="radio"
                 accessibilityLabel={`${opt.label} view mode`}
                 accessibilityState={{ selected: viewMode === opt.key }}
                 style={{
-                  paddingHorizontal: spacing[3],
-                  paddingVertical: spacing[1],
+                  paddingHorizontal: spacing.md,
+                  paddingVertical: spacing.xs,
                   backgroundColor: viewMode === opt.key ? colors.accent.DEFAULT : "transparent",
                   borderRadius: 4,
                 }}
@@ -129,17 +131,13 @@ export default function BodyMapScreen() {
         )}
 
         {/* Interactive SVG Body Silhouette */}
-        <HUDModule
-          label="          MUSCLE MAP"
-          accent="amber"
-          style={{ alignItems: "center", padding: spacing[4] }}
-        >
+        <Card title="MUSCLE MAP" accent="amber" style={{ alignItems: "center" }}>
           <BodySilhouette
             muscleData={muscleData}
             selectedMuscle={selectedMuscle?.zone || null}
             onSelectMuscle={handleSelectZone}
           />
-        </HUDModule>
+        </Card>
 
         {/* Muscle group grid */}
         <Text
@@ -147,14 +145,14 @@ export default function BodyMapScreen() {
             ...typography.subtitle,
             color: colors.text.secondary,
             fontSize: 11,
-            marginTop: spacing[2],
-            marginBottom: spacing[3],
+            marginTop: spacing.sm,
+            marginBottom: spacing.md,
           }}
         >
           Attributes
         </Text>
 
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[2] }}>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }}>
           {muscleData.map((muscle) => (
             <TouchableOpacity
               key={muscle.zone}
@@ -171,7 +169,7 @@ export default function BodyMapScreen() {
                 borderColor:
                   selectedMuscle?.zone === muscle.zone ? muscle.color : colors.border.subtle,
                 borderRadius: 4,
-                padding: spacing[3],
+                padding: spacing.md,
               }}
             >
               <View
@@ -208,7 +206,7 @@ export default function BodyMapScreen() {
                   height: 3,
                   backgroundColor: colors.bg.highlight,
                   borderRadius: 4,
-                  marginTop: spacing[2],
+                  marginTop: spacing.sm,
                   overflow: "hidden",
                 }}
               >
@@ -227,21 +225,26 @@ export default function BodyMapScreen() {
 
         {/* Selected muscle detail */}
         {selectedMuscle && (
-          <View style={{ marginTop: spacing[4] }}>
-            <StatModule
-              label={selectedMuscle.name.toUpperCase()}
-              value={selectedMuscle.level > 0 ? `Level ${selectedMuscle.level}` : "Not trained"}
-              subValue={
-                selectedMuscle.level > 0
-                  ? `${selectedMuscle.xpIntoLevel} / ${selectedMuscle.nextLevelXp} XP to next level`
-                  : "Complete workouts targeting this muscle to begin tracking"
-              }
-              accent={selectedMuscle.level >= 3 ? "green" : "amber"}
-            />
+          <View style={{ marginTop: spacing.lg }}>
+            <Card>
+              <View style={{ alignItems: "center", gap: spacing.xs }}>
+                <Label variant="secondary" style={{ fontSize: 9 }}>
+                  {selectedMuscle.name.toUpperCase()}
+                </Label>
+                <H4 variant={selectedMuscle.level >= 3 ? "success" : "accent"}>
+                  {selectedMuscle.level > 0 ? `Level ${selectedMuscle.level}` : "Not trained"}
+                </H4>
+                <Body variant="secondary" size="sm" style={{ fontSize: 9, textAlign: "center" }}>
+                  {selectedMuscle.level > 0
+                    ? `${selectedMuscle.xpIntoLevel} / ${selectedMuscle.nextLevelXp} XP to next level`
+                    : "Complete workouts targeting this muscle to begin tracking"}
+                </Body>
+              </View>
+            </Card>
 
             {/* XP history chart for selected muscle */}
             {selectedHistory && selectedHistory.points.length >= 2 && (
-              <View style={{ marginTop: spacing[2] }}>
+              <View style={{ marginTop: spacing.sm }}>
                 <MuscleXpChart history={selectedHistory} accent={selectedMuscle.color} />
               </View>
             )}
@@ -252,12 +255,12 @@ export default function BodyMapScreen() {
         {!selectedMuscle && hasHistory && (
           <View
             style={{
-              marginTop: spacing[3],
+              marginTop: spacing.md,
               backgroundColor: colors.bg.elevated,
               borderWidth: 1,
               borderColor: colors.border.subtle,
               borderRadius: 4,
-              padding: spacing[3],
+              padding: spacing.md,
               alignItems: "center",
             }}
           >

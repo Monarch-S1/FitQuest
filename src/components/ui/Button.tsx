@@ -1,5 +1,5 @@
-import { TouchableOpacity, Text, View } from "react-native";
-import { useColors, typography, spacing } from "../../tokens";
+import { TouchableOpacity, View } from "react-native";
+import { useColors, spacing, Label } from "../../tokens";
 import { hapticPress } from "../../utils/haptics";
 
 interface ButtonProps {
@@ -24,9 +24,9 @@ export function Button({
   const colors = useColors();
 
   const sizeStyles = {
-    sm: { paddingVertical: spacing[2], paddingHorizontal: spacing[4] },
-    md: { paddingVertical: spacing[3], paddingHorizontal: spacing[6] },
-    lg: { paddingVertical: spacing[4], paddingHorizontal: spacing[8] },
+    sm: { paddingVertical: spacing.sm, paddingHorizontal: spacing.lg },
+    md: { paddingVertical: spacing.md, paddingHorizontal: spacing.xl },
+    lg: { paddingVertical: spacing.lg, paddingHorizontal: spacing.xxl },
   };
 
   const variantStyles = {
@@ -44,11 +44,10 @@ export function Button({
     },
   };
 
-  const textColors = {
-    primary: colors.bg.primary,
-    secondary: colors.accent.DEFAULT,
-    ghost: colors.text.secondary,
-  };
+  const labelVariant =
+    variant === "secondary" ? "accent" : variant === "ghost" ? "secondary" : undefined;
+  const labelCustomColor = variant === "primary" ? colors.bg.primary : undefined;
+  const labelFontSize = size === "lg" ? 14 : size === "sm" ? 10 : 12;
 
   return (
     <TouchableOpacity
@@ -81,21 +80,26 @@ export function Button({
               height: 14,
               borderRadius: 7,
               borderWidth: 2,
-              borderColor: textColors[variant],
+              borderColor:
+                variant === "primary"
+                  ? colors.bg.primary
+                  : variant === "secondary"
+                    ? colors.accent.DEFAULT
+                    : colors.text.secondary,
               borderTopColor: "transparent",
             }}
           />
         </View>
       )}
-      <Text
+      <Label
+        variant={labelVariant}
         style={{
-          ...typography.label,
-          color: textColors[variant],
-          fontSize: size === "lg" ? 14 : size === "sm" ? 10 : 12,
+          fontSize: labelFontSize,
+          ...(labelCustomColor ? { color: labelCustomColor } : {}),
         }}
       >
         {loading ? "PROCESSING..." : title.toUpperCase()}
-      </Text>
+      </Label>
     </TouchableOpacity>
   );
 }

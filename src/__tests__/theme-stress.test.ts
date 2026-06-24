@@ -4,12 +4,12 @@
  */
 
 // Mock AsyncStorage before importing the store
+import { useUserStore } from "../stores/useUserStore";
+import { getColors, accentOptions, AccentKey, ThemeMode } from "../tokens/themes";
+
 jest.mock("@react-native-async-storage/async-storage", () =>
   require("@react-native-async-storage/async-storage/jest/async-storage-mock"),
 );
-
-import { useUserStore } from "../stores/useUserStore";
-import { getColors, accentOptions, AccentKey, ThemeMode } from "../tokens/themes";
 
 beforeEach(() => {
   // Reset store to defaults
@@ -259,7 +259,9 @@ describe("Theme System Stress Tests", () => {
       // Change theme many times
       for (let i = 0; i < 50; i++) {
         useUserStore.getState().setThemeMode(i % 2 === 0 ? "dark" : "light");
-        useUserStore.getState().setAccentColor(["amber", "emerald", "cyan", "rose"][i % 4] as AccentKey);
+        useUserStore
+          .getState()
+          .setAccentColor(["amber", "emerald", "cyan", "rose"][i % 4] as AccentKey);
       }
 
       expect(useUserStore.getState().level).toBe(levelBefore);

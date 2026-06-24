@@ -1,5 +1,5 @@
 /**
- * ARCH 96-Exercise Progression Database
+ * FitQuest 96-Exercise Progression Database
  *
  * 8 movement pathways × 12 levels = 96 exercises
  * Structured from Level 1 (Absolute Beginner) to Level 12 (Elite).
@@ -11,10 +11,10 @@
  */
 
 // ─── Re-export helpers ─────────────────────────────
-export { Exercise96, M, CK, E } from "./helpers";
-
 import { type Exercise96 } from "./helpers";
 import { PathwayId } from "../pathways";
+
+export { Exercise96, M, CK, E } from "./helpers";
 
 // ═══════════════════════════════════════════════════
 // LAZY LOADING — pathway files imported on first use
@@ -36,10 +36,7 @@ function loadAll(): Exercise96[] {
   const { AC } = require("./ac") as { AC: Exercise96[] };
   const { PLC } = require("./plc") as { PLC: Exercise96[] };
 
-  _allExercises = [
-    ...HP, ...VP, ...HPLL, ...VPLL,
-    ...AQL, ...HPL, ...AC, ...PLC,
-  ];
+  _allExercises = [...HP, ...VP, ...HPLL, ...VPLL, ...AQL, ...HPL, ...AC, ...PLC];
   return _allExercises;
 }
 
@@ -59,7 +56,9 @@ export function getExercisesByPathway(pathway: PathwayId): Exercise96[] {
 }
 
 /** Get all exercises by parent family */
-export function getExercisesByParentFamily(family: "push" | "pull" | "legs" | "core"): Exercise96[] {
+export function getExercisesByParentFamily(
+  family: "push" | "pull" | "legs" | "core",
+): Exercise96[] {
   const families: Record<string, PathwayId[]> = {
     push: ["hp", "vp"],
     pull: ["hpll", "vpll"],

@@ -6,18 +6,25 @@ import {
 import { WorkoutSession } from "../stores/useUserStore";
 
 describe("getAllExercises", () => {
-  it("returns all 24 exercises across all 4 workouts", () => {
+  it("returns all 96 exercises from the 96-exercise database", () => {
     const exercises = getAllExercises();
-    expect(exercises.length).toBe(24);
+    expect(exercises.length).toBe(96);
   });
 
-  it("includes exercises from all workouts", () => {
+  it("includes 96-exercise database entries", () => {
     const exercises = getAllExercises();
     const ids = exercises.map((e) => e.id);
-    expect(ids).toContain("bulgarian-split-squat");
-    expect(ids).toContain("nordic-hamstring-curl");
-    expect(ids).toContain("doorframe-pull-up-negative");
-    expect(ids).toContain("jump-squat");
+    expect(ids).toContain("HP1");
+    expect(ids).toContain("VP6");
+    expect(ids).toContain("AC12");
+    expect(ids).toContain("PLC3");
+  });
+
+  it("has no duplicate IDs", () => {
+    const exercises = getAllExercises();
+    const ids = exercises.map((e) => e.id);
+    const uniqueIds = new Set(ids);
+    expect(ids.length).toBe(uniqueIds.size);
   });
 });
 
@@ -28,7 +35,7 @@ describe("getExerciseProgression", () => {
   });
 
   it("returns insufficient_data status for no history", () => {
-    const result = getExerciseProgression("decline-push-up", []);
+    const result = getExerciseProgression("HP7", []); // HP7 = Decline Push-up
     expect(result).not.toBeNull();
     expect(result!.status).toBe("insufficient_data");
     expect(result!.sessionsCompleted).toBe(0);
@@ -44,28 +51,28 @@ describe("getExerciseProgression", () => {
         duration: 30,
         setsCompleted: 3,
         xpEarned: 75,
-        exercises: [{ exerciseId: "decline-push-up", sets: 3, repsCompleted: [10, 11, 12] }],
+        exercises: [{ exerciseId: "HP7", sets: 3, repsCompleted: [10, 11, 12] }],
       },
     ];
 
-    const result = getExerciseProgression("decline-push-up", sessions);
+    const result = getExerciseProgression("HP7", sessions);
     expect(result).not.toBeNull();
     expect(result!.averageReps).toBeCloseTo(11, 0);
     expect(result!.sessionsCompleted).toBe(1);
   });
 
   it("detects progress status when 80%+ reps at upper range", () => {
-    // Decline push-up: repRange [8, 15], upper threshold = 14
-    // 14, 14, 15, 15, 15 = 5/5 = 100% at upper range → progress
+    // HP7 (Decline Push-up): repRange [8, 12], upper threshold = 11
+    // 11, 12, 12, 12, 12 = 5/5 = 100% at upper range → progress
     const sessions: WorkoutSession[] = [
       {
         id: "1",
         workoutId: "workout-a",
         date: "2026-05-24",
         duration: 30,
-        setsCompleted: 3,
-        xpEarned: 75,
-        exercises: [{ exerciseId: "decline-push-up", sets: 2, repsCompleted: [14, 14] }],
+        setsCompleted: 2,
+        xpEarned: 50,
+        exercises: [{ exerciseId: "HP7", sets: 2, repsCompleted: [11, 12] }],
       },
       {
         id: "2",
@@ -74,25 +81,26 @@ describe("getExerciseProgression", () => {
         duration: 30,
         setsCompleted: 3,
         xpEarned: 75,
-        exercises: [{ exerciseId: "decline-push-up", sets: 3, repsCompleted: [15, 15, 15] }],
+        exercises: [{ exerciseId: "HP7", sets: 3, repsCompleted: [12, 12, 12] }],
       },
     ];
 
-    const result = getExerciseProgression("decline-push-up", sessions);
+    const result = getExerciseProgression("HP7", sessions);
     expect(result).not.toBeNull();
     expect(result!.status).toBe("progress");
   });
 
   it("detects maintain status when reps are mid-range", () => {
+    // HP7 repRange [8, 12], mid-range ~10
     const sessions: WorkoutSession[] = [
       {
         id: "1",
         workoutId: "workout-a",
         date: "2026-05-24",
         duration: 30,
-        setsCompleted: 3,
-        xpEarned: 75,
-        exercises: [{ exerciseId: "decline-push-up", sets: 2, repsCompleted: [10, 11] }],
+        setsCompleted: 2,
+        xpEarned: 50,
+        exercises: [{ exerciseId: "HP7", sets: 2, repsCompleted: [9, 10] }],
       },
       {
         id: "2",
@@ -101,17 +109,17 @@ describe("getExerciseProgression", () => {
         duration: 30,
         setsCompleted: 3,
         xpEarned: 75,
-        exercises: [{ exerciseId: "decline-push-up", sets: 3, repsCompleted: [10, 11, 12] }],
+        exercises: [{ exerciseId: "HP7", sets: 3, repsCompleted: [9, 10, 11] }],
       },
     ];
 
-    const result = getExerciseProgression("decline-push-up", sessions);
+    const result = getExerciseProgression("HP7", sessions);
     expect(result).not.toBeNull();
     expect(result!.status).toBe("maintain");
   });
 
   it("reports correct high-end percentage", () => {
-    // Rep range [8, 15], range = 7. Average of 11 = (11-8)/7 = 3/7 ≈ 42.8%
+    // HP7 repRange [8, 12], range = 4. Average of 10 = (10-8)/4 = 50%
     const sessions: WorkoutSession[] = [
       {
         id: "1",
@@ -120,13 +128,13 @@ describe("getExerciseProgression", () => {
         duration: 30,
         setsCompleted: 1,
         xpEarned: 25,
-        exercises: [{ exerciseId: "decline-push-up", sets: 1, repsCompleted: [11] }],
+        exercises: [{ exerciseId: "HP7", sets: 1, repsCompleted: [10] }],
       },
     ];
 
-    const result = getExerciseProgression("decline-push-up", sessions);
+    const result = getExerciseProgression("HP7", sessions);
     expect(result).not.toBeNull();
-    expect(result!.highEndPercentage).toBeCloseTo(42.9, 0);
+    expect(result!.highEndPercentage).toBeCloseTo(50, 0);
   });
 
   it("returns trend analysis for 2+ sessions", () => {
@@ -138,7 +146,7 @@ describe("getExerciseProgression", () => {
         duration: 30,
         setsCompleted: 3,
         xpEarned: 75,
-        exercises: [{ exerciseId: "decline-push-up", sets: 3, repsCompleted: [8, 8, 8] }],
+        exercises: [{ exerciseId: "HP7", sets: 3, repsCompleted: [8, 8, 8] }],
       },
       {
         id: "2",
@@ -147,11 +155,11 @@ describe("getExerciseProgression", () => {
         duration: 30,
         setsCompleted: 3,
         xpEarned: 75,
-        exercises: [{ exerciseId: "decline-push-up", sets: 3, repsCompleted: [12, 12, 12] }],
+        exercises: [{ exerciseId: "HP7", sets: 3, repsCompleted: [12, 12, 12] }],
       },
     ];
 
-    const result = getExerciseProgression("decline-push-up", sessions);
+    const result = getExerciseProgression("HP7", sessions);
     expect(result).not.toBeNull();
     // Avg went from 8 to 12 — diff is 4 > 0.5, so trend = "up"
     expect(result!.recentTrend).toBe("up");
@@ -166,11 +174,11 @@ describe("getExerciseProgression", () => {
         duration: 30,
         setsCompleted: 3,
         xpEarned: 75,
-        exercises: [{ exerciseId: "decline-push-up", sets: 3, repsCompleted: [10, 11, 12] }],
+        exercises: [{ exerciseId: "HP7", sets: 3, repsCompleted: [10, 11, 12] }],
       },
     ];
 
-    const result = getExerciseProgression("decline-push-up", sessions);
+    const result = getExerciseProgression("HP7", sessions);
     expect(result).not.toBeNull();
     expect(result!.lastReps).toEqual([10, 11, 12]);
   });
@@ -197,10 +205,10 @@ describe("getProgressionSummary", () => {
         setsCompleted: 12,
         xpEarned: 300,
         exercises: [
-          { exerciseId: "decline-push-up", sets: 3, repsCompleted: [10, 10, 10] },
-          { exerciseId: "doorway-row", sets: 3, repsCompleted: [12, 12, 12] },
-          { exerciseId: "bulgarian-split-squat", sets: 3, repsCompleted: [8, 8, 8] },
-          { exerciseId: "hollow-body-hold", sets: 3, repsCompleted: [30, 30, 30] },
+          { exerciseId: "HP7", sets: 3, repsCompleted: [10, 10, 10] },
+          { exerciseId: "HPLL3", sets: 3, repsCompleted: [12, 12, 12] },
+          { exerciseId: "AQL8", sets: 3, repsCompleted: [8, 8, 8] },
+          { exerciseId: "AC5", sets: 3, repsCompleted: [30, 30, 30] },
         ],
       },
       {
@@ -211,10 +219,10 @@ describe("getProgressionSummary", () => {
         setsCompleted: 12,
         xpEarned: 300,
         exercises: [
-          { exerciseId: "nordic-hamstring-curl", sets: 3, repsCompleted: [5, 5, 5] },
-          { exerciseId: "decline-pike-push-up", sets: 3, repsCompleted: [8, 8, 8] },
-          { exerciseId: "one-arm-towel-row", sets: 3, repsCompleted: [10, 10, 10] },
-          { exerciseId: "prone-swimmers", sets: 3, repsCompleted: [12, 12, 12] },
+          { exerciseId: "HPL12", sets: 3, repsCompleted: [5, 5, 5] },
+          { exerciseId: "VP5", sets: 3, repsCompleted: [8, 8, 8] },
+          { exerciseId: "HPLL10", sets: 3, repsCompleted: [10, 10, 10] },
+          { exerciseId: "VPLL3", sets: 3, repsCompleted: [12, 12, 12] },
         ],
       },
     ];
@@ -225,8 +233,8 @@ describe("getProgressionSummary", () => {
   });
 
   it("classifies exercises correctly by status", () => {
-    // One exercise with good progress to trigger 'progress' status
-    // Doorway Row: [10, 20], 3 sets hitting 19, 20, 20 — all at upper range
+    // HPLL3 (Doorway Row Deep Angle): repRange [10, 20], upper threshold = 19
+    // Session 2: 19, 20, 20 = 3/3 = 100% at upper range, across 2 sessions → progress
     const sessions: WorkoutSession[] = [
       {
         id: "1",
@@ -235,7 +243,7 @@ describe("getProgressionSummary", () => {
         duration: 30,
         setsCompleted: 3,
         xpEarned: 75,
-        exercises: [{ exerciseId: "doorway-row", sets: 3, repsCompleted: [10, 12, 11] }],
+        exercises: [{ exerciseId: "HPLL3", sets: 3, repsCompleted: [10, 12, 11] }],
       },
       {
         id: "2",
@@ -244,19 +252,19 @@ describe("getProgressionSummary", () => {
         duration: 30,
         setsCompleted: 3,
         xpEarned: 75,
-        exercises: [{ exerciseId: "doorway-row", sets: 3, repsCompleted: [19, 20, 20] }],
+        exercises: [{ exerciseId: "HPLL3", sets: 3, repsCompleted: [19, 20, 20] }],
       },
     ];
 
     const result = getProgressionSummary(sessions);
     expect(result.exercisesReady.length).toBeGreaterThanOrEqual(0);
     expect(result.exercisesInProgress.length).toBeGreaterThanOrEqual(0);
-    // Doorway row should be categorized somewhere
+    // HPLL3 should be categorized somewhere
     const allTracked = [
       ...result.exercisesReady,
       ...result.exercisesInProgress,
       ...result.exercisesToWatch,
     ];
-    expect(allTracked.some((e) => e.exerciseId === "doorway-row")).toBe(true);
+    expect(allTracked.some((e) => e.exerciseId === "HPLL3")).toBe(true);
   });
 });

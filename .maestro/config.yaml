@@ -1,0 +1,9 @@
+# Maestro shared configuration for FitQuest E2E tests
+# See https://docs.maestro.dev for full documentation
+
+appId: com.fitquest.app
+env:
+  # Default test credentials for onboarding
+  TEST_NAME: "Athlete"
+  TEST_GOAL: "General Fitness"
+  TEST_LEVEL: "Beginner"

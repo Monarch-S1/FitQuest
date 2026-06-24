@@ -1,16 +1,10 @@
 /**
- * ARCH 96-Exercise Database — Shared Helpers
+ * FitQuest 96-Exercise Database — Shared Helpers
  *
  * Types and helper functions used across all 8 pathway files.
  */
 
-import {
-  Exercise,
-  Tempo,
-  MuscleGroup,
-  MovementCategory,
-  FormCheckpoint,
-} from "../exercises";
+import { Exercise, Tempo, MuscleGroup, MovementCategory, FormCheckpoint } from "../exercises";
 import { PathwayId } from "../pathways";
 
 // ─── Extended exercise type ────────────────────────
@@ -55,10 +49,18 @@ export function E(
   checkpoints?: FormCheckpoint[],
 ): Exercise96 {
   const tiers: Record<number, "beginner" | "intermediate" | "advanced"> = {
-    1: "beginner", 2: "beginner", 3: "beginner",
-    4: "intermediate", 5: "intermediate", 6: "intermediate",
-    7: "advanced", 8: "advanced", 9: "advanced",
-    10: "advanced", 11: "advanced", 12: "advanced",
+    1: "beginner",
+    2: "beginner",
+    3: "beginner",
+    4: "intermediate",
+    5: "intermediate",
+    6: "intermediate",
+    7: "advanced",
+    8: "advanced",
+    9: "advanced",
+    10: "advanced",
+    11: "advanced",
+    12: "advanced",
   };
   return {
     id,
@@ -77,8 +79,6 @@ export function E(
     biomechanicalNotes: notes,
     isUnilateral: unilateral,
     overloadMechanism: overload || desc,
-    ...(checkpoints
-      ? { visualGuide: { checkpoints, visuals: [] } }
-      : {}),
+    ...(checkpoints ? { visualGuide: { checkpoints, visuals: [] } } : {}),
   };
 }

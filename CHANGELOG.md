@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to ARCH — Monarch Training Systems will be documented in this file.
+All notable changes to FitQuest will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
@@ -94,7 +94,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Sentry integrated for crash reporting.
 
 ### Core Features
-- 4-day rotating workout program (A/B/C/D) with bodyweight calisthenics exercises.
+- 4-day rotating workout program (A/B/C/D) with bodyweight exercises.
 - Exercise catalog with muscle group targeting, unilateral indicators, and progression data.
 - Workout player with set tracking, rest timer, tempo visualization, and auto-rep counter.
 - Home dashboard with recommended workout, streak display, and recovery status.

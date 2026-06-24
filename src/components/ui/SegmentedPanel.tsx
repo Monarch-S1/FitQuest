@@ -36,7 +36,7 @@ export function SegmentedPanel({
         borderWidth: 1,
         borderColor: accentColor,
         borderRadius: 12,
-        marginBottom: spacing[3],
+        marginBottom: spacing.md,
         overflow: "hidden",
         ...style,
       }}
@@ -48,8 +48,8 @@ export function SegmentedPanel({
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
-            paddingHorizontal: spacing[3],
-            paddingVertical: spacing[2],
+            paddingHorizontal: spacing.md,
+            paddingVertical: spacing.sm,
             borderBottomWidth: 1,
             borderBottomColor: accentColor,
             backgroundColor: colors.bg.primary,
@@ -72,7 +72,7 @@ export function SegmentedPanel({
       <GlossyOverlay highlightOpacity={0.06} showReflection={false} />
 
       {/* Content */}
-      <View style={{ padding: spacing[3] }}>{children}</View>
+      <View style={{ padding: spacing.md }}>{children}</View>
 
       {/* Corner notches */}
       <View

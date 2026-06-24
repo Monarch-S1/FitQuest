@@ -1,5 +1,5 @@
 import { FitnessGoal, useUserStore } from "../stores/useUserStore";
-import { Exercise, Tempo, WorkoutDay, workoutA, workoutB, workoutC, workoutD } from "./exercises";
+import { Exercise, Tempo, WorkoutDay } from "./exercises";
 import { getClassWorkout } from "./workoutClasses";
 
 // ─── Goal-Specific Training Parameters ──────────────────────────────────────
@@ -17,7 +17,7 @@ interface GoalConfig {
   tempoOverride?: (original: Tempo) => Tempo;
 }
 
-const GOAL_CONFIGS: Record<FitnessGoal, GoalConfig> = {
+export const GOAL_CONFIGS: Record<FitnessGoal, GoalConfig> = {
   strength: {
     label: "STRENGTH",
     tagline: "Low reps, heavy tension — build raw force production",
@@ -66,8 +66,11 @@ const GOAL_CONFIGS: Record<FitnessGoal, GoalConfig> = {
 
 // ─── Exercise Transformation ────────────────────────────────────────────────
 
+export function transformExercise96(exercise: Exercise, goal: FitnessGoal): Exercise {
+  return transformExercise(exercise, goal);
+}
+
 function clampRepRange(low: number, high: number): [number, number] {
-  // Ensure minimum viable rep range
   const clampedLow = Math.max(1, Math.round(low));
   const clampedHigh = Math.max(clampedLow + 1, Math.round(high));
   return [clampedLow, clampedHigh];
@@ -76,19 +79,13 @@ function clampRepRange(low: number, high: number): [number, number] {
 function transformExercise(exercise: Exercise, goal: FitnessGoal): Exercise {
   const config = GOAL_CONFIGS[goal];
 
-  // Skip transformation for general goal (no changes)
   if (goal === "general") {
-    // Still check for custom presets even for general goal
     return applyUserPreset(exercise);
   }
 
   const [low, high] = exercise.repRange;
-  const newRepRange = clampRepRange(
-    low * config.repMultiplier,
-    high * config.repMultiplier,
-  );
+  const newRepRange = clampRepRange(low * config.repMultiplier, high * config.repMultiplier);
 
-  // For isometric exercises, adjust the hold duration range
   if (exercise.tempo === "isometric") {
     const newLow = Math.max(5, Math.round(low * config.repMultiplier));
     const newHigh = Math.max(newLow + 5, Math.round(high * config.repMultiplier));
@@ -100,9 +97,7 @@ function transformExercise(exercise: Exercise, goal: FitnessGoal): Exercise {
     };
   }
 
-  const newTempo = config.tempoOverride
-    ? config.tempoOverride(exercise.tempo)
-    : exercise.tempo;
+  const newTempo = config.tempoOverride ? config.tempoOverride(exercise.tempo) : exercise.tempo;
 
   const postGoal = {
     ...exercise,
@@ -112,7 +107,6 @@ function transformExercise(exercise: Exercise, goal: FitnessGoal): Exercise {
     restInterval: Math.max(30, Math.round(exercise.restInterval * config.restMultiplier)),
   };
 
-  // Apply custom presets on top of goal transformation
   return applyUserPreset(postGoal);
 }
 
@@ -121,7 +115,6 @@ function transformExercise(exercise: Exercise, goal: FitnessGoal): Exercise {
  * This runs after goal transformation so custom presets take highest priority.
  */
 function applyUserPreset(exercise: Exercise): Exercise {
-  // Access store directly — this is called from UI-bound functions
   const state = useUserStore.getState();
   const preset = state.exercisePresets?.[exercise.id];
 
@@ -136,60 +129,34 @@ function applyUserPreset(exercise: Exercise): Exercise {
   };
 }
 
-// ─── Workout Transformation ─────────────────────────────────────────────────
-
-function transformWorkout(workout: WorkoutDay, goal: FitnessGoal): WorkoutDay {
-  if (goal === "general") return workout;
-
-  return {
-    ...workout,
-    name: `${workout.name} · ${GOAL_CONFIGS[goal].label}`,
-    exercises: workout.exercises.map((ex) => transformExercise(ex, goal)),
-  };
-}
-
-// ─── Public API ─────────────────────────────────────────────────────────────
-
-const BASE_WORKOUTS: WorkoutDay[] = [workoutA, workoutB, workoutC, workoutD];
-
-/**
- * Get all 4 workouts transformed for the user's fitness goal.
- * Each goal adjusts rep ranges, sets, rest intervals, and tempo
- * while keeping the same exercise selection.
- */
-export function getWorkoutsForGoal(goal: FitnessGoal): WorkoutDay[] {
-  return BASE_WORKOUTS.map((w) => transformWorkout(w, goal));
-}
+// ─── Workut by ID (legacy → 96-generator fallback) ──────────────────────────
 
 /**
  * Get a specific workout by ID, transformed for the user's fitness goal.
+ * Tries the 96-exercise generator first, then falls back to Workout Classes.
  */
-export function getWorkoutByIdForGoal(
-  id: string,
-  goal: FitnessGoal,
-): WorkoutDay | undefined {
-  // First check standard rotation workouts (A/B/C/D)
-  const standardWorkout = getWorkoutsForGoal(goal).find((w) => w.id === id);
-  if (standardWorkout) return standardWorkout;
+export function getWorkoutByIdForGoal(id: string, goal: FitnessGoal): WorkoutDay | undefined {
+  // Try 96-exercise generator first
+  const { getWorkout96ById } = require("./workoutGenerator96") as {
+    getWorkout96ById: (
+      id: string,
+      goal: FitnessGoal,
+      masteredIds: Set<string>,
+    ) => WorkoutDay | undefined;
+  };
+  const masteredIds = new Set(useUserStore.getState().masteredExerciseIds ?? []);
+  const generatedWorkout = getWorkout96ById(id, goal, masteredIds);
+  if (generatedWorkout) return generatedWorkout;
 
   // Fall back to Workout Class (unlockable themed workout)
   const classWorkout = getClassWorkout(id);
   if (!classWorkout) return undefined;
 
-  // Apply goal transformation to class workout exercises
   return {
     ...classWorkout,
     name: `${classWorkout.name} · ${GOAL_CONFIGS[goal].label}`,
     exercises: classWorkout.exercises.map((ex) => transformExercise(ex, goal)),
   };
-}
-
-/**
- * Get the base (unmodified) workouts — used for exercise library, progression tracking,
- * and other systems that need the original exercise data.
- */
-export function getBaseWorkouts(): WorkoutDay[] {
-  return BASE_WORKOUTS;
 }
 
 /**
@@ -204,10 +171,14 @@ export function getGoalConfig(goal: FitnessGoal): GoalConfig {
  */
 export function getGoalWorkoutDescription(goal: FitnessGoal): string {
   const configs: Record<FitnessGoal, string> = {
-    strength: "Low reps (3-6), high sets (4-5), long rest (2-3 min). Explosive concentric, controlled eccentric. Focus on maximal force production.",
-    muscle_gain: "Moderate reps (8-12), moderate sets (3-4), standard rest (90s). Controlled tempo for time under tension. Focus on mechanical tension.",
-    endurance: "High reps (15-25), lower sets (2-3), short rest (30-45s). Fast, rhythmic tempo. Focus on muscular stamina and work capacity.",
-    general: "Balanced rep ranges (8-15), moderate sets (3), standard rest (90s). Well-rounded approach for overall fitness.",
+    strength:
+      "Low reps (3-6), high sets (4-5), long rest (2-3 min). Explosive concentric, controlled eccentric. Focus on maximal force production.",
+    muscle_gain:
+      "Moderate reps (8-12), moderate sets (3-4), standard rest (90s). Controlled tempo for time under tension. Focus on mechanical tension.",
+    endurance:
+      "High reps (15-25), lower sets (2-3), short rest (30-45s). Fast, rhythmic tempo. Focus on muscular stamina and work capacity.",
+    general:
+      "Balanced rep ranges (8-15), moderate sets (3), standard rest (90s). Well-rounded approach for overall fitness.",
   };
   return configs[goal];
 }

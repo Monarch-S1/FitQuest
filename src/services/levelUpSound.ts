@@ -1,5 +1,5 @@
 /**
- * Level-Up Sound Effects — ARCH
+ * Level-Up Sound Effects — FitQuest
  *
  * Plays sound effects for level-ups, skill unlocks, and workout completion.
  * Gracefully degrades when the expo-av native module is unavailable (e.g., Expo Go).
@@ -11,7 +11,6 @@
 // in Expo Go because it requires native build linking.
 // We catch that here so the app doesn't crash on import.
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let AV: any = null;
 
 try {
@@ -24,7 +23,6 @@ try {
 
 // ─── Sound state ────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let soundObject: any = null;
 
 // ─── Core helpers ───────────────────────────────────────────────
@@ -99,8 +97,114 @@ export async function playCompletionSound(): Promise<void> {
   }
 }
 
+/**
+ * Play the skill unlock sound (a clean rising "pop" / click).
+ * Short frequency sweep from 600Hz → 900Hz, 200ms, with a percussive attack.
+ */
+export async function playSkillUnlockSound(): Promise<void> {
+  if (!isSoundAvailable()) return;
+
+  try {
+    const Audio = AV.Audio;
+    const Sound = Audio.Sound;
+
+    await Audio.setAudioModeAsync({
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: false,
+      shouldDuckAndroid: true,
+    });
+
+    const source = { uri: generateSkillUnlockDataUri() };
+
+    if (soundObject) {
+      await soundObject.unloadAsync();
+    }
+
+    soundObject = new Sound();
+    await soundObject.loadAsync(source, { volume: 0.35 });
+    await soundObject.playAsync();
+  } catch {
+    // Sound is optional
+  }
+}
+
+/**
+ * Play the skill mastery sound (a triumphant shimmer / arpeggio).
+ * C major arpeggio: C5→E5→G5→C6 over 450ms with a slight sustain.
+ */
+export async function playSkillMasterySound(): Promise<void> {
+  if (!isSoundAvailable()) return;
+
+  try {
+    const Audio = AV.Audio;
+    const Sound = Audio.Sound;
+
+    await Audio.setAudioModeAsync({
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: false,
+      shouldDuckAndroid: true,
+    });
+
+    const source = { uri: generateSkillMasteryDataUri() };
+
+    if (soundObject) {
+      await soundObject.unloadAsync();
+    }
+
+    soundObject = new Sound();
+    await soundObject.loadAsync(source, { volume: 0.4 });
+    await soundObject.playAsync();
+  } catch {
+    // Sound is optional
+  }
+}
+
+/**
+ * Play a skill tree sound with priority-based debouncing.
+ * If multiple calls happen within 150ms, only the highest-priority sound plays.
+ * Priorities: mastery (3) > unlock (2) > none.
+ */
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+let pendingPriority = 0;
+
+const SOUND_PRIORITY: Record<string, number> = {
+  mastery: 3,
+  unlock: 2,
+};
+
+export function playSkillSound(type: "unlock" | "mastery"): void {
+  const priority = SOUND_PRIORITY[type] ?? 0;
+
+  if (debounceTimer) {
+    // Accumulate highest priority
+    if (priority > pendingPriority) {
+      pendingPriority = priority;
+    }
+    return;
+  }
+
+  pendingPriority = priority;
+
+  debounceTimer = setTimeout(() => {
+    debounceTimer = null;
+    const activeType = pendingPriority >= 3 ? "mastery" : "unlock";
+    pendingPriority = 0;
+
+    if (activeType === "mastery") {
+      playSkillMasterySound();
+    } else {
+      playSkillUnlockSound();
+    }
+  }, 100);
+}
+
 /** Clean up sound resources */
 export async function cleanupSound(): Promise<void> {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+    debounceTimer = null;
+    pendingPriority = 0;
+  }
   if (soundObject) {
     try {
       await soundObject.unloadAsync();
@@ -156,6 +260,110 @@ function generateLevelUpChimeDataUri(): string {
   }
 
   // Convert to base64 data URI
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return `data:audio/wav;base64,${btoa(binary)}`;
+}
+
+/**
+ * Generate a short rising sweep tone for skill unlocks.
+ * Frequency sweep from 600Hz → 900Hz over 200ms with percussive attack.
+ */
+function generateSkillUnlockDataUri(): string {
+  const sampleRate = 22050;
+  const duration = 0.2; // 200ms
+  const numSamples = Math.floor(sampleRate * duration);
+  const buffer = new ArrayBuffer(44 + numSamples * 2);
+  const view = new DataView(buffer);
+
+  writeWavHeader(view, sampleRate, numSamples);
+
+  const startFreq = 600;
+  const endFreq = 900;
+
+  for (let i = 0; i < numSamples; i++) {
+    const t = i / numSamples;
+    const freq = startFreq + (endFreq - startFreq) * t;
+
+    // Percussive envelope: fast attack (5ms), quick decay
+    let envelope: number;
+    if (t < 0.025) {
+      envelope = t / 0.025;
+    } else {
+      envelope = Math.max(0, 1 - (t - 0.025) / 0.175);
+    }
+
+    // Sine + slight harmonics for clarity
+    const sample =
+      (Math.sin((2 * Math.PI * freq * i) / sampleRate) * 0.45 +
+        Math.sin((2 * Math.PI * freq * 2 * i) / sampleRate) * 0.1) *
+      envelope;
+
+    const intSample = Math.max(-32768, Math.min(32767, Math.round(sample * 32767)));
+    view.setInt16(44 + i * 2, intSample, true);
+  }
+
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return `data:audio/wav;base64,${btoa(binary)}`;
+}
+
+/**
+ * Generate a triumphant arpeggio for skill mastery.
+ * C major: C5(523Hz)→E5(659Hz)→G5(784Hz)→C6(1047Hz) over 450ms.
+ * Each note overlaps slightly for a shimmering effect.
+ */
+function generateSkillMasteryDataUri(): string {
+  const sampleRate = 22050;
+  const duration = 0.45; // 450ms
+  const numSamples = Math.floor(sampleRate * duration);
+  const buffer = new ArrayBuffer(44 + numSamples * 2);
+  const view = new DataView(buffer);
+
+  writeWavHeader(view, sampleRate, numSamples);
+
+  // Arpeggio: C5, E5, G5, C6 with overlap
+  const notes = [
+    { freq: 523, start: 0.0, end: 0.35 },
+    { freq: 659, start: 0.08, end: 0.4 },
+    { freq: 784, start: 0.16, end: 0.45 },
+    { freq: 1047, start: 0.24, end: 0.45 },
+  ];
+
+  for (let i = 0; i < numSamples; i++) {
+    const t = i / numSamples;
+    let sample = 0;
+
+    for (const note of notes) {
+      if (t >= note.start && t < note.end) {
+        const noteT = (t - note.start) / (note.end - note.start);
+        // Each note fades in and out
+        let envelope: number;
+        if (noteT < 0.1) {
+          envelope = noteT / 0.1;
+        } else if (noteT > 0.7) {
+          envelope = Math.max(0, (1 - noteT) / 0.3);
+        } else {
+          envelope = 1.0;
+        }
+
+        sample += Math.sin((2 * Math.PI * note.freq * i) / sampleRate) * 0.3 * envelope;
+      }
+    }
+
+    // Master the volume (max sum of 4 overlapping notes ≈ 1.2)
+    sample *= 0.8;
+
+    const intSample = Math.max(-32768, Math.min(32767, Math.round(sample * 32767)));
+    view.setInt16(44 + i * 2, intSample, true);
+  }
+
   const bytes = new Uint8Array(buffer);
   let binary = "";
   for (let i = 0; i < bytes.length; i++) {

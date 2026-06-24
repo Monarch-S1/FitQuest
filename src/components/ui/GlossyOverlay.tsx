@@ -51,11 +51,7 @@ export function GlossyOverlay({
       {/* Diagonal reflection — subtle light sweep from top-left */}
       {showReflection && (
         <LinearGradient
-          colors={[
-            "rgba(255, 255, 255, 0.04)",
-            "rgba(255, 255, 255, 0.02)",
-            "transparent",
-          ]}
+          colors={["rgba(255, 255, 255, 0.04)", "rgba(255, 255, 255, 0.02)", "transparent"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0.6 }}
           style={{

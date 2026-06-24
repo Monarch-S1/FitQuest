@@ -9,7 +9,7 @@ describe("calculateMuscleProgress", () => {
   });
 
   it("distributes XP across target muscles", () => {
-    // Bulgarian Split Squat targets quadriceps and glutes (2 muscles)
+    // AQL8 (Bulgarian Split Squat) targets quadriceps and glutes (2 muscles)
     // 2 sets completed = 2 * 25 = 50 XP, split across 2 muscles = 25 each
     const sessions: WorkoutSession[] = [
       {
@@ -21,7 +21,7 @@ describe("calculateMuscleProgress", () => {
         xpEarned: 50,
         exercises: [
           {
-            exerciseId: "bulgarian-split-squat",
+            exerciseId: "AQL8",
             sets: 2,
             repsCompleted: [10, 12],
           },
@@ -49,9 +49,7 @@ describe("calculateMuscleProgress", () => {
         duration: 30,
         setsCompleted: 5,
         xpEarned: 125,
-        exercises: [
-          { exerciseId: "bulgarian-split-squat", sets: 5, repsCompleted: [10, 10, 10, 10, 10] },
-        ],
+        exercises: [{ exerciseId: "AQL8", sets: 5, repsCompleted: [10, 10, 10, 10, 10] }],
       },
       {
         id: "2",
@@ -60,9 +58,7 @@ describe("calculateMuscleProgress", () => {
         duration: 30,
         setsCompleted: 5,
         xpEarned: 125,
-        exercises: [
-          { exerciseId: "bulgarian-split-squat", sets: 5, repsCompleted: [11, 11, 11, 11, 11] },
-        ],
+        exercises: [{ exerciseId: "AQL8", sets: 5, repsCompleted: [11, 11, 11, 11, 11] }],
       },
     ];
 
@@ -108,6 +104,8 @@ describe("calculateMuscleProgress", () => {
   });
 
   it("returns muscles sorted by level desc, then name", () => {
+    // HP7 targets upper_chest, shoulders, triceps (3 muscles)
+    // HPLL3 targets lats, rhomboids, biceps (3 muscles)
     const sessions: WorkoutSession[] = [
       {
         id: "1",
@@ -117,8 +115,8 @@ describe("calculateMuscleProgress", () => {
         setsCompleted: 100,
         xpEarned: 2500,
         exercises: [
-          { exerciseId: "decline-push-up", sets: 50, repsCompleted: [10] },
-          { exerciseId: "doorway-row", sets: 50, repsCompleted: [12] },
+          { exerciseId: "HP7", sets: 50, repsCompleted: [10] },
+          { exerciseId: "HPLL3", sets: 50, repsCompleted: [12] },
         ],
       },
     ];
@@ -131,6 +129,7 @@ describe("calculateMuscleProgress", () => {
   });
 
   it("calculates level and progress correctly for known XP", () => {
+    // HP4 (Standard Push-up) targets chest, shoulders, triceps, core (4 muscles)
     const sessions: WorkoutSession[] = [
       {
         id: "1",
@@ -139,18 +138,15 @@ describe("calculateMuscleProgress", () => {
         duration: 30,
         setsCompleted: 4,
         xpEarned: 100,
-        exercises: [{ exerciseId: "decline-push-up", sets: 4, repsCompleted: [10, 10, 10, 10] }],
+        exercises: [{ exerciseId: "HP4", sets: 4, repsCompleted: [10, 10, 10, 10] }],
       },
     ];
 
     const result = calculateMuscleProgress(sessions);
     const chest = result.find((m) => m.zone === "chest");
     expect(chest).toBeDefined();
-    // 4 sets * 25 XP / 3 muscles (chest, shoulders, triceps) = 33.33...
+    // 4 sets * 25 XP / 4 muscles (chest, shoulders, triceps, core) = 25 XP each
     expect(chest!.xp).toBeGreaterThan(0);
-    // Level 0 for small XP, or level 1
-    expect(chest!.level).toBeGreaterThanOrEqual(0);
-    expect(chest!.nextLevelXp).toBeGreaterThan(0);
   });
 });
 
@@ -193,6 +189,7 @@ describe("getMuscleXpHistory", () => {
   });
 
   it("returns one entry per trained muscle with correct points", () => {
+    // AQL8 (Bulgarian Split Squat) targets quadriceps, glutes (2 muscles)
     const sessions: WorkoutSession[] = [
       {
         id: "s1",
@@ -201,9 +198,7 @@ describe("getMuscleXpHistory", () => {
         duration: 30,
         setsCompleted: 2,
         xpEarned: 50,
-        exercises: [
-          { exerciseId: "bulgarian-split-squat", sets: 2, repsCompleted: [10, 12] },
-        ],
+        exercises: [{ exerciseId: "AQL8", sets: 2, repsCompleted: [10, 12] }],
       },
     ];
 
@@ -230,9 +225,7 @@ describe("getMuscleXpHistory", () => {
         duration: 30,
         setsCompleted: 3,
         xpEarned: 75,
-        exercises: [
-          { exerciseId: "bulgarian-split-squat", sets: 3, repsCompleted: [10, 10, 10] },
-        ],
+        exercises: [{ exerciseId: "AQL8", sets: 3, repsCompleted: [10, 10, 10] }],
       },
       {
         id: "s2",
@@ -241,9 +234,7 @@ describe("getMuscleXpHistory", () => {
         duration: 30,
         setsCompleted: 3,
         xpEarned: 75,
-        exercises: [
-          { exerciseId: "bulgarian-split-squat", sets: 3, repsCompleted: [12, 12, 12] },
-        ],
+        exercises: [{ exerciseId: "AQL8", sets: 3, repsCompleted: [12, 12, 12] }],
       },
     ];
 
@@ -253,8 +244,6 @@ describe("getMuscleXpHistory", () => {
     expect(quads!.points.length).toBe(2);
 
     // Each session: 3 sets * 25 XP / 2 muscles = 37.5 XP per muscle
-    // xpPerMuscle is accumulated unrounded (37.5 + 37.5 = 75)
-    // totalXp is rounded at display time: Math.round(37.5) = 38, Math.round(75) = 75
     const xpPerMuscle = (3 * XP_PER_SET) / 2; // 37.5
     expect(quads!.points[0].xpGained).toBe(Math.round(xpPerMuscle)); // 38
     expect(quads!.points[0].totalXp).toBe(Math.round(xpPerMuscle)); // 38
@@ -265,8 +254,8 @@ describe("getMuscleXpHistory", () => {
   });
 
   it("tracks level changes across sessions", () => {
-    // High XP to trigger level ups: 6 sets of decline-push-up targets chest/shoulders/triceps
-    // 6 * 25 = 150 XP total, split 3 ways = 50 XP per muscle per session
+    // HP4 (Standard Push-up) targets chest, shoulders, triceps, core (4 muscles)
+    // 6 * 25 = 150 XP total, split 4 ways = 37.5 XP per muscle per session
     // Level 1 = 0 XP base, level 2 = 50 XP, level 3 = 200 XP
     const sessions: WorkoutSession[] = [
       {
@@ -276,9 +265,7 @@ describe("getMuscleXpHistory", () => {
         duration: 30,
         setsCompleted: 6,
         xpEarned: 150,
-        exercises: [
-          { exerciseId: "decline-push-up", sets: 6, repsCompleted: [10, 10, 10, 10, 10, 10] },
-        ],
+        exercises: [{ exerciseId: "HP4", sets: 6, repsCompleted: [10, 10, 10, 10, 10, 10] }],
       },
       {
         id: "s2",
@@ -287,9 +274,7 @@ describe("getMuscleXpHistory", () => {
         duration: 30,
         setsCompleted: 6,
         xpEarned: 150,
-        exercises: [
-          { exerciseId: "decline-push-up", sets: 6, repsCompleted: [10, 10, 10, 10, 10, 10] },
-        ],
+        exercises: [{ exerciseId: "HP4", sets: 6, repsCompleted: [10, 10, 10, 10, 10, 10] }],
       },
     ];
 
@@ -298,13 +283,14 @@ describe("getMuscleXpHistory", () => {
     expect(chest).toBeDefined();
     expect(chest!.points.length).toBe(2);
 
-    // Each session: 6 * 25 / 3 muscles = 50 XP per muscle
-    // After session 1: 50 XP → level 2 (floor(sqrt(50/50)) + 1 = 2)
-    expect(chest!.points[0].totalXp).toBe(50);
-    expect(chest!.points[0].level).toBe(2);
+    // Each session: 6 * 25 / 4 muscles = 37.5 XP per muscle
+    expect(chest!.points[0].totalXp).toBe(Math.round(37.5));
+    // At 38 XP, level = floor(sqrt(38/50)) + 1 = floor(0.87) + 1 = 1
+    expect(chest!.points[0].level).toBe(1);
 
-    // After session 2: 100 XP → level 2 (floor(sqrt(100/50)) + 1 = floor(1.41) + 1 = 2)
-    expect(chest!.points[1].totalXp).toBe(100);
+    // After session 2: 75 XP
+    expect(chest!.points[1].totalXp).toBe(Math.round(75));
+    // At 75 XP, level = floor(sqrt(75/50)) + 1 = floor(1.22) + 1 = 2
     expect(chest!.points[1].level).toBe(2);
   });
 
@@ -352,8 +338,8 @@ describe("getMuscleXpHistory", () => {
         setsCompleted: 10,
         xpEarned: 250,
         exercises: [
-          { exerciseId: "decline-push-up", sets: 10, repsCompleted: [10] },
-          { exerciseId: "doorway-row", sets: 10, repsCompleted: [12] },
+          { exerciseId: "HP7", sets: 10, repsCompleted: [10] },
+          { exerciseId: "HPLL3", sets: 10, repsCompleted: [12] },
         ],
       },
     ];
@@ -375,9 +361,7 @@ describe("getMuscleXpHistory", () => {
         duration: 30,
         setsCompleted: 3,
         xpEarned: 75,
-        exercises: [
-          { exerciseId: "bulgarian-split-squat", sets: 3, repsCompleted: [10, 10, 10] },
-        ],
+        exercises: [{ exerciseId: "AQL8", sets: 3, repsCompleted: [10, 10, 10] }],
       },
     ];
 

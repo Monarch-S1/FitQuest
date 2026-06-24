@@ -35,7 +35,7 @@ export function MuscleXpChart({ history, accent }: MuscleXpChartProps) {
     );
   }
 
-  const chartW = SCREEN_WIDTH - spacing[8] - 32;
+  const chartW = SCREEN_WIDTH - spacing.xxl - 32;
   const chartH = 80;
   const pad = { top: 10, right: 10, bottom: 18, left: 30 };
   const plotW = chartW - pad.left - pad.right;
@@ -67,10 +67,12 @@ export function MuscleXpChart({ history, accent }: MuscleXpChartProps) {
         borderRadius: 4,
         borderWidth: 1,
         borderColor: colors.border.subtle,
-        padding: spacing[2],
+        padding: spacing.sm,
       }}
     >
-      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: spacing[1] }}>
+      <View
+        style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: spacing.xs }}
+      >
         <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 8 }}>
           XP PROGRESSION
         </Text>
@@ -83,15 +85,36 @@ export function MuscleXpChart({ history, accent }: MuscleXpChartProps) {
         {/* Grid lines */}
         {gridLines.map((gl, i) => (
           <G key={i}>
-            <Line x1={pad.left} y1={gl.y} x2={chartW - pad.right} y2={gl.y} stroke={colors.border.subtle} strokeWidth={0.5} />
-            <SvgText x={pad.left - 4} y={gl.y + 3} fill={colors.text.secondary} fontSize={7} textAnchor="end" fontFamily={fonts.body.regular}>
+            <Line
+              x1={pad.left}
+              y1={gl.y}
+              x2={chartW - pad.right}
+              y2={gl.y}
+              stroke={colors.border.subtle}
+              strokeWidth={0.5}
+            />
+            <SvgText
+              x={pad.left - 4}
+              y={gl.y + 3}
+              fill={colors.text.secondary}
+              fontSize={7}
+              textAnchor="end"
+              fontFamily={fonts.body.regular}
+            >
               {gl.label}
             </SvgText>
           </G>
         ))}
 
         {/* Data line */}
-        <Polyline points={linePoints} fill="none" stroke={accent} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+        <Polyline
+          points={linePoints}
+          fill="none"
+          stroke={accent}
+          strokeWidth={2}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
 
         {/* Data dots */}
         {pts.map((p, i) => (
@@ -103,12 +126,23 @@ export function MuscleXpChart({ history, accent }: MuscleXpChartProps) {
 
         {/* X-axis labels */}
         {pts.map((p, i) => {
-          const showLabel = i === 0 || i === pts.length - 1 || pts.length > 5 && i % Math.ceil(pts.length / 4) === 0;
+          const showLabel =
+            i === 0 ||
+            i === pts.length - 1 ||
+            (pts.length > 5 && i % Math.ceil(pts.length / 4) === 0);
           if (!showLabel) return null;
           const d = new Date(p.date + "T12:00:00");
           const label = `${d.toLocaleString("en-US", { month: "short" })} ${d.getDate()}`;
           return (
-            <SvgText key={i} x={p.x} y={chartH - 4} fill={colors.text.secondary} fontSize={7} textAnchor="middle" fontFamily={fonts.body.regular}>
+            <SvgText
+              key={i}
+              x={p.x}
+              y={chartH - 4}
+              fill={colors.text.secondary}
+              fontSize={7}
+              textAnchor="middle"
+              fontFamily={fonts.body.regular}
+            >
               {label}
             </SvgText>
           );
@@ -120,7 +154,15 @@ export function MuscleXpChart({ history, accent }: MuscleXpChartProps) {
           const prev = pts[i - 1];
           if (p.level > prev.level) {
             return (
-              <SvgText key={`lvl-${i}`} x={p.x} y={p.y - 6} fill={colors.success} fontSize={7} textAnchor="middle" fontFamily={fonts.body.semiBold}>
+              <SvgText
+                key={`lvl-${i}`}
+                x={p.x}
+                y={p.y - 6}
+                fill={colors.success}
+                fontSize={7}
+                textAnchor="middle"
+                fontFamily={fonts.body.semiBold}
+              >
                 LV.{p.level}
               </SvgText>
             );

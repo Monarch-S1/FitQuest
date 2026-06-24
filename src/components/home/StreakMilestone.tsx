@@ -152,7 +152,7 @@ export function StreakMilestone({ tier, onDismiss }: StreakMilestoneProps) {
           translateY: showContent ? 0 : 60,
         }}
         transition={{ type: "spring", damping: 12, stiffness: 80 }}
-        style={{ alignItems: "center", width: "100%", padding: spacing[6] }}
+        style={{ alignItems: "center", width: "100%", padding: spacing.xl }}
       >
         {/* Icon badge */}
         <MotiView
@@ -202,17 +202,13 @@ export function StreakMilestone({ tier, onDismiss }: StreakMilestoneProps) {
         </MotiView>
 
         {/* Subtitle */}
-        <MotiView
-          from={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 600 }}
-        >
+        <MotiView from={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 600 }}>
           <Text
             style={{
               ...typography.body,
               color: colors.text.secondary,
               textAlign: "center",
-              marginTop: spacing[3],
+              marginTop: spacing.md,
               maxWidth: 280,
               lineHeight: 20,
             }}
@@ -226,7 +222,7 @@ export function StreakMilestone({ tier, onDismiss }: StreakMilestoneProps) {
           from={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1200 }}
-          style={{ marginTop: spacing[8] }}
+          style={{ marginTop: spacing.xxl }}
         >
           <Text
             style={{

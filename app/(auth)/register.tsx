@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useColors, typography, spacing, fonts } from "../../src/tokens";
-import { useUserStore } from "../../src/stores/useUserStore";
+import { useUserStore, waitForAuthSync } from "../../src/stores/useUserStore";
 import { signUpWithEmail } from "../../src/services/supabase";
 
 export default function RegisterScreen() {
@@ -29,6 +29,11 @@ export default function RegisterScreen() {
       setError("Enter your email address");
       return;
     }
+    // Basic email format check — must contain @ and a domain
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("Enter a valid email address (e.g. you@example.com)");
+      return;
+    }
     if (password.length < 6) {
       setError("Password must be at least 6 characters");
       return;
@@ -41,16 +46,28 @@ export default function RegisterScreen() {
     setLoading(true);
     setError("");
 
-    const { data } = await signUpWithEmail(email.trim(), password);
-    if (data?.user) {
+    const { data, error: authError } = await signUpWithEmail(email.trim(), password);
+    if (authError) {
+      setError(authError.message || "Registration failed. Please try again.");
+      setLoading(false);
+      return;
+    }
+    if (!data?.user) {
+      // No error but no user either — email confirmation is required
+      setError("Account created! Check your email for the confirmation link before signing in.");
+      setLoading(false);
+      return;
+    }
+    if (data.user) {
       setAuth(data.user.id, data.user.email || email.trim());
-      // Navigate to onboarding — new users haven't completed it yet
-      router.replace("/onboarding");
+      // Wait for cloud sync to complete before routing — ensures existing
+      // users who are signing up with a new device get their profile restored
+      await waitForAuthSync();
+      // Root gate will route to onboarding or tabs based on sync result
+      router.replace("/");
     }
     setLoading(false);
   }, [email, password, confirmPassword, setAuth, router]);
-
-
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
@@ -58,12 +75,12 @@ export default function RegisterScreen() {
         contentContainerStyle={{
           flexGrow: 1,
           justifyContent: "center",
-          padding: spacing[6],
+          padding: spacing.xl,
         }}
         keyboardShouldPersistTaps="handled"
       >
         {/* Brand */}
-        <View style={{ alignItems: "center", marginBottom: spacing[8] }}>
+        <View style={{ alignItems: "center", marginBottom: spacing.xxl }}>
           <Text
             style={{
               ...typography.h1,
@@ -72,14 +89,14 @@ export default function RegisterScreen() {
               letterSpacing: 4,
             }}
           >
-            ARCH
+            FitQuest
           </Text>
           <Text
             style={{
               ...typography.label,
               color: colors.text.secondary,
               fontSize: 10,
-              marginTop: spacing[2],
+              marginTop: spacing.sm,
               letterSpacing: 3,
             }}
           >
@@ -95,8 +112,8 @@ export default function RegisterScreen() {
               borderWidth: 1,
               borderColor: colors.error,
               borderRadius: 4,
-              padding: spacing[3],
-              marginBottom: spacing[4],
+              padding: spacing.md,
+              marginBottom: spacing.lg,
             }}
           >
             <Text
@@ -113,13 +130,13 @@ export default function RegisterScreen() {
         ) : null}
 
         {/* Email */}
-        <View style={{ marginBottom: spacing[3] }}>
+        <View style={{ marginBottom: spacing.md }}>
           <Text
             style={{
               ...typography.label,
               color: colors.text.secondary,
               fontSize: 9,
-              marginBottom: spacing[1],
+              marginBottom: spacing.xs,
             }}
           >
             EMAIL
@@ -137,7 +154,7 @@ export default function RegisterScreen() {
               borderWidth: 1,
               borderColor: colors.border.subtle,
               borderRadius: 4,
-              padding: spacing[3],
+              padding: spacing.md,
               color: colors.text.primary,
               fontFamily: fonts.body.regular,
               fontSize: 14,
@@ -146,13 +163,13 @@ export default function RegisterScreen() {
         </View>
 
         {/* Password */}
-        <View style={{ marginBottom: spacing[3] }}>
+        <View style={{ marginBottom: spacing.md }}>
           <Text
             style={{
               ...typography.label,
               color: colors.text.secondary,
               fontSize: 9,
-              marginBottom: spacing[1],
+              marginBottom: spacing.xs,
             }}
           >
             PASSWORD
@@ -168,7 +185,7 @@ export default function RegisterScreen() {
               borderWidth: 1,
               borderColor: colors.border.subtle,
               borderRadius: 4,
-              padding: spacing[3],
+              padding: spacing.md,
               color: colors.text.primary,
               fontFamily: fonts.body.regular,
               fontSize: 14,
@@ -183,7 +200,7 @@ export default function RegisterScreen() {
               ...typography.label,
               color: colors.text.secondary,
               fontSize: 9,
-              marginBottom: spacing[1],
+              marginBottom: spacing.xs,
             }}
           >
             CONFIRM PASSWORD
@@ -199,7 +216,7 @@ export default function RegisterScreen() {
               borderWidth: 1,
               borderColor: colors.border.subtle,
               borderRadius: 4,
-              padding: spacing[3],
+              padding: spacing.md,
               color: colors.text.primary,
               fontFamily: fonts.body.regular,
               fontSize: 14,
@@ -218,10 +235,10 @@ export default function RegisterScreen() {
           style={{
             backgroundColor: colors.accent.DEFAULT,
             borderRadius: 4,
-            paddingVertical: spacing[3],
+            paddingVertical: spacing.md,
             alignItems: "center",
             opacity: loading ? 0.6 : 1,
-            marginBottom: spacing[3],
+            marginBottom: spacing.md,
           }}
         >
           {loading ? (
@@ -243,7 +260,7 @@ export default function RegisterScreen() {
         {/* Login link */}
         <TouchableOpacity
           onPress={() => router.push("/(auth)/login")}
-          style={{ marginTop: spacing[6], alignItems: "center" }}
+          style={{ marginTop: spacing.xl, alignItems: "center" }}
           accessibilityRole="link"
           accessibilityLabel="Go to sign in"
         >

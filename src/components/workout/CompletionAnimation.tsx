@@ -6,11 +6,7 @@ import { Button } from "../ui/Button";
 import { XpBreakdown } from "../../utils/xp";
 import { checkAchievements, AchievementBadge } from "../ui/AchievementSystem";
 import { GlossyOverlay } from "../ui/GlossyOverlay";
-import {
-  playLevelUpSound,
-  playCompletionSound,
-  cleanupSound,
-} from "../../services/levelUpSound";
+import { playLevelUpSound, playCompletionSound, cleanupSound } from "../../services/levelUpSound";
 import { NewSkillUnlock, NewClassUnlock } from "../../utils/skillUnlocks";
 
 interface CompletionAnimationProps {
@@ -104,10 +100,14 @@ export function CompletionAnimation({
           translateY: Math.sin(angle) * distance,
           duration: 600 + Math.random() * 400,
           size: isStar ? 6 : isCircle ? 4 + Math.random() * 4 : 3 + Math.random() * 3,
-          color:
-            [colors.accent.DEFAULT, colors.accent.light, colors.success, colors.warning, "#FFFFFF", colors.accent.dark][
-              i % 6
-            ],
+          color: [
+            colors.accent.DEFAULT,
+            colors.accent.light,
+            colors.success,
+            colors.warning,
+            "#FFFFFF",
+            colors.accent.dark,
+          ][i % 6],
           rotation: Math.random() * 720,
           borderRadius: isCircle ? 50 : isStar ? 2 : 0,
         };
@@ -124,7 +124,13 @@ export function CompletionAnimation({
         duration: 1000 + Math.random() * 1200,
         left: `${5 + Math.random() * 90}%`,
         size: 2 + Math.random() * 5,
-        color: [colors.accent.DEFAULT, colors.accent.light, colors.success, colors.warning, "#FFFFFF"][i % 5],
+        color: [
+          colors.accent.DEFAULT,
+          colors.accent.light,
+          colors.success,
+          colors.warning,
+          "#FFFFFF",
+        ][i % 5],
         rotation: Math.random() * 360,
       })),
     [],
@@ -143,7 +149,7 @@ export function CompletionAnimation({
         backgroundColor: colors.bg.primary,
         justifyContent: "center",
         alignItems: "center",
-        padding: spacing[6],
+        padding: spacing.xl,
       }}
     >
       {/* Screen flash — bright white overlay that fades instantly */}
@@ -181,7 +187,17 @@ export function CompletionAnimation({
 
       {/* Explosive radial burst particles (from center, immediate) */}
       {showContent && (
-        <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
           {burstParticles.map((p, i) => (
             <MotiView
               key={`burst-${i}`}
@@ -262,7 +278,13 @@ export function CompletionAnimation({
           <MotiView
             from={{ scale: 0.8, opacity: 0.6 }}
             animate={{ scale: 1.3, opacity: 0 }}
-            transition={{ type: "timing", duration: 800, delay: 300, loop: true, repeatReverse: true }}
+            transition={{
+              type: "timing",
+              duration: 800,
+              delay: 300,
+              loop: true,
+              repeatReverse: true,
+            }}
             style={{
               position: "absolute",
               top: -4,
@@ -284,7 +306,7 @@ export function CompletionAnimation({
               borderRadius: 4,
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: spacing[4],
+              marginBottom: spacing.lg,
               shadowColor: leveledUp ? "#FFD700" : colors.success,
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: 0.5,
@@ -296,9 +318,7 @@ export function CompletionAnimation({
               animate={{ rotate: "360deg" }}
               transition={{ type: "timing", duration: 4000, loop: true }}
             >
-              <Text style={{ fontSize: leveledUp ? 48 : 40 }}>
-                {leveledUp ? "★" : "✦"}
-              </Text>
+              <Text style={{ fontSize: leveledUp ? 48 : 40 }}>{leveledUp ? "★" : "✦"}</Text>
             </MotiView>
           </View>
         </MotiView>
@@ -321,16 +341,12 @@ export function CompletionAnimation({
           </Text>
         </MotiView>
 
-        <MotiView
-          from={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 550 }}
-        >
+        <MotiView from={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 550 }}>
           <Text
             style={{
               ...typography.body,
               color: colors.text.secondary,
-              marginTop: spacing[1],
+              marginTop: spacing.xs,
               textAlign: "center",
             }}
           >
@@ -360,7 +376,14 @@ export function CompletionAnimation({
             </Text>
           </MotiView>
 
-          <View style={{ width: 1, height: 40, backgroundColor: colors.border.subtle, alignSelf: "center" }} />
+          <View
+            style={{
+              width: 1,
+              height: 40,
+              backgroundColor: colors.border.subtle,
+              alignSelf: "center",
+            }}
+          />
 
           <MotiView
             from={{ opacity: 0, translateY: 20, scale: 0.8 }}
@@ -376,7 +399,14 @@ export function CompletionAnimation({
             </Text>
           </MotiView>
 
-          <View style={{ width: 1, height: 40, backgroundColor: colors.border.subtle, alignSelf: "center" }} />
+          <View
+            style={{
+              width: 1,
+              height: 40,
+              backgroundColor: colors.border.subtle,
+              alignSelf: "center",
+            }}
+          />
 
           <MotiView
             from={{ opacity: 0, translateY: 20, scale: 0.8 }}
@@ -387,9 +417,7 @@ export function CompletionAnimation({
             <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 8 }}>
               XP/MIN
             </Text>
-            <Text style={{ ...typography.h2, color: colors.text.primary }}>
-              {xpPerMin}
-            </Text>
+            <Text style={{ ...typography.h2, color: colors.text.primary }}>{xpPerMin}</Text>
           </MotiView>
         </View>
 
@@ -404,8 +432,8 @@ export function CompletionAnimation({
             borderWidth: 1,
             borderColor: colors.border.subtle,
             borderRadius: 4,
-            padding: spacing[3],
-            marginTop: spacing[4],
+            padding: spacing.md,
+            marginTop: spacing.lg,
             overflow: "hidden",
           }}
         >
@@ -415,12 +443,12 @@ export function CompletionAnimation({
               ...typography.label,
               color: colors.text.secondary,
               fontSize: 8,
-              marginBottom: spacing[2],
+              marginBottom: spacing.sm,
             }}
           >
             XP BREAKDOWN
           </Text>
-          <View style={{ gap: spacing[1] }}>
+          <View style={{ gap: spacing.xs }}>
             <Row label="Base (sets)" value={`+${xpBreakdown.base}`} />
             <Row label="Completion bonus" value={`+${xpBreakdown.completionBonus}`} />
             {xpBreakdown.streakBonus > 0 && (
@@ -434,7 +462,7 @@ export function CompletionAnimation({
               style={{
                 height: 1,
                 backgroundColor: colors.border.subtle,
-                marginVertical: spacing[1],
+                marginVertical: spacing.xs,
               }}
             />
             <Row label="TOTAL" value={`+${xpBreakdown.total}`} color={colors.accent.DEFAULT} bold />
@@ -452,11 +480,11 @@ export function CompletionAnimation({
               borderWidth: 2,
               borderColor: "#FFD700",
               borderRadius: 4,
-              padding: spacing[4],
+              padding: spacing.lg,
               marginTop: spacing[5],
               flexDirection: "row",
               alignItems: "center",
-              gap: spacing[3],
+              gap: spacing.md,
               shadowColor: "#FFD700",
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: 0.4,
@@ -478,13 +506,22 @@ export function CompletionAnimation({
               <Text style={{ fontSize: 36 }}>★</Text>
             </MotiView>
             <View>
-              <Text style={{ ...typography.label, color: "#FFD700", fontSize: 12, letterSpacing: 2 }}>
+              <Text
+                style={{ ...typography.label, color: "#FFD700", fontSize: 12, letterSpacing: 2 }}
+              >
                 LEVEL UP!
               </Text>
               <Text style={{ ...typography.h2, color: colors.text.primary }}>
                 LEVEL {level} → {newLevel}
               </Text>
-              <Text style={{ ...typography.bodySmall, color: colors.text.secondary, fontSize: 11, marginTop: 2 }}>
+              <Text
+                style={{
+                  ...typography.bodySmall,
+                  color: colors.text.secondary,
+                  fontSize: 11,
+                  marginTop: 2,
+                }}
+              >
                 New abilities unlocked
               </Text>
             </View>
@@ -493,7 +530,7 @@ export function CompletionAnimation({
 
         {/* Class unlock notifications — appear before skills */}
         {showSkillUnlocks && newClassUnlocks && newClassUnlocks.length > 0 && (
-          <View style={{ width: "100%", marginTop: spacing[4] }}>
+          <View style={{ width: "100%", marginTop: spacing.lg }}>
             <MotiView
               from={{ opacity: 0, translateY: 10 }}
               animate={{ opacity: 1, translateY: 0 }}
@@ -504,7 +541,7 @@ export function CompletionAnimation({
                   ...typography.label,
                   color: colors.success,
                   fontSize: 9,
-                  marginBottom: spacing[2],
+                  marginBottom: spacing.sm,
                   textAlign: "center",
                 }}
               >
@@ -529,9 +566,9 @@ export function CompletionAnimation({
                   borderWidth: 2,
                   borderColor: unlock.classDef.accent,
                   borderRadius: 4,
-                  padding: spacing[4],
-                  gap: spacing[3],
-                  marginBottom: spacing[2],
+                  padding: spacing.lg,
+                  gap: spacing.md,
+                  marginBottom: spacing.sm,
                   overflow: "hidden",
                 }}
               >
@@ -553,19 +590,19 @@ export function CompletionAnimation({
                       color: colors.text.secondary,
                       fontSize: 11,
                       lineHeight: 16,
-                      marginTop: spacing[1],
+                      marginTop: spacing.xs,
                     }}
                   >
                     {unlock.classDef.description}
                   </Text>
-                  <View style={{ flexDirection: "row", gap: spacing[2], marginTop: spacing[2] }}>
+                  <View style={{ flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm }}>
                     {unlock.classDef.focus.slice(0, 3).map((f) => (
                       <View
                         key={f}
                         style={{
                           backgroundColor: `${unlock.classDef.accent}15`,
                           borderRadius: 1,
-                          paddingHorizontal: spacing[1],
+                          paddingHorizontal: spacing.xs,
                           paddingVertical: 1,
                         }}
                       >
@@ -591,8 +628,8 @@ export function CompletionAnimation({
                     style={{
                       backgroundColor: colors.success,
                       borderRadius: 4,
-                      paddingHorizontal: spacing[2],
-                      paddingVertical: spacing[1],
+                      paddingHorizontal: spacing.sm,
+                      paddingVertical: spacing.xs,
                     }}
                   >
                     <Text
@@ -614,7 +651,7 @@ export function CompletionAnimation({
 
         {/* Skill unlock notifications */}
         {showSkillUnlocks && newSkillUnlocks && newSkillUnlocks.length > 0 && (
-          <View style={{ width: "100%", marginTop: spacing[4] }}>
+          <View style={{ width: "100%", marginTop: spacing.lg }}>
             <MotiView
               from={{ opacity: 0, translateY: 10 }}
               animate={{ opacity: 1, translateY: 0 }}
@@ -625,14 +662,14 @@ export function CompletionAnimation({
                   ...typography.label,
                   color: colors.accent.DEFAULT,
                   fontSize: 9,
-                  marginBottom: spacing[2],
+                  marginBottom: spacing.sm,
                   textAlign: "center",
                 }}
               >
                 NEW SKILLS UNLOCKED
               </Text>
             </MotiView>
-            <View style={{ gap: spacing[2] }}>
+            <View style={{ gap: spacing.sm }}>
               {newSkillUnlocks.map((unlock, i) => (
                 <MotiView
                   key={unlock.node.exercise.id}
@@ -651,8 +688,8 @@ export function CompletionAnimation({
                     borderWidth: 1,
                     borderColor: `${unlock.branchAccent}35`,
                     borderRadius: 4,
-                    padding: spacing[3],
-                    gap: spacing[2],
+                    padding: spacing.md,
+                    gap: spacing.sm,
                     overflow: "hidden",
                   }}
                 >
@@ -702,7 +739,7 @@ export function CompletionAnimation({
                       }}
                       numberOfLines={1}
                     >
-                      {unlock.node.exercise.repRange[0]}–{unlock.node.exercise.repRange[1]} reps ·{' '}
+                      {unlock.node.exercise.repRange[0]}–{unlock.node.exercise.repRange[1]} reps ·{" "}
                       {unlock.node.exercise.defaultSets} sets
                     </Text>
                   </View>
@@ -738,7 +775,7 @@ export function CompletionAnimation({
 
         {/* Achievement badges */}
         {showAchievements && unlockedAchievements.length > 0 && (
-          <View style={{ width: "100%", marginTop: spacing[4] }}>
+          <View style={{ width: "100%", marginTop: spacing.lg }}>
             <MotiView
               from={{ opacity: 0, translateY: 10 }}
               animate={{ opacity: 1, translateY: 0 }}
@@ -749,14 +786,21 @@ export function CompletionAnimation({
                   ...typography.label,
                   color: colors.accent.DEFAULT,
                   fontSize: 9,
-                  marginBottom: spacing[2],
+                  marginBottom: spacing.sm,
                   textAlign: "center",
                 }}
               >
                 ACHIEVEMENTS UNLOCKED
               </Text>
             </MotiView>
-            <View style={{ flexDirection: "row", justifyContent: "center", gap: spacing[3], flexWrap: "wrap" }}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "center",
+                gap: spacing.md,
+                flexWrap: "wrap",
+              }}
+            >
               {unlockedAchievements.map((achievement, i) => (
                 <MotiView
                   key={achievement.id}
@@ -780,7 +824,7 @@ export function CompletionAnimation({
           from={{ opacity: 0 }}
           animate={{ opacity: showContent ? 1 : 0 }}
           transition={{ delay: 1100 }}
-          style={{ marginTop: spacing[6], width: "100%" }}
+          style={{ marginTop: spacing.xl, width: "100%" }}
         >
           <Button title="CONTINUE" onPress={onContinue} fullWidth />
         </MotiView>

@@ -35,11 +35,11 @@ export function VoiceCoachToggle({ initialEnabled = true, onToggle }: VoiceCoach
         borderWidth: 1,
         borderColor: enabled ? colors.accent.DEFAULT : colors.border.subtle,
         borderRadius: 4,
-        paddingHorizontal: spacing[1],
-        paddingVertical: spacing[0],
+        paddingHorizontal: spacing.xs,
+        paddingVertical: 0,
         flexDirection: "row",
         alignItems: "center",
-        gap: spacing[1],
+        gap: spacing.xs,
       }}
       accessibilityLabel={enabled ? "Disable voice coach" : "Enable voice coach"}
       accessibilityRole="switch"

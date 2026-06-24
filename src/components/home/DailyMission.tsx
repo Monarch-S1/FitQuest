@@ -1,5 +1,5 @@
 import { View, Text } from "react-native";
-import { useColors, typography, spacing, fonts } from "../../tokens";
+import { useColors, spacing, Label, Body, H4, Tag } from "../../tokens";
 import { Button } from "../ui/Button";
 import { calculateDailyMissionXp } from "../../utils/xp";
 
@@ -20,11 +20,11 @@ export function DailyMission({
   return (
     <View
       style={{
-        backgroundColor: isComplete ? "rgba(16, 185, 129, 0.08)" : colors.bg.primary,
+        backgroundColor: isComplete ? `${colors.success}10` : colors.bg.base,
         borderWidth: 1.5,
-        borderColor: isComplete ? colors.success : colors.border.accent,
+        borderColor: isComplete ? colors.success : colors.accent.DEFAULT,
         borderRadius: 4,
-        padding: spacing[4],
+        padding: spacing.lg,
         position: "relative",
         overflow: "hidden",
       }}
@@ -38,7 +38,7 @@ export function DailyMission({
           width: 60,
           height: 60,
           borderRightWidth: 60,
-          borderRightColor: isComplete ? "rgba(16, 185, 129, 0.1)" : "rgba(245, 158, 11, 0.06)",
+          borderRightColor: isComplete ? `${colors.success}15` : `${colors.accent.DEFAULT}10`,
           borderBottomWidth: 60,
           borderBottomColor: "transparent",
         }}
@@ -46,60 +46,44 @@ export function DailyMission({
 
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
         <View style={{ flex: 1 }}>
-          <Text
-            style={{
-              ...typography.label,
-              color: colors.accent.DEFAULT,
-              fontSize: 10,
-              marginBottom: spacing[1],
-            }}
-          >
+          <Label variant="accent" style={{ marginBottom: spacing.xs }}>
             {isComplete ? "MISSION COMPLETE" : "TODAY'S MISSION"}
-          </Text>
-          <Text
+          </Label>
+          <Body
+            variant="primary"
             style={{
-              ...typography.body,
-              color: colors.text.primary,
-              fontFamily: fonts.body.semiBold,
+              fontFamily: "Inter-SemiBold",
               fontSize: 15,
               lineHeight: 22,
             }}
           >
             {mission}
-          </Text>
+          </Body>
         </View>
 
-        <View style={{ alignItems: "flex-end", marginLeft: spacing[3] }}>
-          <Text style={{ ...typography.label, color: colors.accent.DEFAULT, fontSize: 8 }}>
+        <View style={{ alignItems: "flex-end", marginLeft: spacing.md }}>
+          <Tag variant="accent" style={{ marginBottom: spacing.xs }}>
             REWARD
-          </Text>
-          <Text
-            style={{
-              ...typography.h3,
-              color: isComplete ? colors.success : colors.accent.DEFAULT,
-              fontSize: 24,
-            }}
-          >
-            +{xpReward}
-          </Text>
-          <Text style={{ ...typography.bodySmall, color: colors.text.secondary, fontSize: 9 }}>
+          </Tag>
+          <H4 variant={isComplete ? "success" : "accent"}>+{xpReward}</H4>
+          <Body variant="secondary" size="sm" style={{ fontSize: 9 }}>
             XP
-          </Text>
+          </Body>
         </View>
       </View>
 
       {!isComplete && onStart && (
-        <View style={{ marginTop: spacing[3] }}>
+        <View style={{ marginTop: spacing.md }}>
           <Button title="START MISSION" onPress={onStart} size="sm" fullWidth />
         </View>
       )}
 
       {isComplete && (
-        <View style={{ marginTop: spacing[2], flexDirection: "row", alignItems: "center" }}>
-          <Text style={{ color: colors.success, fontSize: 14, marginRight: spacing[1] }}>✓</Text>
-          <Text style={{ ...typography.bodySmall, color: colors.success, fontSize: 11 }}>
+        <View style={{ marginTop: spacing.sm, flexDirection: "row", alignItems: "center" }}>
+          <Text style={{ color: colors.success, fontSize: 14, marginRight: spacing.xs }}>✓</Text>
+          <Body variant="success" size="sm">
             Completed today
-          </Text>
+          </Body>
         </View>
       )}
 

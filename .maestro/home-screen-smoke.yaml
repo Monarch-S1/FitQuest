@@ -1,0 +1,71 @@
+# FitQuest Home Screen Smoke Test
+#
+# Minimal smoke test that verifies the app launches and the home
+# screen renders key elements. Intended for quick CI validation
+# after deployments.
+#
+# Prerequisite: User must have completed onboarding (clearing state
+# runs onboarding first, so this flow starts with an initial path
+# check to see if the user needs onboarding).
+
+appId: com.fitquest.app
+---
+# Launch app (preserve state — assumes onboarding is done)
+- launchApp:
+    clearState: false
+    timeout: 15000
+
+# Wait for splash screen and hydration
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Home screen should show the FitQuest logo/title
+- assertVisible: "SYSTEM ONLINE"
+- assertVisible: "FitQuest"
+
+# Verify hero stats section renders
+- assertVisible: "TOTAL XP"
+- assertVisible: "DAY STREAK"
+
+# Verify Featured Quest card renders
+- assertVisible: "FEATURED QUEST"
+
+# Verify bottom tab bar is present
+- tapOn:
+    text: "TRAIN"
+    index: 0
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- assertVisible: "Workouts"
+
+# Navigate to Body Map tab
+- tapOn:
+    text: "BODY"
+    index: 0
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- assertVisible: "MUSCLE MAP"
+
+# Navigate to History tab
+- tapOn:
+    text: "LOG"
+    index: 0
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- assertVisible: "Adventure Log"
+
+# Navigate to Profile tab
+- tapOn:
+    text: "CHARACTER"
+    index: 0
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- assertVisible: "Character"

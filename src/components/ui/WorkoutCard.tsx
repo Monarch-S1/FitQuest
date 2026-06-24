@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { TouchableOpacity, View, Text } from "react-native";
-import { useColors, typography, spacing } from "../../tokens";
+import { TouchableOpacity, View } from "react-native";
+import { useColors, spacing, H4, Label, Body, Tag } from "../../tokens";
 import { WorkoutDay } from "../../data/exercises";
 import { hapticPress } from "../../utils/haptics";
-import { GlossyOverlay } from "./GlossyOverlay";
 
 interface WorkoutCardProps {
   workout: WorkoutDay;
@@ -39,12 +38,10 @@ export function WorkoutCard({ workout, onPress, isActive = false }: WorkoutCardP
       accessibilityHint="Double tap to preview this workout"
       accessibilityState={{ selected: isActive }}
       style={{
-        backgroundColor: isActive ? colors.bg.highlight : colors.bg.elevated,
-        borderWidth: 1.5,
-        borderColor: isActive ? colors.accent.DEFAULT : colors.border.subtle,
+        backgroundColor: isActive ? colors.bg.highlight : colors.bg.card,
         borderRadius: 12,
-        padding: spacing[4],
-        marginBottom: spacing[3],
+        padding: spacing.lg,
+        marginBottom: spacing.md,
         position: "relative",
         overflow: "hidden",
         transform: [{ scale: isPressed ? 0.98 : 1 }],
@@ -52,54 +49,25 @@ export function WorkoutCard({ workout, onPress, isActive = false }: WorkoutCardP
           ? {
               shadowColor: colors.accent.DEFAULT,
               shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.3,
-              shadowRadius: 12,
-              elevation: 8,
+              shadowOpacity: 0.12,
+              shadowRadius: 10,
+              elevation: 4,
             }
           : {}),
       }}
     >
-      {/* Glossy finish */}
-      <GlossyOverlay highlightOpacity={isActive ? 0.18 : 0.08} />
-
-      {/* Top glow accent bar */}
-      <View
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 2,
-          backgroundColor: isActive ? colors.accent.DEFAULT : colors.border.subtle,
-          opacity: isActive ? 1 : 0.5,
-        }}
-      />
-
-      {/* Left accent bar */}
-      <View
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: 3,
-          height: "100%",
-          backgroundColor: isActive ? colors.accent.DEFAULT : colors.border.subtle,
-        }}
-      />
-
-      {/* Subtle background gradient for active */}
+      {/* Left accent bar — only for active/recommended */}
       {isActive && (
         <View
           style={{
             position: "absolute",
             top: 0,
-            right: 0,
-            width: 120,
-            height: 120,
-            borderRadius: 60,
-            backgroundColor: colors.accent.glow,
-            opacity: 0.15,
-            transform: [{ translateX: 40 }, { translateY: -40 }],
+            left: 0,
+            width: 3,
+            height: "100%",
+            backgroundColor: colors.accent.DEFAULT,
+            borderTopLeftRadius: 12,
+            borderBottomLeftRadius: 12,
           }}
         />
       )}
@@ -108,96 +76,63 @@ export function WorkoutCard({ workout, onPress, isActive = false }: WorkoutCardP
       <View
         style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}
       >
-        <View style={{ flex: 1, marginRight: spacing[3] }}>
-          <Text
-            style={{
-              ...typography.h4,
-              color: isActive ? colors.accent.DEFAULT : colors.text.primary,
-            }}
-          >
+        <View style={{ flex: 1, marginRight: spacing.md }}>
+          <H4 variant={isActive ? "accent" : "primary"} style={{ marginBottom: spacing.xs }}>
             {workout.name}
-          </Text>
-          <Text
-            style={{
-              ...typography.bodySmall,
-              color: colors.text.secondary,
-              marginTop: spacing[1],
-            }}
-          >
+          </H4>
+          <Body variant="secondary" size="sm">
             {workout.focus}
-          </Text>
+          </Body>
         </View>
 
         <View
           style={{
-            backgroundColor: isActive ? colors.accent.DEFAULT : "transparent",
-            borderWidth: 1.5,
-            borderColor: isActive ? colors.accent.DEFAULT : colors.border.subtle,
-            borderRadius: 12,
-            paddingHorizontal: spacing[2],
-            paddingVertical: spacing[1],
+            backgroundColor: isActive ? `${colors.accent.DEFAULT}15` : colors.bg.highlight,
+            borderRadius: 8,
+            paddingHorizontal: spacing.sm,
+            paddingVertical: spacing.xs,
           }}
         >
-          <Text
-            style={{
-              ...typography.label,
-              color: isActive ? colors.bg.primary : colors.text.secondary,
-              fontSize: 10,
-            }}
-          >
-            {workout.exercises.length} EX
-          </Text>
+          <Tag variant={isActive ? "accent" : "secondary"}>{workout.exercises.length} EX</Tag>
         </View>
       </View>
 
       {/* Exercise list preview */}
       <View
-        style={{ marginTop: spacing[3], flexDirection: "row", flexWrap: "wrap", gap: spacing[1] }}
+        style={{ marginTop: spacing.md, flexDirection: "row", flexWrap: "wrap", gap: spacing.xs }}
       >
         {workout.exercises.slice(0, 4).map((ex) => (
           <View
             key={ex.id}
             style={{
-              backgroundColor: isActive ? `${colors.accent.DEFAULT}10` : colors.bg.primary,
-              borderWidth: 1,
-              borderColor: isActive ? `${colors.accent.DEFAULT}30` : colors.border.subtle,
-              borderRadius: 12,
-              paddingHorizontal: spacing[2],
-              paddingVertical: spacing[0],
+              backgroundColor: isActive ? `${colors.accent.DEFAULT}10` : colors.bg.highlight,
+              borderRadius: 8,
+              paddingHorizontal: spacing.sm,
+              paddingVertical: 3,
             }}
           >
-            <Text
-              style={{
-                ...typography.bodySmall,
-                color: isActive ? colors.accent.light : colors.text.secondary,
-                fontSize: 10,
-              }}
+            <Body
+              variant={isActive ? "accent" : "secondary"}
+              size="sm"
+              style={{ fontSize: 9 }}
               numberOfLines={1}
             >
               {ex.name}
-            </Text>
+            </Body>
           </View>
         ))}
         {workout.exercises.length > 4 && (
           <View
             style={{
-              backgroundColor: colors.bg.primary,
-              borderWidth: 1,
-              borderColor: colors.border.subtle,
-              borderRadius: 12,
-              paddingHorizontal: spacing[2],
-              paddingVertical: spacing[0],
+              backgroundColor: colors.bg.highlight,
+              borderRadius: 8,
+              paddingHorizontal: spacing.sm,
+              paddingVertical: 3,
             }}
           >
-            <Text
-              style={{
-                ...typography.bodySmall,
-                color: colors.text.secondary,
-                fontSize: 10,
-              }}
-            >
+            <Body variant="secondary" size="sm" style={{ fontSize: 9 }}>
               +{workout.exercises.length - 4}
-            </Text>
+            </Body>
           </View>
         )}
       </View>
@@ -205,33 +140,21 @@ export function WorkoutCard({ workout, onPress, isActive = false }: WorkoutCardP
       {/* Bottom info row */}
       <View
         style={{
-          marginTop: spacing[3],
+          marginTop: spacing.md,
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
+          paddingTop: spacing.sm,
           borderTopWidth: 1,
-          borderTopColor: isActive ? `${colors.accent.DEFAULT}20` : colors.border.subtle,
-          paddingTop: spacing[2],
+          borderTopColor: colors.border.subtle,
         }}
       >
-        <Text
-          style={{
-            ...typography.bodySmall,
-            color: colors.text.secondary,
-            fontSize: 10,
-          }}
-        >
+        <Body variant="secondary" size="sm" style={{ fontSize: 10 }}>
           ~{estimatedMin} min
-        </Text>
-        <Text
-          style={{
-            ...typography.label,
-            color: isActive ? colors.accent.DEFAULT : colors.text.secondary,
-            fontSize: 10,
-          }}
-        >
+        </Body>
+        <Label variant={isActive ? "accent" : "secondary"} style={{ fontSize: 9 }}>
           {isActive ? "★ RECOMMENDED" : "PREVIEW →"}
-        </Text>
+        </Label>
       </View>
     </TouchableOpacity>
   );

@@ -51,9 +51,7 @@ describe("SKILL_TREE_8", () => {
   it("nodes are sorted by level within each branch", () => {
     for (const branch of SKILL_TREE_8) {
       for (let i = 1; i < branch.nodes.length; i++) {
-        expect(branch.nodes[i].pathwayLevel).toBeGreaterThan(
-          branch.nodes[i - 1].pathwayLevel,
-        );
+        expect(branch.nodes[i].pathwayLevel).toBeGreaterThan(branch.nodes[i - 1].pathwayLevel);
       }
     }
   });

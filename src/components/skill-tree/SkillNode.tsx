@@ -1,6 +1,21 @@
-import { View, Text, TouchableOpacity } from "react-native";
-import { useColors, typography, spacing } from "../../tokens";
-import { SkillNode as SkillNodeData, DifficultyTier } from "../../data/skillTree";
+/**
+ * SkillNode — Connected Sphere Node with Enhanced State Indicators
+ *
+ * Game-inspired sphere design with strong visual distinction:
+ *   🔒 LOCKED    — 24dp, dark gray, padlock icon, no glow
+ *   ○ UNLOCKED   — 28dp, visible colored border, faint fill, open circle
+ *   ◉ ACTIVE     — 34dp, bright fill, strong breathing glow ring
+ *   ★ MASTERED   — 42dp, brilliant fill, pulsing radiant ring, checkmark icon
+ *
+ * Design inspired by: Path of Exile (color states), God of War (clear icons),
+ * Final Fantasy X Sphere Grid (physical progression distinction).
+ */
+
+import { useEffect, useRef } from "react";
+import { View, Text, TouchableOpacity, Animated } from "react-native";
+import { MotiView } from "moti";
+import { useColors } from "../../tokens";
+import { SkillNode as SkillNodeData } from "../../data/skillTree";
 
 interface SkillNodeProps {
   node: SkillNodeData;
@@ -9,239 +24,240 @@ interface SkillNodeProps {
   isMastered: boolean;
   isSelected: boolean;
   onPress: () => void;
+  onLayout?: (event: any) => void;
+  /** Stagger delay for mount animation (index * ms) */
+  animationDelay?: number;
 }
 
-const NODE_STATE_CONFIG = {
-  mastered: { icon: "★", label: "MASTERED" },
-  active: { icon: "◆", label: "ACTIVE" },
-  unlocked: { icon: "▷", label: "UNLOCKED" },
-  locked: { icon: "◈", label: "LOCKED" },
-} as const;
-
-const DIFFICULTY_COLORS: Record<DifficultyTier, string> = {
-  beginner: "#10B981",
-  intermediate: "#F59E0B",
-  advanced: "#EF4444",
+/** Sphere diameter by state — 20% larger than before */
+const SPHERE_SIZE = {
+  locked: 24,
+  unlocked: 28,
+  active: 34,
+  mastered: 42,
 };
 
-const DIFFICULTY_LABELS: Record<DifficultyTier, string> = {
-  beginner: "BEGINNER",
-  intermediate: "INTERMEDIATE",
-  advanced: "ADVANCED",
+/** Glow ring diameter for active/mastered states */
+const GLOW_RING = {
+  active: 44,
+  mastered: 54,
 };
 
-export function SkillNode({ node, isCompleted, isUnlocked, isMastered, isSelected, onPress }: SkillNodeProps) {
+/** State ranks for transition detection (higher = more advanced) */
+const STATE_RANK: Record<string, number> = {
+  locked: 0,
+  unlocked: 1,
+  active: 2,
+  mastered: 3,
+};
+
+export function SkillNode({
+  node,
+  isCompleted,
+  isUnlocked,
+  isMastered,
+  isSelected,
+  onPress,
+  onLayout,
+  animationDelay = 0,
+}: SkillNodeProps) {
   const colors = useColors();
 
-  const state =
-    isMastered ? "mastered" :
-    isCompleted ? "active" :
-    isUnlocked ? "unlocked" :
-    "locked";
+  const state = isMastered
+    ? "mastered"
+    : isCompleted
+      ? "active"
+      : isUnlocked
+        ? "unlocked"
+        : "locked";
 
-  const stateCfg = NODE_STATE_CONFIG[state];
+  const size = SPHERE_SIZE[state];
+  const isDim = state === "locked";
+  const isHighlighted = state === "mastered" || state === "active";
 
-  const accentColor =
-    state === "mastered" ? colors.success :
-    state === "active" ? node.accent :
-    state === "unlocked" ? node.accent :
-    colors.border.subtle;
+  // Brighter, more distinct colors
+  const sphereColor =
+    state === "mastered"
+      ? colors.success
+      : state === "active"
+        ? node.accent
+        : state === "unlocked"
+          ? colors.text.secondary
+          : "#3A3645";
 
-  const diffColor = DIFFICULTY_COLORS[node.difficulty];
+  const labelColor = isDim ? colors.text.tertiary : colors.text.primary;
+
+  // ── State transition "pop" animation ──────────────
+
+  const prevStateRef = useRef(state);
+  const popScale = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const prev = prevStateRef.current;
+    prevStateRef.current = state;
+
+    const prevRank = STATE_RANK[prev] ?? 0;
+    const currRank = STATE_RANK[state] ?? 0;
+
+    if (currRank > prevRank && prevRank >= 0) {
+      popScale.setValue(0.85);
+      Animated.spring(popScale, {
+        toValue: 1,
+        friction: 4,
+        tension: 120,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [state, popScale]);
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.7}
+    <MotiView
+      from={{ scale: 0, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{
+        type: "spring",
+        damping: 14,
+        stiffness: 90,
+        delay: animationDelay,
+      }}
+      onLayout={onLayout}
       style={{
-        flexDirection: "row",
         alignItems: "center",
-        backgroundColor: isSelected
-          ? `${accentColor}15`
-          : state === "mastered"
-            ? `${colors.success}10`
-            : state === "active"
-              ? `${node.accent}10`
-              : colors.bg.elevated,
-        borderWidth: 1,
-        borderColor: isSelected
-          ? accentColor
-          : state === "mastered"
-            ? `${colors.success}40`
-            : state === "active"
-              ? `${node.accent}40`
-              : colors.border.subtle,
-        borderRadius: 4,
-        paddingLeft: 0,
-        paddingRight: spacing[3],
-        marginBottom: spacing[2],
-        overflow: "hidden",
-        opacity: state === "locked" ? 0.45 : 1,
+        justifyContent: "center",
+        width: GLOW_RING.mastered,
+        height: GLOW_RING.mastered,
       }}
     >
-      {/* Accent stripe */}
-      <View
-        style={{
-          width: 3,
-          alignSelf: "stretch",
-          backgroundColor: accentColor,
-          opacity: state === "mastered" || state === "active" ? 1 : 0.4,
-          marginRight: spacing[2],
-        }}
-      />
+      {/* ── Glow ring — mastered (wide, pulsing radial) ── */}
+      {state === "mastered" && (
+        <MotiView
+          from={{ scale: 0.95, opacity: 0.35 }}
+          animate={{ scale: 1.06, opacity: 0.5 }}
+          transition={{ loop: true, repeatReverse: true, duration: 2000, type: "timing" }}
+          style={{
+            position: "absolute",
+            width: GLOW_RING.mastered,
+            height: GLOW_RING.mastered,
+            borderRadius: GLOW_RING.mastered / 2,
+            backgroundColor: `${sphereColor}20`,
+            borderWidth: 1.5,
+            borderColor: `${sphereColor}40`,
+          }}
+        />
+      )}
 
-      {/* Content */}
-      <View style={{ flex: 1, paddingVertical: spacing[2] }}>
-        {/* Exercise name + pathway level badge */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[2] }}>
-          <Text
-            style={{
-              ...typography.h3,
-              color: state !== "locked" ? colors.text.primary : colors.text.secondary,
-              fontSize: 14,
-              flex: 1,
-              letterSpacing: 0.5,
-            }}
-            numberOfLines={1}
-          >
-            {node.exercise.name.toUpperCase()}
-          </Text>
+      {/* ── Glow ring — active (breathing pulse) ── */}
+      {state === "active" && (
+        <MotiView
+          from={{ scale: 0.97, opacity: 0.2 }}
+          animate={{ scale: 1.05, opacity: 0.35 }}
+          transition={{ loop: true, repeatReverse: true, duration: 1500, type: "timing" }}
+          style={{
+            position: "absolute",
+            width: GLOW_RING.active,
+            height: GLOW_RING.active,
+            borderRadius: GLOW_RING.active / 2,
+            backgroundColor: `${sphereColor}18`,
+          }}
+        />
+      )}
 
-          {/* Level badge */}
-          <View
-            style={{
-              backgroundColor: `${node.accent}15`,
-              borderWidth: 1,
-              borderColor: `${node.accent}30`,
-              borderRadius: 1,
-              paddingHorizontal: spacing[1],
-            }}
-          >
-            <Text style={{ ...typography.bodySmall, color: node.accent, fontSize: 7 }}>
-              Lv{node.pathwayLevel}
-            </Text>
-          </View>
-
-          {/* State icon */}
-          <Text style={{
-            fontSize: 12,
-            color:
-              state === "mastered" ? colors.success :
-              state === "active" ? node.accent :
-              state === "unlocked" ? colors.text.secondary :
-              colors.text.tertiary,
-          }}>
-            {state === "mastered" ? "★" :
-             state === "active" ? "◇" :
-             state === "unlocked" ? "▷" : "◆"}
-          </Text>
-        </View>
-
-        {/* State label + difficulty + rep range */}
+      {/* ── Selected ring ── */}
+      {isSelected && (
         <View
           style={{
-            flexDirection: "row",
+            position: "absolute",
+            width: GLOW_RING.mastered + 8,
+            height: GLOW_RING.mastered + 8,
+            borderRadius: (GLOW_RING.mastered + 8) / 2,
+            borderWidth: 2,
+            borderColor: colors.accent.DEFAULT,
+          }}
+        />
+      )}
+
+      {/* ── Core sphere ── */}
+      <Animated.View style={{ transform: [{ scale: popScale }] }}>
+        <TouchableOpacity
+          onPress={onPress}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={`${node.exercise.name}, ${state}`}
+          style={{
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            backgroundColor: isDim ? sphereColor : `${sphereColor}25`,
+            borderWidth: isDim ? 1 : 2.5,
+            borderColor: isDim ? "#3A3645" : sphereColor,
             alignItems: "center",
-            gap: spacing[2],
-            marginTop: spacing[1],
+            justifyContent: "center",
+            opacity: isDim ? 0.5 : 1,
+            ...(isHighlighted
+              ? {
+                  shadowColor: sphereColor,
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0.6,
+                  shadowRadius: state === "mastered" ? 12 : 6,
+                  elevation: state === "mastered" ? 12 : 6,
+                }
+              : {}),
           }}
         >
-          {/* State badge */}
-          <View
-            style={{
-              backgroundColor: `${accentColor}20`,
-              borderWidth: 1,
-              borderColor: `${accentColor}40`,
-              borderRadius: 1,
-              paddingHorizontal: spacing[1],
-              paddingVertical: 1,
-            }}
-          >
-            <Text
-              style={{
-                ...typography.bodySmall,
-                color: accentColor,
-                fontSize: 7,
-                letterSpacing: 0.8,
-              }}
-            >
-              {stateCfg.label}
-            </Text>
-          </View>
-
-          <View
-            style={{
-              backgroundColor: `${diffColor}20`,
-              borderWidth: 1,
-              borderColor: `${diffColor}40`,
-              borderRadius: 1,
-              paddingHorizontal: spacing[1],
-              paddingVertical: 1,
-            }}
-          >
-            <Text
-              style={{
-                ...typography.bodySmall,
-                color: diffColor,
-                fontSize: 7,
-                letterSpacing: 0.8,
-              }}
-            >
-              {DIFFICULTY_LABELS[node.difficulty]}
-            </Text>
-          </View>
-          <Text
-            style={{
-              ...typography.bodySmall,
-              color: colors.text.secondary,
-              fontSize: 8,
-            }}
-          >
-            {node.exercise.repRange[0]}–{node.exercise.repRange[1]} reps
-          </Text>
-        </View>
-
-        {/* Muscle targets */}
-        <View
-          style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[1], marginTop: spacing[1] }}
-        >
-          {node.exercise.targetMuscles.slice(0, 3).map((muscle) => (
-            <View
-              key={muscle}
-              style={{
-                backgroundColor: `${accentColor}10`,
-                borderRadius: 1,
-                paddingHorizontal: spacing[1],
-                paddingVertical: 1,
-              }}
+          {/* Mastered: checkmark ✓ */}
+          {state === "mastered" && (
+            <MotiView
+              from={{ rotate: "0deg", scale: 0.8 }}
+              animate={{ rotate: "360deg", scale: 1 }}
+              transition={{ type: "timing", duration: 600, delay: animationDelay + 200 }}
             >
               <Text
-                style={{
-                  ...typography.bodySmall,
-                  color: state !== "locked" ? accentColor : colors.text.secondary,
-                  fontSize: 6,
-                  opacity: state !== "locked" ? 0.8 : 0.4,
-                  textTransform: "uppercase",
-                  letterSpacing: 0.5,
-                }}
+                style={{ fontSize: 16, color: colors.bg.base, fontWeight: "bold", marginTop: -1 }}
               >
-                {muscle.replace(/_/g, " ")}
+                ✓
               </Text>
-            </View>
-          ))}
-        </View>
-      </View>
+            </MotiView>
+          )}
 
-      {/* Chevron */}
+          {/* Active: diamond ◇ */}
+          {state === "active" && (
+            <View
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: 1,
+                backgroundColor: sphereColor,
+                transform: [{ rotate: "45deg" }],
+              }}
+            />
+          )}
+
+          {/* Unlocked: open circle */}
+          {state === "unlocked" && (
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: sphereColor }} />
+          )}
+
+          {/* Locked: padlock 🔒 */}
+          {state === "locked" && (
+            <Text style={{ fontSize: 10, color: "#5A5665", marginTop: -1 }}>🔒</Text>
+          )}
+        </TouchableOpacity>
+      </Animated.View>
+
+      {/* Level label */}
       <Text
         style={{
-          color: isSelected ? accentColor : colors.text.secondary,
-          fontSize: 10,
-          opacity: isSelected ? 1 : 0.3,
+          fontFamily: "Inter-SemiBold",
+          fontSize: 8,
+          color: labelColor,
+          letterSpacing: 0.5,
+          marginTop: 4,
+          textAlign: "center",
+          opacity: isDim ? 0.4 : 0.8,
         }}
       >
-        {isSelected ? "▼" : "▶"}
+        Lv{node.pathwayLevel}
       </Text>
-    </TouchableOpacity>
+    </MotiView>
   );
 }

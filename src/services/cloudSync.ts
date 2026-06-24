@@ -67,33 +67,34 @@ function setSyncStatus(status: SyncStatus) {
  * Push user profile data to Supabase.
  * Upserts so it creates the row on first sync and updates on subsequent syncs.
  */
-export async function pushProfile(userId: string, profile: {
-  displayName: string;
-  fitnessGoal: FitnessGoal;
-  fitnessLevel: FitnessLevel;
-  avatarUri: string | null;
-  themeMode: string;
-  accentColor: string;
-  onboardingComplete: boolean;
-}): Promise<{ error: string | null }> {
+export async function pushProfile(
+  userId: string,
+  profile: {
+    displayName: string;
+    fitnessGoal: FitnessGoal;
+    fitnessLevel: FitnessLevel;
+    avatarUri: string | null;
+    themeMode: string;
+    accentColor: string;
+    onboardingComplete: boolean;
+  },
+): Promise<{ error: string | null }> {
   if (!isSupabaseConfigured()) return { error: null };
 
-  const { error } = await supabase
-    .from("user_profiles")
-    .upsert(
-      {
-        id: userId,
-        display_name: profile.displayName,
-        fitness_goal: profile.fitnessGoal,
-        fitness_level: profile.fitnessLevel,
-        avatar_url: profile.avatarUri,
-        theme_mode: profile.themeMode,
-        accent_color: profile.accentColor,
-        onboarding_complete: profile.onboardingComplete,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "id" },
-    );
+  const { error } = await supabase.from("user_profiles").upsert(
+    {
+      id: userId,
+      display_name: profile.displayName,
+      fitness_goal: profile.fitnessGoal,
+      fitness_level: profile.fitnessLevel,
+      avatar_url: profile.avatarUri,
+      theme_mode: profile.themeMode,
+      accent_color: profile.accentColor,
+      onboarding_complete: profile.onboardingComplete,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "id" },
+  );
 
   return { error: error?.message ?? null };
 }
@@ -127,9 +128,7 @@ export async function pushWorkoutSessions(
   let pushedCount = 0;
   for (let i = 0; i < rows.length; i += BATCH_SIZE) {
     const batch = rows.slice(i, i + BATCH_SIZE);
-    const { error } = await supabase
-      .from("workout_sessions")
-      .upsert(batch, { onConflict: "id" });
+    const { error } = await supabase.from("workout_sessions").upsert(batch, { onConflict: "id" });
     if (error) return { error: error.message, pushedCount };
     pushedCount += batch.length;
   }
@@ -140,29 +139,30 @@ export async function pushWorkoutSessions(
 /**
  * Push aggregated stats to Supabase.
  */
-export async function pushStats(userId: string, stats: {
-  totalXp: number;
-  currentStreak: number;
-  longestStreak: number;
-  lastWorkoutDate: string | null;
-  totalWorkouts: number;
-}): Promise<{ error: string | null }> {
+export async function pushStats(
+  userId: string,
+  stats: {
+    totalXp: number;
+    currentStreak: number;
+    longestStreak: number;
+    lastWorkoutDate: string | null;
+    totalWorkouts: number;
+  },
+): Promise<{ error: string | null }> {
   if (!isSupabaseConfigured()) return { error: null };
 
-  const { error } = await supabase
-    .from("user_stats")
-    .upsert(
-      {
-        user_id: userId,
-        total_xp: stats.totalXp,
-        current_streak: stats.currentStreak,
-        longest_streak: stats.longestStreak,
-        last_workout_date: stats.lastWorkoutDate,
-        total_workouts: stats.totalWorkouts,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id" },
-    );
+  const { error } = await supabase.from("user_stats").upsert(
+    {
+      user_id: userId,
+      total_xp: stats.totalXp,
+      current_streak: stats.currentStreak,
+      longest_streak: stats.longestStreak,
+      last_workout_date: stats.lastWorkoutDate,
+      total_workouts: stats.totalWorkouts,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" },
+  );
 
   return { error: error?.message ?? null };
 }
@@ -284,19 +284,22 @@ export async function pullStats(userId: string): Promise<{
  * Full bidirectional sync: pull from cloud, merge with local, push back.
  * Uses a "cloud wins for profile, local wins for workouts" strategy.
  */
-export async function fullSync(userId: string, localData: {
-  displayName: string;
-  fitnessGoal: FitnessGoal;
-  fitnessLevel: FitnessLevel;
-  avatarUri: string | null;
-  themeMode: string;
-  accentColor: string;
-  onboardingComplete: boolean;
-  workoutHistory: WorkoutSession[];
-  totalXp: number;
-  streakData: { currentStreak: number; longestStreak: number; lastWorkoutDate: string | null };
-  totalWorkouts: number;
-}): Promise<{
+export async function fullSync(
+  userId: string,
+  localData: {
+    displayName: string;
+    fitnessGoal: FitnessGoal;
+    fitnessLevel: FitnessLevel;
+    avatarUri: string | null;
+    themeMode: string;
+    accentColor: string;
+    onboardingComplete: boolean;
+    workoutHistory: WorkoutSession[];
+    totalXp: number;
+    streakData: { currentStreak: number; longestStreak: number; lastWorkoutDate: string | null };
+    totalWorkouts: number;
+  },
+): Promise<{
   mergedProfile: typeof localData | null;
   mergedWorkouts: WorkoutSession[];
   error: string | null;
@@ -383,13 +386,17 @@ export async function fullSync(userId: string, localData: {
  * Push only the latest workout session and updated stats.
  * Called after each workout completion for near-real-time cloud backup.
  */
-export async function incrementalSync(userId: string, session: WorkoutSession, stats: {
-  totalXp: number;
-  currentStreak: number;
-  longestStreak: number;
-  lastWorkoutDate: string | null;
-  totalWorkouts: number;
-}): Promise<{ error: string | null }> {
+export async function incrementalSync(
+  userId: string,
+  session: WorkoutSession,
+  stats: {
+    totalXp: number;
+    currentStreak: number;
+    longestStreak: number;
+    lastWorkoutDate: string | null;
+    totalWorkouts: number;
+  },
+): Promise<{ error: string | null }> {
   if (!isSupabaseConfigured()) return { error: null };
 
   setSyncStatus("syncing");

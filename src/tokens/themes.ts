@@ -10,9 +10,13 @@ export interface AccentPalette {
 
 export interface ColorPalette {
   bg: {
+    // New names (preferred)
+    base: string;
+    card: string;
+    highlight: string;
+    // Legacy aliases for backward compatibility
     primary: string;
     elevated: string;
-    highlight: string;
     surface: string;
   };
   accent: AccentPalette;
@@ -21,6 +25,7 @@ export interface ColorPalette {
   error: string;
   errorGlow: string;
   warning: string;
+  recovery: string;
   text: {
     primary: string;
     secondary: string;
@@ -35,76 +40,82 @@ export interface ColorPalette {
 
 export const accentOptions: Record<AccentKey, AccentPalette> = {
   amber: {
-    DEFAULT: "#F59E0B",
-    light: "#FBBF24",
-    dark: "#D97706",
-    glow: "rgba(245, 158, 11, 0.25)",
+    DEFAULT: "#C9954A",
+    light: "#E0BC6A",
+    dark: "#A67B32",
+    glow: "rgba(201, 149, 74, 0.2)",
   },
   emerald: {
-    DEFAULT: "#10B981",
-    light: "#34D399",
-    dark: "#059669",
-    glow: "rgba(16, 185, 129, 0.25)",
+    DEFAULT: "#7A9A6D",
+    light: "#9CBA8E",
+    dark: "#5E8262",
+    glow: "rgba(122, 154, 109, 0.2)",
   },
   cyan: {
-    DEFAULT: "#06B6D4",
-    light: "#22D3EE",
-    dark: "#0891B2",
-    glow: "rgba(6, 182, 212, 0.25)",
+    DEFAULT: "#6E9490",
+    light: "#8EB0AC",
+    dark: "#5A807C",
+    glow: "rgba(110, 148, 144, 0.2)",
   },
   rose: {
-    DEFAULT: "#F43F5E",
-    light: "#FB7185",
-    dark: "#E11D48",
-    glow: "rgba(244, 63, 94, 0.25)",
+    DEFAULT: "#C4715A",
+    light: "#D9917C",
+    dark: "#A85D48",
+    glow: "rgba(196, 113, 90, 0.2)",
   },
 };
 
 const darkPalette: Omit<ColorPalette, "accent"> = {
   bg: {
-    primary: "#070814",
-    elevated: "#0D1021",
-    highlight: "#151A30",
-    surface: "#0A0D1A",
+    base: "#100E13",
+    card: "#1B1820",
+    highlight: "#26222E",
+    primary: "#100E13",
+    elevated: "#1B1820",
+    surface: "#1B1820",
   },
-  success: "#10B981",
-  successGlow: "rgba(16, 185, 129, 0.2)",
-  error: "#EF4444",
-  errorGlow: "rgba(239, 68, 68, 0.2)",
-  warning: "#F59E0B",
+  success: "#7A9A6D",
+  successGlow: "rgba(122, 154, 109, 0.2)",
+  error: "#C4715A",
+  errorGlow: "rgba(196, 113, 90, 0.2)",
+  warning: "#D4A853",
+  recovery: "#6E9490",
   text: {
-    primary: "#EDE7D9",
-    secondary: "#9B8E7A",
-    tertiary: "#5A4F42",
-    accent: "#F59E0B",
+    primary: "#EDE8DC",
+    secondary: "#9C9285",
+    tertiary: "#655D53",
+    accent: "#C9954A",
   },
   border: {
-    subtle: "#1C1F33",
-    accent: "#F59E0B",
+    subtle: "#2A2730",
+    accent: "#C9954A",
   },
 };
 
 const lightPalette: Omit<ColorPalette, "accent"> = {
   bg: {
-    primary: "#F9FAFB",
-    elevated: "#FFFFFF",
-    highlight: "#F3F4F6",
-    surface: "#F0F0F5",
+    base: "#F2EDE4",
+    card: "#F9F5EE",
+    highlight: "#EBE5DA",
+    primary: "#F2EDE4",
+    elevated: "#F9F5EE",
+    surface: "#F9F5EE",
   },
-  success: "#059669",
-  successGlow: "rgba(5, 150, 105, 0.15)",
-  error: "#DC2626",
-  errorGlow: "rgba(220, 38, 38, 0.15)",
-  warning: "#D97706",
+  success: "#5E8262",
+  successGlow: "rgba(94, 130, 98, 0.15)",
+  error: "#A85D48",
+  errorGlow: "rgba(168, 93, 72, 0.15)",
+  warning: "#A67B32",
+  recovery: "#5A807C",
   text: {
-    primary: "#111827",
-    secondary: "#6B7280",
-    tertiary: "#9CA3AF",
-    accent: "#D97706",
+    primary: "#2A2520",
+    secondary: "#7A7268",
+    tertiary: "#A89E93",
+    accent: "#C9954A",
   },
   border: {
-    subtle: "#E5E7EB",
-    accent: "#D97706",
+    subtle: "#E0D9CE",
+    accent: "#C9954A",
   },
 };
 
@@ -113,7 +124,6 @@ const palettes: Record<ThemeMode, Omit<ColorPalette, "accent">> = {
   light: lightPalette,
 };
 
-/** Merge the base palette with the chosen accent colors */
 export function getColors(mode: ThemeMode, accentKey: AccentKey): ColorPalette {
   const base = palettes[mode];
   const accent = accentOptions[accentKey];

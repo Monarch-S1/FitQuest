@@ -69,7 +69,7 @@ export const WORKOUT_CLASSES: WorkoutClass[] = [
     id: "planche-prep-pro",
     name: "Planche Prep Pro",
     description:
-      "A specialized routine targeting the core-to-shoulder tension needed for advanced calisthenics. Hollow body control meets pseudo-planche pressing.",
+      "A specialized routine targeting the core-to-shoulder tension needed for advanced bodyweight training. Hollow body control meets pseudo-planche pressing.",
     icon: "🔥",
     accent: "#F59E0B",
     requiredExercises: ["AC5", "HP8"],
@@ -91,6 +91,48 @@ export const WORKOUT_CLASSES: WorkoutClass[] = [
     focus: ["Glutes", "Hamstrings", "Quadriceps", "Unilateral Strength"],
     estimatedMinutes: 30,
     exerciseCount: 5,
+    difficulty: "intermediate",
+  },
+  {
+    id: "core-crucible",
+    name: "The Core Crucible",
+    description:
+      "An anterior-to-posterior core gauntlet fusing hollow-body tension with lateral stability. Forged through isometric holds, dynamic flexion, and rotational control — no stone left unturned.",
+    icon: "⛓️",
+    accent: "#F59E0B",
+    requiredExercises: ["AC5", "PLC3"],
+    requiredNames: ["Hollow Body Hold (Full)", "Standard Forearm Plank"],
+    focus: ["Core", "Obliques", "Anti-Extension", "Lateral Stability"],
+    estimatedMinutes: 25,
+    exerciseCount: 6,
+    difficulty: "intermediate",
+  },
+  {
+    id: "atlas-protocol",
+    name: "The Atlas Protocol",
+    description:
+      "A vertical pulling gauntlet designed to widen and thicken the back. Sliding lat pulldowns progress into unilateral drags while core stability holds the body rigid. Shoulders stay packed, lats take the load.",
+    icon: "🏛️",
+    accent: "#8B5CF6",
+    requiredExercises: ["VPLL6", "PLC6"],
+    requiredNames: ["Sliding Floor Lat Pulldown (Full Plank)", "Side Plank (Foot Supported)"],
+    focus: ["Lats", "Core", "Scapular Control", "Unilateral Pull"],
+    estimatedMinutes: 30,
+    exerciseCount: 6,
+    difficulty: "intermediate",
+  },
+  {
+    id: "iron-foundation",
+    name: "The Iron Foundation",
+    description:
+      "A beginner-friendly full-body circuit building the movement patterns every athlete needs. Push, squat, plank, row, and crawl — mastered here before progressing to advanced variations.",
+    icon: "🛡️",
+    accent: "#78716C",
+    requiredExercises: ["HP4", "AQL3"],
+    requiredNames: ["Standard Push-up", "Full-Depth Air Squat"],
+    focus: ["Full Body", "Fundamental Patterns", "Core Stability", "Form Foundation"],
+    estimatedMinutes: 25,
+    exerciseCount: 6,
     difficulty: "intermediate",
   },
 ];
@@ -118,6 +160,15 @@ export function getClassWorkout(classId: string): WorkoutDay | undefined {
     },
     "posterior-powerhouse": {
       exercises: ["AQL8", "HPL6", "HPL4", "HPL3", "PLC1"],
+    },
+    "core-crucible": {
+      exercises: ["AC5", "PLC3", "PLC6", "AC8", "PLC8", "PLC9"],
+    },
+    "atlas-protocol": {
+      exercises: ["VPLL6", "PLC6", "VPLL9", "AC5", "VPLL4", "PLC1"],
+    },
+    "iron-foundation": {
+      exercises: ["HP4", "AQL3", "PLC3", "AC1", "HPLL3", "AC2"],
     },
   };
 

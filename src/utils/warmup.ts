@@ -1,20 +1,11 @@
-/**
- * Warm-Up Routine Generator — ARCH
- *
- * Analyses a WorkoutDay's exercises to determine which muscle groups
- * are being trained, then selects 3-5 appropriate warm-up/mobility
- * exercises (level 1-3) from the 96-exercise DB.
- *
- * Each warm-up is scaled for activation: 1-2 sets, moderate reps,
- * faster tempo, minimal rest.
- */
-
 import { Exercise, WorkoutDay, Tempo } from "../data/exercises";
-import { getExercise96ById } from "../data/exercises96";
+import {
+  getWarmupExerciseById,
+  getWarmupExercisesByZone,
+  WarmupZone,
+} from "../data/warmupExercises";
 
-// ─── Muscle → Body Zone Mapping ───────────────────────
-
-type BodyZone = "push" | "pull" | "legs" | "core";
+type BodyZone = WarmupZone;
 
 const MUSCLE_ZONE: Record<string, BodyZone> = {
   chest: "push",
@@ -22,7 +13,6 @@ const MUSCLE_ZONE: Record<string, BodyZone> = {
   triceps: "push",
   upper_chest: "push",
   serratus_anterior: "push",
-
   lats: "pull",
   rhomboids: "pull",
   biceps: "pull",
@@ -32,7 +22,6 @@ const MUSCLE_ZONE: Record<string, BodyZone> = {
   rear_deltoids: "pull",
   grip: "pull",
   scapular_stabilizers: "pull",
-
   quadriceps: "legs",
   glutes: "legs",
   hamstrings: "legs",
@@ -40,7 +29,6 @@ const MUSCLE_ZONE: Record<string, BodyZone> = {
   hip_flexors: "legs",
   hip_abductors: "legs",
   hip_adductors: "legs",
-
   core: "core",
   obliques: "core",
   lower_back: "core",
@@ -49,66 +37,29 @@ const MUSCLE_ZONE: Record<string, BodyZone> = {
   rectus_abdominis: "core",
 };
 
-// ─── Warm-Up Exercise Selections ──────────────────────
-//
-// Each zone has 2-3 curated level 1-3 exercises from the 96-exercise DB.
-// The first entry is the primary recommendation; fallbacks are used
-// when the primary is already selected by another zone.
-
-interface ZoneSelection {
-  primary: string; // 96-exercise ID
-  fallbacks: string[];
-}
-
-const ZONE_EXERCISES: Record<BodyZone, ZoneSelection> = {
-  push: {
-    primary: "HP1", // Wall Push-up
-    fallbacks: ["HP2", "VP1", "PLC9"],
-  },
-  pull: {
-    primary: "HPLL1", // Doorway Row
-    fallbacks: ["VPLL1", "HPLL3"],
-  },
-  legs: {
-    primary: "HPL1", // Double-Leg Glute Bridge
-    fallbacks: ["AQL1", "AQL2"],
-  },
-  core: {
-    primary: "PLC1", // Bird-Dog
-    fallbacks: ["AC1", "AC2"],
-  },
+const ZONE_WARMUPS: Record<BodyZone, string[]> = {
+  legs: ["WARM_LEG_SWINGS", "WARM_HIP_CIRCLES", "WARM_ANKLE_MOB", "WARM_GLUTE_BRIDGE"],
+  push: ["WARM_ARM_CIRCLES", "WARM_WALL_ANGELS", "WARM_CAT_COW"],
+  pull: ["WARM_THORACIC_ROTATION", "WARM_SCAP_RETRACTIONS", "WARM_BAND_PULL_APART"],
+  core: ["WARM_DEAD_BUG", "WARM_CAT_COW", "WARM_WORLDS_GREATEST"],
 };
 
-// ─── Full-zone warm-up when 3+ zones are active ──────
-// These are general mobility/activation exercises that work
-// as a full-body warm-up regardless of the workout focus.
-const FULL_BODY_WARMUPS: string[] = ["HP1", "PLC1", "HPL1", "AC1"];
-
-// ─── Warm-up scaling ──────────────────────────────────
-// Warm-ups get reduced volume, shorter rest, and slightly faster tempo.
+const FULL_BODY_WARMUPS: string[] = [
+  "WARM_ARM_CIRCLES",
+  "WARM_LEG_SWINGS",
+  "WARM_CAT_COW",
+  "WARM_WORLDS_GREATEST",
+];
 
 export interface WarmUpExercise {
-  /** The warm-up exercise data */
   exercise: Exercise;
-  /** Reduced sets (1-2 instead of 3) */
   sets: number;
-  /** Moderate rep range suitable for activation */
   repRange: [number, number];
-  /** Slightly faster tempo for warm-up (or isometric) */
   tempo: Tempo;
-  /** Shorter rest (15-30s) */
   restInterval: number;
 }
 
-// ─── Core algorithm ────────────────────────────────────
-
-/**
- * Generate a warm-up routine for a given workout.
- * Returns 3-5 warm-up exercises scaled for activation,
- * ordered by body zone (legs → push → pull → core).
- */
 export function generateWarmUp(workout: WorkoutDay): WarmUpExercise[] {
-  // 1. Detect which body zones the workout targets
   const activeZones = new Set<BodyZone>();
   for (const ex of workout.exercises) {
     for (const muscle of ex.targetMuscles) {
@@ -117,81 +68,57 @@ export function generateWarmUp(workout: WorkoutDay): WarmUpExercise[] {
     }
   }
 
-  // 2. Select warm-up exercises — one per active zone, in priority order
   const zoneOrder: BodyZone[] = ["legs", "push", "pull", "core"];
   const warmUps: WarmUpExercise[] = [];
   const usedIds = new Set<string>();
 
-  // Helper: add a warm-up from a zone
-  function addFromZone(zone: BodyZone): boolean {
-    const selection = ZONE_EXERCISES[zone];
-    const candidates = [selection.primary, ...selection.fallbacks];
-    for (const id of candidates) {
-      if (usedIds.has(id)) continue;
-      const ex = getExercise96ById(id);
-      if (!ex) continue;
-      usedIds.add(id);
-
-      const isIsometric = ex.tempo === "isometric";
-      warmUps.push({
-        exercise: ex,
-        sets: 1, // 1 activation set per warm-up
-        repRange: isIsometric
-          ? [ex.repRange[0], Math.min(ex.repRange[1], 30)]
-          : [Math.max(8, ex.repRange[0]), Math.min(ex.repRange[1], 15)],
-        tempo: isIsometric ? "isometric" : "2-0-1-0",
-        restInterval: Math.min(15, ex.restInterval || 60),
-      });
-      return true;
-    }
-    return false;
+  function addWarmup(id: string): boolean {
+    if (usedIds.has(id)) return false;
+    const ex = getWarmupExerciseById(id);
+    if (!ex) return false;
+    usedIds.add(id);
+    const isIsometric = ex.tempo === "isometric";
+    warmUps.push({
+      exercise: ex,
+      sets: 1,
+      repRange: isIsometric
+        ? [ex.repRange[0], Math.min(ex.repRange[1], 30)]
+        : [Math.max(6, ex.repRange[0]), Math.min(ex.repRange[1], 15)],
+      tempo: isIsometric ? "isometric" : "2-0-1-0",
+      restInterval: Math.min(10, ex.restInterval || 60),
+    });
+    return true;
   }
 
-  // Priority queue: process zones in order
   for (const zone of zoneOrder) {
     if (activeZones.has(zone)) {
-      addFromZone(zone);
+      const candidates = ZONE_WARMUPS[zone];
+      for (const id of candidates) {
+        if (addWarmup(id)) break;
+      }
     }
   }
 
-  // 3. If fewer than 3 warm-ups selected, pad with full-body
   if (warmUps.length < 3) {
     for (const id of FULL_BODY_WARMUPS) {
-      if (usedIds.has(id)) continue;
       if (warmUps.length >= 3) break;
-      const ex = getExercise96ById(id);
-      if (!ex) continue;
-      usedIds.add(id);
-      warmUps.push({
-        exercise: ex,
-        sets: 1,
-        repRange: [8, 12],
-        tempo: "2-0-1-0",
-        restInterval: 10,
-      });
+      addWarmup(id);
     }
   }
 
-  // 4. Cap at 5 exercises, limit to 4 if already at 5
   return warmUps.slice(0, 5);
 }
 
-/**
- * Get the estimated duration (seconds) for a warm-up routine.
- */
 export function estimateWarmUpDuration(warmUps: WarmUpExercise[]): number {
   return warmUps.reduce((sum, wu) => {
     const avgReps = (wu.repRange[0] + wu.repRange[1]) / 2;
-    const repTime = wu.tempo === "isometric" ? avgReps : avgReps * 4;
+    const repTime = wu.tempo === "isometric" ? avgReps : avgReps * 3;
     const setTime = repTime * wu.sets;
     const restTime = wu.restInterval;
     return sum + setTime + restTime;
   }, 0);
 }
 
-/**
- * Get a human-readable summary of the warm-up body zones.
- */
 export function getWarmUpZoneSummary(warmUps: WarmUpExercise[]): string[] {
   const zones = new Set<string>();
   for (const wu of warmUps) {

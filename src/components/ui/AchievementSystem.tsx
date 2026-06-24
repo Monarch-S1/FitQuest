@@ -19,32 +19,158 @@ const RARITY_COLORS: Record<string, { bg: string; border: string; text: string }
 
 const ALL_ACHIEVEMENTS: Achievement[] = [
   // Streak achievements
-  { id: "first-blood", title: "FIRST BLOOD", description: "Complete your first workout", icon: "🩸", rarity: "common", xpReward: 50 },
-  { id: "3-day-streak", title: "HABIT FORMED", description: "3-day workout streak", icon: "🔥", rarity: "common", xpReward: 75 },
-  { id: "7-day-streak", title: "WEEK WARRIOR", description: "7-day workout streak", icon: "⚡", rarity: "rare", xpReward: 150 },
-  { id: "14-day-streak", title: "UNSTOPPABLE", description: "14-day workout streak", icon: "💎", rarity: "epic", xpReward: 300 },
-  { id: "30-day-streak", title: "IRON WILL", description: "30-day workout streak", icon: "👑", rarity: "legendary", xpReward: 1000 },
+  {
+    id: "first-blood",
+    title: "FIRST BLOOD",
+    description: "Complete your first workout",
+    icon: "🩸",
+    rarity: "common",
+    xpReward: 50,
+  },
+  {
+    id: "3-day-streak",
+    title: "HABIT FORMED",
+    description: "3-day workout streak",
+    icon: "🔥",
+    rarity: "common",
+    xpReward: 75,
+  },
+  {
+    id: "7-day-streak",
+    title: "WEEK WARRIOR",
+    description: "7-day workout streak",
+    icon: "⚡",
+    rarity: "rare",
+    xpReward: 150,
+  },
+  {
+    id: "14-day-streak",
+    title: "UNSTOPPABLE",
+    description: "14-day workout streak",
+    icon: "💎",
+    rarity: "epic",
+    xpReward: 300,
+  },
+  {
+    id: "30-day-streak",
+    title: "IRON WILL",
+    description: "30-day workout streak",
+    icon: "👑",
+    rarity: "legendary",
+    xpReward: 1000,
+  },
 
   // Volume achievements
-  { id: "10-workouts", title: "GRINDER", description: "Complete 10 workouts", icon: "⚙️", rarity: "common", xpReward: 100 },
-  { id: "50-workouts", title: "CENTURION", description: "Complete 50 workouts", icon: "🏛️", rarity: "rare", xpReward: 500 },
-  { id: "100-workouts", title: "LEGEND", description: "Complete 100 workouts", icon: "🏆", rarity: "legendary", xpReward: 2000 },
+  {
+    id: "10-workouts",
+    title: "GRINDER",
+    description: "Complete 10 workouts",
+    icon: "⚙️",
+    rarity: "common",
+    xpReward: 100,
+  },
+  {
+    id: "50-workouts",
+    title: "CENTURION",
+    description: "Complete 50 workouts",
+    icon: "🏛️",
+    rarity: "rare",
+    xpReward: 500,
+  },
+  {
+    id: "100-workouts",
+    title: "LEGEND",
+    description: "Complete 100 workouts",
+    icon: "🏆",
+    rarity: "legendary",
+    xpReward: 2000,
+  },
 
   // Level achievements
-  { id: "level-5", title: "RISING STAR", description: "Reach Level 5", icon: "⭐", rarity: "common", xpReward: 100 },
-  { id: "level-10", title: "VETERAN", description: "Reach Level 10", icon: "🎖️", rarity: "rare", xpReward: 250 },
-  { id: "level-20", title: "COMMANDER", description: "Reach Level 20", icon: "🏅", rarity: "epic", xpReward: 500 },
-  { id: "level-50", title: "TITAN", description: "Reach Level 50", icon: "🌟", rarity: "legendary", xpReward: 5000 },
+  {
+    id: "level-5",
+    title: "RISING STAR",
+    description: "Reach Level 5",
+    icon: "⭐",
+    rarity: "common",
+    xpReward: 100,
+  },
+  {
+    id: "level-10",
+    title: "VETERAN",
+    description: "Reach Level 10",
+    icon: "🎖️",
+    rarity: "rare",
+    xpReward: 250,
+  },
+  {
+    id: "level-20",
+    title: "COMMANDER",
+    description: "Reach Level 20",
+    icon: "🏅",
+    rarity: "epic",
+    xpReward: 500,
+  },
+  {
+    id: "level-50",
+    title: "TITAN",
+    description: "Reach Level 50",
+    icon: "🌟",
+    rarity: "legendary",
+    xpReward: 5000,
+  },
 
   // Workout-specific
-  { id: "perfect-form", title: "PERFECTIONIST", description: "Complete workout with all sets", icon: "✨", rarity: "rare", xpReward: 100 },
-  { id: "speed-demon", title: "SPEED DEMON", description: "Complete workout under 20 min", icon: "💨", rarity: "rare", xpReward: 150 },
-  { id: "beast-mode", title: "BEAST MODE", description: "Earn 200+ XP in one workout", icon: "🦁", rarity: "epic", xpReward: 200 },
+  {
+    id: "perfect-form",
+    title: "PERFECTIONIST",
+    description: "Complete workout with all sets",
+    icon: "✨",
+    rarity: "rare",
+    xpReward: 100,
+  },
+  {
+    id: "speed-demon",
+    title: "SPEED DEMON",
+    description: "Complete workout under 20 min",
+    icon: "💨",
+    rarity: "rare",
+    xpReward: 150,
+  },
+  {
+    id: "beast-mode",
+    title: "BEAST MODE",
+    description: "Earn 200+ XP in one workout",
+    icon: "🦁",
+    rarity: "epic",
+    xpReward: 200,
+  },
 
   // Muscle mastery
-  { id: "chest-master", title: "CHEST MASTER", description: "Reach Level 5 in Chest", icon: "💪", rarity: "rare", xpReward: 150 },
-  { id: "leg-day", title: "LEG DAY CHAMP", description: "Reach Level 5 in Quadriceps", icon: "🦵", rarity: "rare", xpReward: 150 },
-  { id: "core-steel", title: "CORE OF STEEL", description: "Reach Level 5 in Core", icon: "🛡️", rarity: "rare", xpReward: 150 },
+  {
+    id: "chest-master",
+    title: "CHEST MASTER",
+    description: "Reach Level 5 in Chest",
+    icon: "💪",
+    rarity: "rare",
+    xpReward: 150,
+  },
+  {
+    id: "leg-day",
+    title: "LEG DAY CHAMP",
+    description: "Reach Level 5 in Quadriceps",
+    icon: "🦵",
+    rarity: "rare",
+    xpReward: 150,
+  },
+  {
+    id: "core-steel",
+    title: "CORE OF STEEL",
+    description: "Reach Level 5 in Core",
+    icon: "🛡️",
+    rarity: "rare",
+    xpReward: 150,
+  },
 ];
 
 export function checkAchievements(context: {
@@ -149,7 +275,7 @@ export function AchievementBadge({ achievement, size = "md" }: AchievementBadgeP
           borderRadius: 4,
           alignItems: "center",
           justifyContent: "center",
-          marginBottom: spacing[1],
+          marginBottom: spacing.xs,
         }}
       >
         <Text style={{ fontSize: s.icon }}>{achievement.icon}</Text>
@@ -199,8 +325,8 @@ export function AchievementUnlockToast({ achievement }: AchievementUnlockToastPr
         borderWidth: 1,
         borderColor: rarity.border,
         borderRadius: 4,
-        padding: spacing[3],
-        gap: spacing[3],
+        padding: spacing.md,
+        gap: spacing.md,
       }}
     >
       <View

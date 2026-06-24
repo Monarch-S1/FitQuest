@@ -75,7 +75,7 @@ async function getNotifModule(): Promise<NotifModule | null> {
 let permissionRequested = false;
 
 /**
- * Request notification permissions — now exposed publicly so the UI can 
+ * Request notification permissions — now exposed publicly so the UI can
  * call it at a user-action-driven moment instead of automatically.
  */
 export async function requestRestNotificationPermission(): Promise<boolean> {

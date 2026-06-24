@@ -15,8 +15,8 @@ export default function PrivacyPolicyScreen() {
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          paddingHorizontal: spacing[4],
-          paddingVertical: spacing[3],
+          paddingHorizontal: spacing.lg,
+          paddingVertical: spacing.md,
           borderBottomWidth: 1,
           borderBottomColor: colors.border.subtle,
         }}
@@ -40,8 +40,8 @@ export default function PrivacyPolicyScreen() {
             borderWidth: 1,
             borderColor: colors.border.subtle,
             borderRadius: 4,
-            paddingVertical: spacing[1],
-            paddingHorizontal: spacing[3],
+            paddingVertical: spacing.xs,
+            paddingHorizontal: spacing.md,
           }}
         >
           <Text
@@ -59,7 +59,7 @@ export default function PrivacyPolicyScreen() {
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
-          padding: spacing[4],
+          padding: spacing.lg,
           paddingBottom: spacing[12],
         }}
       >
@@ -68,7 +68,7 @@ export default function PrivacyPolicyScreen() {
             ...typography.h2,
             color: colors.text.primary,
             fontSize: 20,
-            marginBottom: spacing[1],
+            marginBottom: spacing.xs,
           }}
         >
           Privacy Policy
@@ -78,7 +78,7 @@ export default function PrivacyPolicyScreen() {
             ...typography.bodySmall,
             color: colors.text.tertiary,
             fontSize: 10,
-            marginBottom: spacing[4],
+            marginBottom: spacing.lg,
           }}
         >
           Last updated: June 6, 2026
@@ -87,8 +87,9 @@ export default function PrivacyPolicyScreen() {
         {/* Section: Overview */}
         <Section title="OVERVIEW" colors={colors}>
           <BodyText colors={colors}>
-            ARCH ("we", "our", "us") is a calisthenics training application built for Android devices.
-            We respect your privacy and are committed to protecting your personal data.
+            FitQuest (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;) is a gamified fitness
+            application built for Android devices. We respect your privacy and are committed to
+            protecting your personal data.
           </BodyText>
         </Section>
 
@@ -98,9 +99,7 @@ export default function PrivacyPolicyScreen() {
             <Bullet colors={colors}>
               Email address — collected when you create an account via email
             </Bullet>
-            <Bullet colors={colors}>
-              Display name — provided by you during onboarding
-            </Bullet>
+            <Bullet colors={colors}>Display name — provided by you during onboarding</Bullet>
           </SubSection>
 
           <SubSection title="Workout Data" colors={colors}>
@@ -121,23 +120,17 @@ export default function PrivacyPolicyScreen() {
               during active workouts. Processed locally, never transmitted to our servers.
             </Bullet>
             <Bullet colors={colors}>
-              Crash and diagnostic data — we use Sentry (sentry.io) for crash reporting.
-              May collect device model, OS version, and error stack traces.
+              Crash and diagnostic data — we use Sentry (sentry.io) for crash reporting. May collect
+              device model, OS version, and error stack traces.
             </Bullet>
           </SubSection>
         </Section>
 
         {/* Section: How We Use Your Data */}
         <Section title="HOW WE USE YOUR DATA" colors={colors}>
-          <Bullet colors={colors}>
-            To provide and maintain the ARCH training experience
-          </Bullet>
-          <Bullet colors={colors}>
-            To track your workout progress and calculate XP/leveling
-          </Bullet>
-          <Bullet colors={colors}>
-            To provide personalized workout recommendations
-          </Bullet>
+          <Bullet colors={colors}>To provide and maintain the FitQuest training experience</Bullet>
+          <Bullet colors={colors}>To track your workout progress and calculate XP/leveling</Bullet>
+          <Bullet colors={colors}>To provide personalized workout recommendations</Bullet>
           <Bullet colors={colors}>
             To enable the auto rep counter feature using motion sensors
           </Bullet>
@@ -149,10 +142,12 @@ export default function PrivacyPolicyScreen() {
             All workout data is stored locally on your device using secure device storage
           </Bullet>
           <Bullet colors={colors}>
-            Account data is managed through Supabase, a third-party authentication and database service
+            Account data is managed through Supabase, a third-party authentication and database
+            service
           </Bullet>
           <Bullet colors={colors}>
-            We do not sell, trade, or share your personal information with third parties for marketing
+            We do not sell, trade, or share your personal information with third parties for
+            marketing
           </Bullet>
         </Section>
 
@@ -169,7 +164,7 @@ export default function PrivacyPolicyScreen() {
         {/* Section: Your Rights */}
         <Section title="YOUR RIGHTS" colors={colors}>
           <Bullet colors={colors}>
-            Access: You can view all your data in the app's History and Profile screens
+            Access: You can view all your data in the app&apos;s History and Profile screens
           </Bullet>
           <Bullet colors={colors}>
             Deletion: Uninstalling the app removes all local data. To delete account data, contact
@@ -183,8 +178,8 @@ export default function PrivacyPolicyScreen() {
         {/* Section: Children's Privacy */}
         <Section title="CHILDREN'S PRIVACY" colors={colors}>
           <BodyText colors={colors}>
-            ARCH is not intended for use by children under the age of 13. We do not knowingly collect
-            data from children under 13.
+            FitQuest is not intended for use by children under the age of 13. We do not knowingly
+            collect data from children under 13.
           </BodyText>
         </Section>
 
@@ -214,14 +209,14 @@ function Section({
   colors: ReturnType<typeof useColors>;
 }) {
   return (
-    <View style={{ marginBottom: spacing[4] }}>
+    <View style={{ marginBottom: spacing.lg }}>
       <Text
         style={{
           ...typography.label,
           color: colors.accent.DEFAULT,
           fontSize: 9,
           letterSpacing: 1,
-          marginBottom: spacing[2],
+          marginBottom: spacing.sm,
         }}
       >
         {title}
@@ -241,13 +236,13 @@ function SubSection({
   colors: ReturnType<typeof useColors>;
 }) {
   return (
-    <View style={{ marginBottom: spacing[2], marginLeft: spacing[2] }}>
+    <View style={{ marginBottom: spacing.sm, marginLeft: spacing.sm }}>
       <Text
         style={{
           ...typography.label,
           color: colors.text.secondary,
           fontSize: 8,
-          marginBottom: spacing[1],
+          marginBottom: spacing.xs,
         }}
       >
         {title}
@@ -268,9 +263,9 @@ function Bullet({
     <View
       style={{
         flexDirection: "row",
-        gap: spacing[2],
-        marginBottom: spacing[1],
-        marginLeft: spacing[2],
+        gap: spacing.sm,
+        marginBottom: spacing.xs,
+        marginLeft: spacing.sm,
       }}
     >
       <Text style={{ color: colors.accent.DEFAULT, fontSize: 10, marginTop: 1 }}>•</Text>
@@ -305,7 +300,7 @@ function BodyText({
         color: accent ? colors.accent.DEFAULT : colors.text.secondary,
         fontSize: 11,
         lineHeight: 18,
-        marginLeft: spacing[2],
+        marginLeft: spacing.sm,
       }}
     >
       {children}

@@ -4,14 +4,6 @@
 // Using node environment to avoid React Native native module issues.
 // AsyncStorage is mocked for the confirmLevelUp tests which access useUserStore.
 
-jest.mock("@react-native-async-storage/async-storage", () => ({
-  getItem: jest.fn(() => Promise.resolve(null)),
-  setItem: jest.fn(() => Promise.resolve()),
-  removeItem: jest.fn(() => Promise.resolve()),
-  clear: jest.fn(() => Promise.resolve()),
-  getAllKeys: jest.fn(() => Promise.resolve([])),
-}));
-
 import {
   checkExerciseProgression,
   checkAllExerciseProgressions,
@@ -21,6 +13,14 @@ import {
 } from "../utils/doubleProgression";
 import { getExercise96ById, getAllExercises96 } from "../data/exercises96";
 import type { WorkoutSession } from "../stores/useUserStore";
+
+jest.mock("@react-native-async-storage/async-storage", () => ({
+  getItem: jest.fn(() => Promise.resolve(null)),
+  setItem: jest.fn(() => Promise.resolve()),
+  removeItem: jest.fn(() => Promise.resolve()),
+  clear: jest.fn(() => Promise.resolve()),
+  getAllKeys: jest.fn(() => Promise.resolve([])),
+}));
 
 // ─── Helpers ────────────────────────────────
 
@@ -45,9 +45,7 @@ function sessionWith(
     duration: 1800,
     setsCompleted: setCount,
     xpEarned: 100,
-    exercises: [
-      { exerciseId, sets: setCount, repsCompleted: Array(setCount).fill(repsPerSet) },
-    ],
+    exercises: [{ exerciseId, sets: setCount, repsCompleted: Array(setCount).fill(repsPerSet) }],
   };
 }
 
@@ -118,9 +116,7 @@ describe("checkExerciseProgression", () => {
 
   it("returns canLevelUp=false with only 1 session (needs 2+)", () => {
     const th = upperThreshold("HP1");
-    const result = checkExerciseProgression("HP1", [
-      sessionWith("s1", "HP1", th),
-    ]);
+    const result = checkExerciseProgression("HP1", [sessionWith("s1", "HP1", th)]);
     expect(result!.sessionsCompleted).toBe(1);
     expect(result!.canLevelUp).toBe(false);
   });
@@ -188,8 +184,12 @@ describe("checkExerciseProgression", () => {
   it("computes averageReps across all sets", () => {
     const sessions: WorkoutSession[] = [
       {
-        id: "s1", workoutId: "test", date: "2026-06-01",
-        duration: 1800, setsCompleted: 2, xpEarned: 50,
+        id: "s1",
+        workoutId: "test",
+        date: "2026-06-01",
+        duration: 1800,
+        setsCompleted: 2,
+        xpEarned: 50,
         exercises: [{ exerciseId: "AC1", sets: 2, repsCompleted: [10, 12] }],
       },
     ];
@@ -216,8 +216,12 @@ describe("checkExerciseProgression", () => {
   it("preserves averageReps across legacy-to-pathway mapping", () => {
     const sessions: WorkoutSession[] = [
       {
-        id: "s1", workoutId: "test", date: "2026-06-01",
-        duration: 600, setsCompleted: 2, xpEarned: 50,
+        id: "s1",
+        workoutId: "test",
+        date: "2026-06-01",
+        duration: 600,
+        setsCompleted: 2,
+        xpEarned: 50,
         exercises: [{ exerciseId: "bulgarian-split-squat", sets: 2, repsCompleted: [12, 14] }],
       },
     ];
@@ -290,18 +294,20 @@ describe("checkAllExerciseProgressions", () => {
 describe("detectNewMastery", () => {
   it("returns an empty array when the just-completed session has no exercises", () => {
     const empty: WorkoutSession = {
-      id: "s1", workoutId: "test", date: "2026-06-01",
-      duration: 600, setsCompleted: 0, xpEarned: 0, exercises: [],
+      id: "s1",
+      workoutId: "test",
+      date: "2026-06-01",
+      duration: 600,
+      setsCompleted: 0,
+      xpEarned: 0,
+      exercises: [],
     };
     expect(detectNewMastery([], empty)).toEqual([]);
   });
 
   it("returns empty when the just-completed session reps are well below threshold", () => {
     const th = upperThreshold("HP1");
-    const sessions = [
-      sessionWith("s1", "HP1", th),
-      sessionWith("s2", "HP1", th),
-    ];
+    const sessions = [sessionWith("s1", "HP1", th), sessionWith("s2", "HP1", th)];
     const lowSession = sessionWith("s3", "HP1", 10);
     expect(detectNewMastery(sessions, lowSession)).toEqual([]);
   });
@@ -320,8 +326,12 @@ describe("detectNewMastery", () => {
 
   it("skips exercises with empty repsCompleted", () => {
     const emptySets: WorkoutSession = {
-      id: "s1", workoutId: "test", date: "2026-06-01",
-      duration: 600, setsCompleted: 1, xpEarned: 25,
+      id: "s1",
+      workoutId: "test",
+      date: "2026-06-01",
+      duration: 600,
+      setsCompleted: 1,
+      xpEarned: 25,
       exercises: [{ exerciseId: "HP1", sets: 1, repsCompleted: [] }],
     };
     expect(detectNewMastery([], emptySets)).toEqual([]);
@@ -354,19 +364,31 @@ describe("detectNewMastery", () => {
     const th = upperThreshold("HP7");
     const sessions: WorkoutSession[] = [
       {
-        id: "s1", workoutId: "test", date: "2026-06-01",
-        duration: 1800, setsCompleted: 3, xpEarned: 100,
+        id: "s1",
+        workoutId: "test",
+        date: "2026-06-01",
+        duration: 1800,
+        setsCompleted: 3,
+        xpEarned: 100,
         exercises: [{ exerciseId: "decline-push-up", sets: 3, repsCompleted: [th, th, th] }],
       },
       {
-        id: "s2", workoutId: "test", date: "2026-06-04",
-        duration: 1800, setsCompleted: 3, xpEarned: 100,
+        id: "s2",
+        workoutId: "test",
+        date: "2026-06-04",
+        duration: 1800,
+        setsCompleted: 3,
+        xpEarned: 100,
         exercises: [{ exerciseId: "decline-push-up", sets: 3, repsCompleted: [th, th, th] }],
       },
     ];
     const justCompleted: WorkoutSession = {
-      id: "s3", workoutId: "test", date: "2026-06-07",
-      duration: 1800, setsCompleted: 3, xpEarned: 100,
+      id: "s3",
+      workoutId: "test",
+      date: "2026-06-07",
+      duration: 1800,
+      setsCompleted: 3,
+      xpEarned: 100,
       exercises: [{ exerciseId: "decline-push-up", sets: 3, repsCompleted: [th, th, th] }],
     };
     const mastered = detectNewMastery(sessions, justCompleted);
@@ -377,10 +399,7 @@ describe("detectNewMastery", () => {
   it("returns empty when this session hits threshold but history is insufficient (< 2 sessions)", () => {
     const th = upperThreshold("HP1");
     // Only 1 prior session — canLevelUp requires ≥2 sessions total
-    const result = detectNewMastery(
-      [sessionWith("s1", "HP1", th)],
-      sessionWith("s2", "HP1", th),
-    );
+    const result = detectNewMastery([sessionWith("s1", "HP1", th)], sessionWith("s2", "HP1", th));
     expect(result).toEqual([]);
   });
 

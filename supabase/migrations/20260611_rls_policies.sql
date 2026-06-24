@@ -1,5 +1,5 @@
 -- =============================================================================
--- ARCH — Row Level Security Migration
+-- FitQuest — Row Level Security Migration
 -- Run this in Supabase SQL Editor: https://supabase.com/dashboard → SQL Editor
 -- =============================================================================
 
@@ -12,7 +12,7 @@ BEGIN;
 
 CREATE TABLE IF NOT EXISTS user_profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  display_name TEXT NOT NULL DEFAULT 'ARCH OPERATOR',
+  display_name TEXT NOT NULL DEFAULT 'FITQUEST OPERATOR',
   fitness_goal TEXT NOT NULL DEFAULT 'general'
     CHECK (fitness_goal IN ('strength', 'muscle_gain', 'endurance', 'general')),
   fitness_level TEXT NOT NULL DEFAULT 'beginner'

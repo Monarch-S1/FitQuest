@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { View, Text, Animated, Easing } from "react-native";
-import { useColors, typography } from "../../tokens";
+import { View, Animated, Easing } from "react-native";
+import { useColors, Tag } from "../../tokens";
 import { getSyncStatus, onSyncStatusChange, type SyncStatus } from "../../services/cloudSync";
 import { isSupabaseConfigured } from "../../services/supabase";
 
@@ -43,8 +43,7 @@ export function SyncIndicator() {
         ? colors.error
         : colors.success;
 
-  const label =
-    status === "syncing" ? "SYNCING" : status === "error" ? "SYNC ERROR" : "SYNCED";
+  const label = status === "syncing" ? "SYNCING" : status === "error" ? "SYNC ERROR" : "SYNCED";
 
   return (
     <Animated.View
@@ -67,16 +66,7 @@ export function SyncIndicator() {
           backgroundColor: dotColor,
         }}
       />
-      <Text
-        style={{
-          ...typography.label,
-          color: dotColor,
-          fontSize: 7,
-          letterSpacing: 1,
-        }}
-      >
-        {label}
-      </Text>
+      <Tag style={{ color: dotColor, letterSpacing: 1 }}>{label}</Tag>
     </Animated.View>
   );
 }

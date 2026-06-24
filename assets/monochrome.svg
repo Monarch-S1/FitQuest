@@ -26,6 +26,6 @@
   <line x1="450" y1="660" x2="418" y2="674" stroke="white" stroke-width="16" stroke-linecap="round"/>
   <line x1="574" y1="660" x2="606" y2="674" stroke="white" stroke-width="16" stroke-linecap="round"/>
   
-  <!-- ARCH text -->
-  <text x="512" y="810" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="100" font-weight="900" letter-spacing="12" fill="white">ARCH</text>
+  <!-- FITQUEST text -->
+  <text x="512" y="810" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="88" font-weight="900" letter-spacing="8" fill="white">FITQUEST</text>
 </svg>

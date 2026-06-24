@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -7,7 +7,7 @@ import Animated, {
   withSequence,
   withDelay,
 } from "react-native-reanimated";
-import { useColors, typography, spacing } from "../../tokens";
+import { useColors, spacing, Label, Body } from "../../tokens";
 
 interface XpBarProps {
   currentXp: number;
@@ -57,15 +57,16 @@ export function XpBar({ currentXp, requiredXp, level, nextLevel, animate = true 
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: spacing[1],
+          marginBottom: spacing.xs,
         }}
       >
-        <Text style={{ ...typography.label, color: colors.text.secondary }}>
-          LEVEL {level}{nextLevel ? ` → ${nextLevel}` : ""}
-        </Text>
-        <Text style={{ ...typography.bodySmall, color: colors.text.secondary }}>
+        <Label variant="secondary">
+          LEVEL {level}
+          {nextLevel ? ` → ${nextLevel}` : ""}
+        </Label>
+        <Body variant="secondary" size="sm">
           {currentXp} / {requiredXp} TO NEXT LEVEL
-        </Text>
+        </Body>
       </View>
 
       <View
@@ -92,7 +93,10 @@ export function XpBar({ currentXp, requiredXp, level, nextLevel, animate = true 
           style={[
             {
               position: "absolute",
-              top: 0, left: 0, right: 0, bottom: 0,
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
               backgroundColor: colors.accent.light,
               opacity: 0.3,
             },

@@ -12,7 +12,7 @@
   <!-- Subtle border -->
   <rect x="2" y="2" width="508" height="508" rx="62" fill="none" stroke="#2A2D35" stroke-width="1"/>
   
-  <!-- Geometric figure — angular calisthenics silhouette -->
+  <!-- Geometric figure — angular fitness silhouette -->
   <!-- Head -->
   <circle cx="256" cy="110" r="28" fill="url(#accent)"/>
   
@@ -38,9 +38,9 @@
   <line x1="220" y1="370" x2="200" y2="378" stroke="#FBBF24" stroke-width="10" stroke-linecap="round"/>
   <line x1="292" y1="370" x2="312" y2="378" stroke="#FBBF24" stroke-width="10" stroke-linecap="round"/>
   
-  <!-- ARCH text -->
-  <text x="256" y="440" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="52" font-weight="900" letter-spacing="8" fill="#F3F4F6">ARCH</text>
+  <!-- FitQuest text -->
+  <text x="256" y="440" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="40" font-weight="900" letter-spacing="5" fill="#F3F4F6">FITQUEST</text>
   
   <!-- Tagline -->
-  <text x="256" y="472" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" letter-spacing="4" fill="#9CA3AF">CALISTHENICS</text>
+  <text x="256" y="472" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" letter-spacing="4" fill="#9CA3AF">GAMIFIED FITNESS</text>
 </svg>

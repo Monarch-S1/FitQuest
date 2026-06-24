@@ -116,7 +116,7 @@ export function RepCounterPanel({ phase, onSyncCount, manualCount }: RepCounterP
         borderWidth: 1,
         borderColor: isMonitoring ? colors.accent.DEFAULT : colors.border.subtle,
         borderRadius: 4,
-        padding: spacing[3],
+        padding: spacing.md,
       }}
     >
       {/* Header row: label + badges */}
@@ -125,11 +125,11 @@ export function RepCounterPanel({ phase, onSyncCount, manualCount }: RepCounterP
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: spacing[2],
+          marginBottom: spacing.sm,
         }}
       >
         {/* Label */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[2] }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
           <Text
             style={{
               ...typography.label,
@@ -149,7 +149,7 @@ export function RepCounterPanel({ phase, onSyncCount, manualCount }: RepCounterP
                 borderWidth: 1,
                 borderColor: isCalibrated ? colors.success : colors.accent.DEFAULT,
                 borderRadius: 4,
-                paddingHorizontal: spacing[1],
+                paddingHorizontal: spacing.xs,
                 paddingVertical: 1,
               }}
             >
@@ -167,10 +167,10 @@ export function RepCounterPanel({ phase, onSyncCount, manualCount }: RepCounterP
         </View>
 
         {/* Right side: status info */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[2] }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
           {/* Calibration indicator */}
           {showCalibrating && (
-            <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[1] }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.xs }}>
               <View
                 style={{
                   width: 6,
@@ -198,7 +198,7 @@ export function RepCounterPanel({ phase, onSyncCount, manualCount }: RepCounterP
               style={{
                 backgroundColor: `${colors.text.secondary}15`,
                 borderRadius: 4,
-                paddingHorizontal: spacing[1],
+                paddingHorizontal: spacing.xs,
                 paddingVertical: 1,
               }}
             >
@@ -222,7 +222,7 @@ export function RepCounterPanel({ phase, onSyncCount, manualCount }: RepCounterP
                 borderWidth: 1,
                 borderColor: colors.warning,
                 borderRadius: 4,
-                paddingHorizontal: spacing[1],
+                paddingHorizontal: spacing.xs,
                 paddingVertical: 1,
               }}
             >
@@ -246,8 +246,8 @@ export function RepCounterPanel({ phase, onSyncCount, manualCount }: RepCounterP
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
-          gap: spacing[3],
-          marginBottom: spacing[2],
+          gap: spacing.md,
+          marginBottom: spacing.sm,
         }}
       >
         {/* Quick adjust -1 */}
@@ -286,7 +286,11 @@ export function RepCounterPanel({ phase, onSyncCount, manualCount }: RepCounterP
           disabled={count === 0}
           activeOpacity={0.7}
           accessibilityRole="button"
-          accessibilityLabel={count > 0 ? `Sync ${count} auto-detected reps to manual input` : "Auto rep counter, no reps detected"}
+          accessibilityLabel={
+            count > 0
+              ? `Sync ${count} auto-detected reps to manual input`
+              : "Auto rep counter, no reps detected"
+          }
           accessibilityState={{ disabled: count === 0 }}
           style={{
             minWidth: 64,
@@ -301,8 +305,8 @@ export function RepCounterPanel({ phase, onSyncCount, manualCount }: RepCounterP
                   ? colors.accent.DEFAULT
                   : colors.border.subtle,
             borderRadius: 4,
-            paddingHorizontal: spacing[3],
-            paddingVertical: spacing[1],
+            paddingHorizontal: spacing.md,
+            paddingVertical: spacing.xs,
           }}
         >
           {showCalibrating ? (
@@ -333,7 +337,7 @@ export function RepCounterPanel({ phase, onSyncCount, manualCount }: RepCounterP
               ...typography.label,
               fontSize: 7,
               color: count > 0 ? colors.success : colors.text.secondary,
-              marginTop: -spacing[0],
+              marginTop: -0,
             }}
           >
             {isMonitoring ? (showCalibrating ? "LISTENING" : "REPS") : "OFF"}
@@ -376,7 +380,7 @@ export function RepCounterPanel({ phase, onSyncCount, manualCount }: RepCounterP
           accessibilityLabel={count !== manualCount ? `Sync ${count} reps` : "Reps synced"}
           style={{
             alignItems: "center",
-            paddingVertical: spacing[0],
+            paddingVertical: 0,
           }}
         >
           <Text

@@ -42,7 +42,7 @@ export default function Index() {
             letterSpacing: 2,
           }}
         >
-          INITIALIZING ARCH
+          INITIALIZING FITQUEST
         </Text>
       </View>
     );

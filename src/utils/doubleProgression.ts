@@ -1,7 +1,7 @@
 /**
- * Double Progression Algorithm — ARCH
+ * Double Progression Algorithm — FitQuest
  *
- * Calisthenics progression method:
+ * Bodyweight progression method:
  * 1️⃣ Rep progression: Hit the upper end of the rep range consistently
  * 2️⃣ Exercise progression: Advance to the next level in the same pathway
  *
@@ -9,13 +9,22 @@
  * (within 1 rep of the high end), the exercise is "ready to level up."
  */
 
-import { WorkoutSession } from "../stores/useUserStore";
+import { WorkoutSession, useUserStore } from "../stores/useUserStore";
+import { Exercise } from "../data/exercises";
 import {
   getExercise96ById,
+  getAllExercises96,
   Exercise96,
+  LEGACY_TO_PATHWAY,
 } from "../data/exercises96";
-import { LEGACY_TO_PATHWAY } from "../data/exercises96";
-import { useUserStore } from "../stores/useUserStore";
+
+/**
+ * Get all exercises from the unified 96-exercise database.
+ * Consistent with the same export in `progression.ts` for unified lookup.
+ */
+export function getAllExercises(): Exercise[] {
+  return getAllExercises96();
+}
 
 // ─── Types ─────────────────────────────────────────
 
@@ -72,9 +81,7 @@ function getExerciseName(exerciseId: string): string | null {
 }
 
 /** Get pathway info for an exercise */
-function getPathwayInfo(
-  exerciseId: string,
-): { id: string; label: string; level: number } | null {
+function getPathwayInfo(exerciseId: string): { id: string; label: string; level: number } | null {
   const id = to96Id(exerciseId);
   const ex = getExercise96ById(id);
   if (!ex) return null;
@@ -162,11 +169,7 @@ export function checkExerciseProgression(
   const [low, high] = repRange;
   const range = high - low;
   const highEndPercentage =
-    range > 0
-      ? Math.max(0, Math.min(1, (avgReps - low) / range))
-      : avgReps >= high
-        ? 1
-        : 0;
+    range > 0 ? Math.max(0, Math.min(1, (avgReps - low) / range)) : avgReps >= high ? 1 : 0;
 
   // Double progression check: ≥80% of recent sets (across last 2+ sessions)
   // must be within 1 rep of the upper rep range
@@ -174,14 +177,10 @@ export function checkExerciseProgression(
   const recentSets = recentSessions.flat();
   const highThreshold = high - 1; // within 1 rep of upper range
   const setsAtUpper = recentSets.filter((r) => r >= highThreshold).length;
-  const percentAtUpper = recentSets.length > 0
-    ? setsAtUpper / recentSets.length
-    : 0;
+  const percentAtUpper = recentSets.length > 0 ? setsAtUpper / recentSets.length : 0;
 
   // Must have at least 2 sessions and 80% of recent sets at upper range
-  const canLevelUp =
-    sessionsCompleted >= 2 &&
-    percentAtUpper >= 0.8;
+  const canLevelUp = sessionsCompleted >= 2 && percentAtUpper >= 0.8;
 
   return {
     exerciseId,
@@ -199,24 +198,18 @@ export function checkExerciseProgression(
 }
 
 /**
- * Scan ALL exercises (96-exercise DB + legacy) and return those
- * ready for double progression level-up.
+ * Scan ALL exercises (96-exercise database with unique IDs) and return those
+ * that have been trained, sorted by double progression readiness.
  */
 export function checkAllExerciseProgressions(
   workoutHistory: WorkoutSession[],
 ): DoubleProgressionResult[] {
-  // Collect all unique exercise IDs from workout history
-  const seenIds = new Set<string>();
-  for (const session of workoutHistory) {
-    for (const ex of session.exercises || []) {
-      seenIds.add(to96Id(ex.exerciseId));
-    }
-  }
-
   const results: DoubleProgressionResult[] = [];
-  for (const id of seenIds) {
-    const result = checkExerciseProgression(id, workoutHistory);
-    if (result) {
+  const allExercises = getAllExercises();
+
+  for (const exercise of allExercises) {
+    const result = checkExerciseProgression(exercise.id, workoutHistory);
+    if (result && result.sessionsCompleted > 0) {
       results.push(result);
     }
   }
@@ -276,9 +269,7 @@ export function confirmLevelUp(exerciseId: string): void {
  * Get the replacement exercise when a level-up is confirmed.
  * Returns the next-level exercise data for UI updates.
  */
-export function getLevelUpReplacement(
-  exerciseId: string,
-): Exercise96 | null {
+export function getLevelUpReplacement(exerciseId: string): Exercise96 | null {
   const pathwayId = to96Id(exerciseId);
   const current = getExercise96ById(pathwayId);
   if (!current) return null;

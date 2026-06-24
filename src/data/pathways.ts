@@ -64,7 +64,11 @@ export const PATHWAYS: Record<PathwayId, PathwayConfig> = {
     accent: "#EF4444", // red
     parentFamily: "push",
     primaryTargets: ["Pectorals", "Anterior Deltoids", "Triceps"],
-    overloadPrinciples: ["Decrease incline angle", "Reduce contact points", "Increase lever length"],
+    overloadPrinciples: [
+      "Decrease incline angle",
+      "Reduce contact points",
+      "Increase lever length",
+    ],
     minLevel: 1,
     maxLevel: 12,
     exerciseCount: 12,
@@ -78,7 +82,11 @@ export const PATHWAYS: Record<PathwayId, PathwayConfig> = {
     accent: "#F97316", // orange
     parentFamily: "push",
     primaryTargets: ["Deltoids", "Triceps", "Upper Chest"],
-    overloadPrinciples: ["Increase foot elevation", "Decrease wall assistance", "Reduce balance support"],
+    overloadPrinciples: [
+      "Increase foot elevation",
+      "Decrease wall assistance",
+      "Reduce balance support",
+    ],
     minLevel: 1,
     maxLevel: 12,
     exerciseCount: 12,
@@ -134,7 +142,11 @@ export const PATHWAYS: Record<PathwayId, PathwayConfig> = {
     accent: "#059669", // emerald
     parentFamily: "legs",
     primaryTargets: ["Hamstrings", "Glutes", "Erector Spinae"],
-    overloadPrinciples: ["Unilateral hinging", "Increase eccentric duration", "Decrease floor friction"],
+    overloadPrinciples: [
+      "Unilateral hinging",
+      "Increase eccentric duration",
+      "Decrease floor friction",
+    ],
     minLevel: 1,
     maxLevel: 12,
     exerciseCount: 12,
@@ -148,7 +160,11 @@ export const PATHWAYS: Record<PathwayId, PathwayConfig> = {
     accent: "#F59E0B", // amber
     parentFamily: "core",
     primaryTargets: ["Rectus Abdominis", "Iliopsoas", "Obliques"],
-    overloadPrinciples: ["Increase lever length", "Reduce contact points", "Increase eccentric duration"],
+    overloadPrinciples: [
+      "Increase lever length",
+      "Reduce contact points",
+      "Increase eccentric duration",
+    ],
     minLevel: 1,
     maxLevel: 12,
     exerciseCount: 12,
@@ -158,7 +174,8 @@ export const PATHWAYS: Record<PathwayId, PathwayConfig> = {
     label: "PLC",
     fullLabel: "Posterior & Lateral Core",
     icon: "◈",
-    description: "Spinal extension & lateral stability — erector spinae, obliques, deep stabilizers",
+    description:
+      "Spinal extension & lateral stability — erector spinae, obliques, deep stabilizers",
     accent: "#D97706", // amber-dark
     parentFamily: "core",
     primaryTargets: ["Erector Spinae", "Obliques", "Transverse Abdominis", "Glutes"],

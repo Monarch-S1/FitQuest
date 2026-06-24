@@ -1,19 +1,22 @@
 import { useCallback, useMemo, useRef, useEffect } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Animated, Easing } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { useColors, typography, spacing, fonts } from "../../src/tokens";
-import { SegmentedPanel } from "../../src/components/ui/SegmentedPanel";
+import { useColors, spacing, fonts, Label, Body, H4, Display, Tag } from "../../src/tokens";
+import { Card } from "../../src/components/ui/Card";
 import { WorkoutCard } from "../../src/components/ui/WorkoutCard";
 import { Button } from "../../src/components/ui/Button";
-import { getWorkoutsForGoal, getGoalConfig } from "../../src/data/workouts";
+import { getWorkouts96, getGoalConfig } from "../../src/data/workouts";
 import { useUserStore } from "../../src/stores/useUserStore";
 import { getRecommendation } from "../../src/utils/recommendations";
 import { getProgressionSummary } from "../../src/utils/progression";
 import { TrainScreenSkeleton } from "../../src/components/ui/Skeleton";
-import { Animated, Easing } from "react-native";
-import { WORKOUT_CLASSES, getUnlockedClasses, getClassUnlockProgress } from "../../src/data/workoutClasses";
-import { GlossyOverlay } from "../../src/components/ui/GlossyOverlay";
+import {
+  WORKOUT_CLASSES,
+  getUnlockedClasses,
+  getClassUnlockProgress,
+} from "../../src/data/workoutClasses";
+
 import {
   checkAllExerciseProgressions,
   confirmLevelUp,
@@ -25,10 +28,13 @@ export default function TrainScreen() {
   const router = useRouter();
   const { workoutHistory, recoveryStatus, isHydrated, fitnessGoal } = useUserStore();
 
-  // Goal-specific workouts
+  // Goal-specific workouts — generated from 96-exercise database
+  const storeMasteredIds = useUserStore((state) => state.masteredExerciseIds ?? []);
+  const masteredIds = useMemo(() => new Set(storeMasteredIds), [storeMasteredIds]);
+
   const goalWorkouts = useMemo(
-    () => getWorkoutsForGoal(fitnessGoal),
-    [fitnessGoal],
+    () => getWorkouts96(fitnessGoal, masteredIds),
+    [fitnessGoal, masteredIds],
   );
   const goalConfig = useMemo(() => getGoalConfig(fitnessGoal), [fitnessGoal]);
 
@@ -40,9 +46,6 @@ export default function TrainScreen() {
 
   const progressionSummary = useMemo(() => getProgressionSummary(workoutHistory), [workoutHistory]);
 
-  const storeMasteredIds = useUserStore((state) => state.masteredExerciseIds ?? []);
-  const masteredIds = useMemo(() => new Set(storeMasteredIds), [storeMasteredIds]);
-
   // Double progression — exercises ready to level up
   const readyToLevelUp = useMemo(
     () => checkAllExerciseProgressions(workoutHistory).filter((r) => r.canLevelUp),
@@ -50,10 +53,7 @@ export default function TrainScreen() {
   );
 
   // Unlocked workout classes based on mastered exercises
-  const unlockedClasses = useMemo(
-    () => getUnlockedClasses(masteredIds),
-    [masteredIds],
-  );
+  const unlockedClasses = useMemo(() => getUnlockedClasses(masteredIds), [masteredIds]);
 
   // Classes still locked with progress
   const lockedClassesWithProgress = useMemo(
@@ -69,20 +69,17 @@ export default function TrainScreen() {
 
   const handleWorkoutSelect = useCallback(
     (workoutId: string) => {
-      router.push(`/workout/preview/${workoutId}`);
+      router.push(`/workout/${workoutId}`);
     },
     [router],
   );
 
-  const handleLevelUp = useCallback(
-    (exerciseId: string) => {
-      const replacement = getLevelUpReplacement(exerciseId);
-      if (replacement) {
-        confirmLevelUp(exerciseId);
-      }
-    },
-    [],
-  );
+  const handleLevelUp = useCallback((exerciseId: string) => {
+    const replacement = getLevelUpReplacement(exerciseId);
+    if (replacement) {
+      confirmLevelUp(exerciseId);
+    }
+  }, []);
 
   // Fade-in animation when content loads
   const fadeIn = useRef(new Animated.Value(0)).current;
@@ -109,43 +106,23 @@ export default function TrainScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
       <Animated.ScrollView
         style={{ flex: 1, opacity: fadeIn }}
-        contentContainerStyle={{ padding: spacing[4], paddingBottom: spacing[12] }}
+        contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing[12] }}
       >
         {/* Header */}
-        <View style={{ marginBottom: spacing[4] }}>
-          <Text
-            style={{
-              ...typography.label,
-              color: colors.text.secondary,
-              fontSize: 10,
-              marginBottom: spacing[1],
-            }}
-          >
+        <View style={{ marginBottom: spacing.lg }}>
+          <Label variant="secondary" style={{ marginBottom: spacing.xs }}>
             Train
-          </Text>
-          <Text
-            style={{
-              ...typography.display,
-              color: colors.text.primary,
-            }}
-          >
-            Workouts
-          </Text>
+          </Label>
+          <Display>Workouts</Display>
         </View>
 
         {/* Intelligence-Driven Recommendation */}
-        <SegmentedPanel title="            Pick a workout" accent="amber">          <Text
-              style={{
-                ...typography.body,
-                color: colors.text.secondary,
-                fontSize: 13,
-                lineHeight: 20,
-              }}
-            >
-              {recommendation.reasoning}
-            </Text>
+        <Card title="Pick a workout" accent="amber">
+          <Body variant="secondary" style={{ fontSize: 13, lineHeight: 20 }}>
+            {recommendation.reasoning}
+          </Body>
           {recommendation.recommendedId !== "rest" && (
-            <View style={{ marginTop: spacing[3] }}>
+            <View style={{ marginTop: spacing.md }}>
               <Button
                 title={`ACCEPT QUEST: ${recommendation.recommendedName}`}
                 onPress={() => handleWorkoutSelect(recommendation.recommendedId)}
@@ -158,8 +135,8 @@ export default function TrainScreen() {
             style={{
               flexDirection: "row",
               alignItems: "center",
-              marginTop: spacing[2],
-              gap: spacing[1],
+              marginTop: spacing.sm,
+              gap: spacing.xs,
             }}
           >
             <View
@@ -175,22 +152,22 @@ export default function TrainScreen() {
                       : colors.text.secondary,
               }}
             />
-            <Text style={{ ...typography.bodySmall, color: colors.text.secondary, fontSize: 9 }}>
+            <Label variant="secondary" style={{ fontSize: 9 }}>
               {recommendation.confidence === "high"
                 ? "HIGH CONFIDENCE"
                 : recommendation.confidence === "medium"
                   ? "MODERATE CONFIDENCE"
                   : "ESTIMATE"}
-            </Text>
+            </Label>
           </View>
-        </SegmentedPanel>
+        </Card>
 
         {/* Progression Readiness — only show when there's data */}
         {progressionSummary.exercisesReady.length > 0 && (
-          <SegmentedPanel
+          <Card
             title={`${progressionSummary.exercisesReady.length} READY TO PROGRESS`}
             accent="green"
-            style={{ marginTop: spacing[2] }}
+            style={{ marginTop: spacing.sm }}
           >
             {progressionSummary.exercisesReady.slice(0, 3).map((ex) => (
               <View
@@ -200,35 +177,29 @@ export default function TrainScreen() {
                   justifyContent: "space-between",
                   alignItems: "center",
                   backgroundColor: colors.bg.primary,
-                  padding: spacing[2],
+                  padding: spacing.sm,
                   borderWidth: 1,
                   borderColor: colors.border.subtle,
                   borderRadius: 4,
-                  marginBottom: spacing[1],
+                  marginBottom: spacing.xs,
                 }}
               >
                 <View style={{ flex: 1 }}>
-                  <Text
-                    style={{
-                      ...typography.bodySmall,
-                      color: colors.text.primary,
-                      fontFamily: fonts.body.semiBold,
-                      fontSize: 11,
-                    }}
+                  <Body
+                    variant="primary"
+                    size="sm"
+                    style={{ fontFamily: fonts.body.semiBold, fontSize: 11 }}
                   >
                     {ex.exerciseName}
-                  </Text>
-                  <Text
-                    style={{
-                      ...typography.bodySmall,
-                      color: colors.text.secondary,
-                      fontSize: 9,
-                      marginTop: 2,
-                    }}
+                  </Body>
+                  <Body
+                    variant="secondary"
+                    size="sm"
+                    style={{ fontSize: 9, marginTop: 2 }}
                     numberOfLines={1}
                   >
                     Avg {ex.averageReps} reps · Trend: {ex.recentTrend.toUpperCase()}
-                  </Text>
+                  </Body>
                 </View>
                 <View
                   style={{
@@ -236,26 +207,24 @@ export default function TrainScreen() {
                     borderWidth: 1,
                     borderColor: colors.success,
                     borderRadius: 4,
-                    paddingHorizontal: spacing[2],
-                    paddingVertical: spacing[0],
-                    marginLeft: spacing[2],
+                    paddingHorizontal: spacing.sm,
+                    paddingVertical: 0,
+                    marginLeft: spacing.sm,
                   }}
                 >
-                  <Text style={{ ...typography.label, color: colors.success, fontSize: 7 }}>
-                    {ex.highEndPercentage}%
-                  </Text>
+                  <Tag variant="success">{ex.highEndPercentage}%</Tag>
                 </View>
               </View>
             ))}
-          </SegmentedPanel>
+          </Card>
         )}
 
         {/* Double Progression — READY TO LEVEL UP */}
         {readyToLevelUp.length > 0 && (
-          <SegmentedPanel
+          <Card
             title={`⬆ ${readyToLevelUp.length} READY TO LEVEL UP`}
             accent="amber"
-            style={{ marginTop: spacing[2] }}
+            style={{ marginTop: spacing.sm }}
           >
             {readyToLevelUp.map((prog) => (
               <TouchableOpacity
@@ -267,13 +236,12 @@ export default function TrainScreen() {
                   borderWidth: 1,
                   borderColor: prog.nextExercise ? `${colors.success}40` : colors.border.subtle,
                   borderRadius: 4,
-                  padding: spacing[3],
-                  marginBottom: spacing[2],
+                  padding: spacing.md,
+                  marginBottom: spacing.sm,
                   overflow: "hidden",
                 }}
               >
-                <GlossyOverlay highlightOpacity={0.08} showReflection={false} />
-                <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[2] }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
                   <View
                     style={{
                       width: 32,
@@ -287,47 +255,25 @@ export default function TrainScreen() {
                     <Text style={{ fontSize: 14 }}>⬆</Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        ...typography.bodySmall,
-                        color: colors.text.primary,
-                        fontSize: 12,
-                        fontFamily: fonts.body.semiBold,
-                      }}
+                    <Body
+                      variant="primary"
+                      size="sm"
+                      style={{ fontFamily: fonts.body.semiBold, fontSize: 12 }}
                     >
                       {prog.exerciseName}
-                    </Text>
-                    <Text
-                      style={{
-                        ...typography.bodySmall,
-                        color: colors.text.secondary,
-                        fontSize: 9,
-                        marginTop: 2,
-                      }}
-                    >
-                      {prog.pathwayLabel} · Lv {prog.currentLevel} → {prog.nextExercise ? `Lv ${prog.nextExercise.level}` : "MAX"}
-                    </Text>
+                    </Body>
+                    <Body variant="secondary" size="sm" style={{ fontSize: 9, marginTop: 2 }}>
+                      {prog.pathwayLabel} · Lv {prog.currentLevel} →{" "}
+                      {prog.nextExercise ? `Lv ${prog.nextExercise.level}` : "MAX"}
+                    </Body>
                   </View>
                   <View style={{ alignItems: "flex-end" }}>
-                    <Text
-                      style={{
-                        ...typography.label,
-                        color: colors.success,
-                        fontSize: 10,
-                      }}
-                    >
+                    <Label variant="success" style={{ fontSize: 10 }}>
                       {prog.highEndPercentage}%
-                    </Text>
-                    <Text
-                      style={{
-                        ...typography.bodySmall,
-                        color: colors.text.secondary,
-                        fontSize: 7,
-                        marginTop: 1,
-                      }}
-                    >
+                    </Label>
+                    <Body variant="secondary" size="sm" style={{ fontSize: 7, marginTop: 1 }}>
                       {prog.averageReps} avg
-                    </Text>
+                    </Body>
                   </View>
                 </View>
                 {prog.nextExercise && (
@@ -337,100 +283,64 @@ export default function TrainScreen() {
                       borderWidth: 1,
                       borderColor: `${colors.success}25`,
                       borderRadius: 4,
-                      padding: spacing[2],
-                      marginTop: spacing[2],
+                      padding: spacing.sm,
+                      marginTop: spacing.sm,
                     }}
                   >
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[1] }}>
-                      <Text style={{ ...typography.label, color: colors.success, fontSize: 7 }}>
-                        NEXT LEVEL
-                      </Text>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.xs }}>
+                      <Tag variant="success">NEXT LEVEL</Tag>
                       <View
                         style={{ flex: 1, height: 1, backgroundColor: `${colors.success}20` }}
                       />
                     </View>
-                    <Text
-                      style={{
-                        ...typography.bodySmall,
-                        color: colors.text.primary,
-                        fontSize: 11,
-                        marginTop: spacing[0],
-                      }}
-                    >
+                    <Body variant="primary" size="sm" style={{ fontSize: 11, marginTop: 0 }}>
                       {prog.nextExercise.name}
-                    </Text>
-                    <Text
-                      style={{
-                        ...typography.bodySmall,
-                        color: colors.text.secondary,
-                        fontSize: 8,
-                        marginTop: 1,
-                      }}
+                    </Body>
+                    <Body
+                      variant="secondary"
+                      size="sm"
+                      style={{ fontSize: 8, marginTop: 1 }}
                       numberOfLines={1}
                     >
                       {prog.nextExercise.overloadMechanism}
-                    </Text>
+                    </Body>
                     <View
                       style={{
                         backgroundColor: colors.success,
                         borderRadius: 4,
-                        paddingHorizontal: spacing[2],
-                        paddingVertical: spacing[0],
+                        paddingHorizontal: spacing.sm,
+                        paddingVertical: 0,
                         alignSelf: "flex-start",
-                        marginTop: spacing[1],
+                        marginTop: spacing.xs,
                       }}
                     >
-                      <Text
-                        style={{
-                          ...typography.label,
-                          color: colors.bg.primary,
-                          fontSize: 7,
-                        }}
-                      >
-                        TAP TO LEVEL UP →
-                      </Text>
+                      <Tag style={{ color: colors.bg.primary }}>TAP TO LEVEL UP →</Tag>
                     </View>
                   </View>
                 )}
               </TouchableOpacity>
             ))}
-          </SegmentedPanel>
+          </Card>
         )}
 
         {/* Deload notice */}
         {progressionSummary.deloadRecommended && (
-          <SegmentedPanel
-            title="DELOAD WEEK SUGGESTED"
-            accent="red"
-            style={{ marginTop: spacing[2] }}
-          >
-            <Text
-              style={{
-                ...typography.body,
-                color: colors.text.secondary,
-                fontSize: 13,
-                lineHeight: 20,
-              }}
-            >
-              You've been training consistently for {progressionSummary.totalTrainingWeeks} weeks.
-              Reduce volume by 40-50% this week: 2 sets per exercise, leave 4-5 reps in reserve.
-              Your body will come back stronger.
-            </Text>
-          </SegmentedPanel>
+          <Card title="DELOAD WEEK SUGGESTED" accent="red" style={{ marginTop: spacing.sm }}>
+            <Body variant="secondary" style={{ fontSize: 13, lineHeight: 20 }}>
+              You&apos;ve been training consistently for {progressionSummary.totalTrainingWeeks}{" "}
+              weeks. Reduce volume by 40-50% this week: 2 sets per exercise, leave 4-5 reps in
+              reserve. Your body will come back stronger.
+            </Body>
+          </Card>
         )}
 
         {/* Core Programs */}
-        <Text
-          style={{
-            ...typography.subtitle,
-            color: colors.text.secondary,
-            fontSize: 11,
-            marginTop: spacing[2],
-            marginBottom: spacing[3],
-          }}
+        <Label
+          variant="secondary"
+          style={{ fontSize: 11, marginTop: spacing.sm, marginBottom: spacing.md }}
         >
           Active Quests
-        </Text>
+        </Label>
 
         {goalWorkouts.map((w) => (
           <WorkoutCard
@@ -442,7 +352,7 @@ export default function TrainScreen() {
         ))}
 
         {/* Skills Library + Skill Tree row */}
-        <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: spacing[3] }}>
+        <View style={{ flexDirection: "row", gap: spacing.sm, marginBottom: spacing.md }}>
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={() => router.push("/exercises/catalog")}
@@ -456,48 +366,26 @@ export default function TrainScreen() {
               borderColor: colors.border.subtle,
               borderRadius: 4,
               borderStyle: "dashed",
-              padding: spacing[3],
+              padding: spacing.md,
               alignItems: "center",
             }}
           >
-            <Text
-              style={{
-                ...typography.h4,
-                color: colors.accent.DEFAULT,
-                fontSize: 16,
-                marginBottom: spacing[1],
-              }}
-            >
+            <H4 variant="accent" style={{ fontSize: 16, marginBottom: spacing.xs }}>
               SKILLS LIBRARY
-            </Text>
-            <Text
-              style={{
-                ...typography.bodySmall,
-                color: colors.text.secondary,
-                fontSize: 9,
-                textAlign: "center",
-              }}
-            >
+            </H4>
+            <Body variant="secondary" size="sm" style={{ fontSize: 9, textAlign: "center" }}>
               Browse all skills by muscle group
-            </Text>
+            </Body>
             <View
               style={{
-                marginTop: spacing[2],
+                marginTop: spacing.sm,
                 backgroundColor: colors.accent.DEFAULT,
                 borderRadius: 4,
-                paddingHorizontal: spacing[2],
-                paddingVertical: spacing[0],
+                paddingHorizontal: spacing.sm,
+                paddingVertical: 0,
               }}
             >
-              <Text
-                style={{
-                  ...typography.label,
-                  color: colors.bg.primary,
-                  fontSize: 8,
-                }}
-              >
-                BROWSE →
-              </Text>
+              <Tag style={{ color: colors.bg.primary }}>BROWSE →</Tag>
             </View>
           </TouchableOpacity>
 
@@ -513,7 +401,7 @@ export default function TrainScreen() {
               borderWidth: 1.5,
               borderColor: `${colors.success}40`,
               borderRadius: 4,
-              padding: spacing[3],
+              padding: spacing.md,
               alignItems: "center",
             }}
           >
@@ -522,66 +410,37 @@ export default function TrainScreen() {
                 fontFamily: "BebasNeue-Regular",
                 fontSize: 24,
                 color: colors.success,
-                marginBottom: spacing[1],
+                marginBottom: spacing.xs,
               }}
             >
               ⬆ ⬇ ⬍ ◈
             </Text>
-            <Text
-              style={{
-                ...typography.h4,
-                color: colors.success,
-                fontSize: 16,
-                marginBottom: spacing[1],
-              }}
-            >
+            <H4 variant="success" style={{ fontSize: 16, marginBottom: spacing.xs }}>
               SKILL TREE
-            </Text>
-            <Text
-              style={{
-                ...typography.bodySmall,
-                color: colors.text.secondary,
-                fontSize: 9,
-                textAlign: "center",
-              }}
-            >
+            </H4>
+            <Body variant="secondary" size="sm" style={{ fontSize: 9, textAlign: "center" }}>
               Movement families & progression
-            </Text>
+            </Body>
             <View
               style={{
-                marginTop: spacing[2],
+                marginTop: spacing.sm,
                 backgroundColor: colors.success,
                 borderRadius: 4,
-                paddingHorizontal: spacing[2],
-                paddingVertical: spacing[0],
+                paddingHorizontal: spacing.sm,
+                paddingVertical: 0,
               }}
             >
-              <Text
-                style={{
-                  ...typography.label,
-                  color: colors.bg.primary,
-                  fontSize: 8,
-                }}
-              >
-                VIEW →
-              </Text>
+              <Tag style={{ color: colors.bg.primary }}>VIEW →</Tag>
             </View>
           </TouchableOpacity>
         </View>
 
         {/* Workout Classes — unlocked and in-progress */}
         {unlockedClasses.length > 0 && (
-          <View style={{ marginBottom: spacing[3] }}>
-            <Text
-              style={{
-                ...typography.subtitle,
-                color: colors.success,
-                fontSize: 11,
-                marginBottom: spacing[2],
-              }}
-            >
+          <View style={{ marginBottom: spacing.md }}>
+            <Label variant="success" style={{ fontSize: 11, marginBottom: spacing.sm }}>
               ★ UNLOCKED CLASSES
-            </Text>
+            </Label>
             {unlockedClasses.map((wc) => (
               <TouchableOpacity
                 key={wc.id}
@@ -592,63 +451,42 @@ export default function TrainScreen() {
                   borderWidth: 1.5,
                   borderColor: `${wc.accent}40`,
                   borderRadius: 4,
-                  padding: spacing[3],
-                  marginBottom: spacing[2],
+                  padding: spacing.md,
+                  marginBottom: spacing.sm,
                   overflow: "hidden",
                 }}
               >
-                <GlossyOverlay highlightOpacity={0.1} showReflection={false} />
-                <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[2] }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
                   <Text style={{ fontSize: 24 }}>{wc.icon}</Text>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ ...typography.h4, color: wc.accent, fontSize: 14 }}>
-                      {wc.name}
-                    </Text>
-                    <Text
-                      style={{
-                        ...typography.bodySmall,
-                        color: colors.text.secondary,
-                        fontSize: 10,
-                        marginTop: 2,
-                      }}
+                    <H4 style={{ color: wc.accent, fontSize: 14 }}>{wc.name}</H4>
+                    <Body
+                      variant="secondary"
+                      size="sm"
+                      style={{ fontSize: 10, marginTop: 2 }}
                       numberOfLines={2}
                     >
                       {wc.description}
-                    </Text>
-                    <View style={{ flexDirection: "row", gap: spacing[2], marginTop: spacing[2] }}>
+                    </Body>
+                    <View style={{ flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm }}>
                       {wc.focus.slice(0, 3).map((f) => (
                         <View
                           key={f}
                           style={{
                             backgroundColor: `${wc.accent}15`,
                             borderRadius: 1,
-                            paddingHorizontal: spacing[1],
+                            paddingHorizontal: spacing.xs,
                             paddingVertical: 1,
                           }}
                         >
-                          <Text
-                            style={{
-                              ...typography.bodySmall,
-                              color: wc.accent,
-                              fontSize: 7,
-                            }}
-                          >
-                            {f}
-                          </Text>
+                          <Tag style={{ color: wc.accent }}>{f}</Tag>
                         </View>
                       ))}
                     </View>
                   </View>
-                  <Text
-                    style={{
-                      ...typography.label,
-                      color: colors.success,
-                      fontSize: 8,
-                      letterSpacing: 1,
-                    }}
-                  >
+                  <Label variant="success" style={{ fontSize: 8, letterSpacing: 1 }}>
                     UNLOCKED
-                  </Text>
+                  </Label>
                 </View>
               </TouchableOpacity>
             ))}
@@ -657,17 +495,10 @@ export default function TrainScreen() {
 
         {/* In-progress class unlocks */}
         {lockedClassesWithProgress.length > 0 && (
-          <View style={{ marginBottom: spacing[3] }}>
-            <Text
-              style={{
-                ...typography.subtitle,
-                color: colors.text.secondary,
-                fontSize: 11,
-                marginBottom: spacing[2],
-              }}
-            >
+          <View style={{ marginBottom: spacing.md }}>
+            <Label variant="secondary" style={{ fontSize: 11, marginBottom: spacing.sm }}>
               LOCKED CLASSES
-            </Text>
+            </Label>
             {lockedClassesWithProgress.map(({ classDef: wc, progress }) => (
               <View
                 key={wc.id}
@@ -676,11 +507,11 @@ export default function TrainScreen() {
                   borderWidth: 1,
                   borderColor: colors.border.subtle,
                   borderRadius: 4,
-                  padding: spacing[3],
-                  marginBottom: spacing[2],
+                  padding: spacing.md,
+                  marginBottom: spacing.sm,
                   flexDirection: "row",
                   alignItems: "center",
-                  gap: spacing[2],
+                  gap: spacing.sm,
                 }}
               >
                 <View
@@ -698,21 +529,15 @@ export default function TrainScreen() {
                   <Text style={{ fontSize: 16, opacity: 0.5 }}>{wc.icon}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text
-                    style={{
-                      ...typography.bodySmall,
-                      color: colors.text.secondary,
-                      fontSize: 11,
-                    }}
-                  >
+                  <Body variant="secondary" size="sm" style={{ fontSize: 11 }}>
                     {wc.name}
-                  </Text>
+                  </Body>
                   <View
                     style={{
                       flexDirection: "row",
                       alignItems: "center",
-                      gap: spacing[1],
-                      marginTop: spacing[1],
+                      gap: spacing.xs,
+                      marginTop: spacing.xs,
                     }}
                   >
                     <View
@@ -733,15 +558,9 @@ export default function TrainScreen() {
                         }}
                       />
                     </View>
-                    <Text
-                      style={{
-                        ...typography.bodySmall,
-                        color: colors.text.secondary,
-                        fontSize: 7,
-                      }}
-                    >
+                    <Body variant="secondary" size="sm" style={{ fontSize: 7 }}>
                       {progress.unlocked}/{progress.required}
-                    </Text>
+                    </Body>
                   </View>
                 </View>
               </View>
@@ -750,31 +569,26 @@ export default function TrainScreen() {
         )}
 
         {/* Program Info */}
-        <SegmentedPanel title="QUEST INFO" accent="none">
-          <View style={{ gap: spacing[2] }}>
-            <InfoRow label="FREQUENCY" value="4 days/week, rotating A→B→C→D" />
+        <Card title="QUEST INFO" accent="none">
+          <View style={{ gap: spacing.sm }}>
+            <InfoRow label="FREQUENCY" value="4 days/week, rotating quest cycle" />
             <InfoRow label="PROGRAM" value={goalConfig.label} />
             <InfoRow label="REST" value="Varies by goal (30-180s)" />
             <InfoRow label="PROGRESSION" value="Double progression method" />
             <InfoRow label="DELOAD" value="Every 4-6 weeks (-50% volume)" />
           </View>
-        </SegmentedPanel>
+        </Card>
 
         {/* Difficulty selector */}
-        <SegmentedPanel title="DIFFICULTY TIERS" accent="none">
-          <Text
-            style={{
-              ...typography.body,
-              color: colors.text.secondary,
-              fontSize: 13,
-              lineHeight: 20,
-              marginBottom: spacing[3],
-            }}
+        <Card title="DIFFICULTY TIERS" accent="none">
+          <Body
+            variant="secondary"
+            style={{ fontSize: 13, lineHeight: 20, marginBottom: spacing.md }}
           >
             Each exercise has built-in progression pathways. Start at the level that matches your
             current capability and progress when you hit the upper rep range with perfect form.
-          </Text>
-          <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: spacing[3] }}>
+          </Body>
+          <View style={{ flexDirection: "row", gap: spacing.sm, marginBottom: spacing.md }}>
             {["BEGINNER", "INTERMEDIATE", "ADVANCED"].map((level) => (
               <View
                 key={level}
@@ -784,20 +598,16 @@ export default function TrainScreen() {
                   borderWidth: 1,
                   borderColor: colors.border.subtle,
                   borderRadius: 4,
-                  padding: spacing[2],
+                  padding: spacing.sm,
                   alignItems: "center",
                 }}
               >
-                <Text
-                  style={{
-                    ...typography.label,
-                    color: level === "INTERMEDIATE" ? colors.accent.DEFAULT : colors.text.secondary,
-                    fontSize: 8,
-                    textAlign: "center",
-                  }}
+                <Label
+                  variant={level === "INTERMEDIATE" ? "accent" : "secondary"}
+                  style={{ fontSize: 8, textAlign: "center" }}
                 >
                   {level}
-                </Text>
+                </Label>
               </View>
             ))}
           </View>
@@ -811,42 +621,33 @@ export default function TrainScreen() {
               borderWidth: 1,
               borderColor: colors.accent.DEFAULT,
               borderRadius: 4,
-              padding: spacing[3],
+              padding: spacing.md,
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              gap: spacing[2],
+              gap: spacing.sm,
             }}
           >
             <Text style={{ fontSize: 16 }}>🌳</Text>
-            <Text
-              style={{
-                ...typography.label,
-                color: colors.accent.DEFAULT,
-                fontSize: 10,
-                letterSpacing: 1,
-              }}
-            >
+            <Label variant="accent" style={{ fontSize: 10, letterSpacing: 1 }}>
               VIEW FULL SKILL TREE
-            </Text>
+            </Label>
           </TouchableOpacity>
-        </SegmentedPanel>
+        </Card>
       </Animated.ScrollView>
     </SafeAreaView>
   );
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {
-  const colors = useColors();
-
   return (
     <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-      <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 9 }}>
+      <Label variant="secondary" style={{ fontSize: 9 }}>
         {label}
-      </Text>
-      <Text style={{ ...typography.bodySmall, color: colors.text.primary, fontSize: 11 }}>
+      </Label>
+      <Body variant="primary" size="sm" style={{ fontSize: 11 }}>
         {value}
-      </Text>
+      </Body>
     </View>
   );
 }

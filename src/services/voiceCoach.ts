@@ -172,7 +172,7 @@ export function getSetCompleteCue(
   const restCues = ["Rest up.", "Take a breather.", "Good. Rest now."];
   const doneCues = ["Nice work.", "Good set.", "Well done."];
   const completeCues = ["Exercise done.", "Finished. Moving on."];
-  
+
   if (isTimeBased) {
     const seconds = reps;
     if (isLastSet) {

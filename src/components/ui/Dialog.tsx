@@ -132,7 +132,7 @@ export function useDialog() {
             backgroundColor: "rgba(0, 0, 0, 0.7)",
             justifyContent: "center",
             alignItems: "center",
-            padding: spacing[4],
+            padding: spacing.lg,
             opacity: fadeAnim,
           }}
         >
@@ -162,12 +162,8 @@ function DialogPanel({
   onClose: () => void;
 }) {
   const isDestructive = config.variant === "destructive";
-  const borderColor = isDestructive
-    ? "rgba(239, 68, 68, 0.5)"
-    : "rgba(212, 168, 67, 0.4)";
-  const innerBorderColor = isDestructive
-    ? "rgba(239, 68, 68, 0.2)"
-    : "rgba(212, 168, 67, 0.15)";
+  const borderColor = isDestructive ? "rgba(239, 68, 68, 0.5)" : "rgba(212, 168, 67, 0.4)";
+  const innerBorderColor = isDestructive ? "rgba(239, 68, 68, 0.2)" : "rgba(212, 168, 67, 0.15)";
 
   return (
     <Animated.View
@@ -233,11 +229,11 @@ function StandardContent({
     confirmButtonLabel = (params as AlertDialogParams).okLabel || "OK";
   }
 
-  const cancelButtonLabel =
-    isAlert ? ""
-      : isDestructive
-        ? (params as DestructiveDialogParams).cancelLabel
-        : (params as ConfirmDialogParams).cancelLabel;
+  const cancelButtonLabel = isAlert
+    ? ""
+    : isDestructive
+      ? (params as DestructiveDialogParams).cancelLabel
+      : (params as ConfirmDialogParams).cancelLabel;
 
   const accentColor = isDestructive ? "#EF4444" : colors.accent.DEFAULT;
 
@@ -246,9 +242,9 @@ function StandardContent({
       {/* Title */}
       <View
         style={{
-          paddingHorizontal: spacing[4],
-          paddingTop: spacing[4],
-          paddingBottom: spacing[2],
+          paddingHorizontal: spacing.lg,
+          paddingTop: spacing.lg,
+          paddingBottom: spacing.sm,
           alignItems: "center",
         }}
       >
@@ -258,7 +254,7 @@ function StandardContent({
             height: 2,
             backgroundColor: accentColor,
             borderRadius: 1,
-            marginBottom: spacing[2],
+            marginBottom: spacing.sm,
             opacity: 0.6,
           }}
         />
@@ -277,7 +273,7 @@ function StandardContent({
 
       {/* Message */}
       {params.message && (
-        <View style={{ paddingHorizontal: spacing[4], paddingBottom: spacing[3] }}>
+        <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.md }}>
           <Text
             style={{
               ...typography.bodySmall,
@@ -302,7 +298,7 @@ function StandardContent({
       >
         {!isAlert && (
           <ActionButton
-            label={(cancelButtonLabel) || "Cancel"}
+            label={cancelButtonLabel || "Cancel"}
             variant="cancel"
             onPress={() => {
               params.onCancel?.();
@@ -331,13 +327,7 @@ function StandardContent({
 
 // ── Select Content ─────────────────────────────
 
-function SelectContent({
-  params,
-  onClose,
-}: {
-  params: SelectDialogParams;
-  onClose: () => void;
-}) {
+function SelectContent({ params, onClose }: { params: SelectDialogParams; onClose: () => void }) {
   const colors = useColors();
 
   return (
@@ -345,9 +335,9 @@ function SelectContent({
       {/* Title */}
       <View
         style={{
-          paddingHorizontal: spacing[4],
-          paddingTop: spacing[4],
-          paddingBottom: spacing[2],
+          paddingHorizontal: spacing.lg,
+          paddingTop: spacing.lg,
+          paddingBottom: spacing.sm,
           alignItems: "center",
         }}
       >
@@ -357,7 +347,7 @@ function SelectContent({
             height: 2,
             backgroundColor: colors.accent.DEFAULT,
             borderRadius: 1,
-            marginBottom: spacing[2],
+            marginBottom: spacing.sm,
             opacity: 0.6,
           }}
         />
@@ -375,7 +365,7 @@ function SelectContent({
       </View>
 
       {/* Options */}
-      <View style={{ paddingHorizontal: spacing[2], paddingBottom: spacing[1] }}>
+      <View style={{ paddingHorizontal: spacing.sm, paddingBottom: spacing.xs }}>
         {params.options.map((option, idx) => (
           <TouchableOpacity
             key={idx}
@@ -389,8 +379,8 @@ function SelectContent({
               borderWidth: 1,
               borderColor: colors.border.subtle,
               borderRadius: radii.md,
-              padding: spacing[3],
-              marginBottom: spacing[1],
+              padding: spacing.md,
+              marginBottom: spacing.xs,
             }}
           >
             <Text
@@ -463,7 +453,7 @@ function ActionButton({
       style={[
         {
           flex: 1,
-          paddingVertical: spacing[3],
+          paddingVertical: spacing.md,
           alignItems: "center",
           justifyContent: "center",
         },

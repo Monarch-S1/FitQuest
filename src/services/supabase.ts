@@ -6,16 +6,21 @@ import {
 import { makeRedirectUri } from "expo-auth-session";
 import { openAuthSessionAsync } from "expo-web-browser";
 import * as Linking from "expo-linking";
+import Constants from "expo-constants";
 import { setSentryUser, clearSentryUser } from "./sentry";
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || "";
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || "";
+// Read credentials from app.json extra (bundled & always available) with
+// process.env.EXPO_PUBLIC_ fallback for Expo CLI / Metro built bundles.
+const supabaseUrl =
+  Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || "";
+const supabaseAnonKey =
+  Constants.expoConfig?.extra?.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || "";
 
 const isConfigured = !!(supabaseUrl && supabaseAnonKey);
 
 if (!isConfigured) {
   console.warn(
-    "⚠️ Supabase credentials missing. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY in your .env file and restart Metro with -c."
+    "⚠️ Supabase credentials missing. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY in your .env file and restart Metro with -c.",
   );
 }
 
@@ -30,22 +35,28 @@ export function isSupabaseConfigured(): boolean {
   return isConfigured;
 }
 
-
-
 // ─── Auth Methods ────────────────────────────────────────────────────────────
 
 export async function signUpWithEmail(email: string, password: string) {
   if (!isSupabaseConfigured()) {
-    // Local fallback: simulate sign-up
-    return { data: { user: { id: `local-${Date.now()}`, email } }, error: null };
+    return {
+      data: { user: { id: `local-${Date.now()}`, email } },
+      error: null,
+    };
   }
 
   try {
-    const result = await supabase.auth.signUp({ email, password });
+    const redirectUri = makeRedirectUri({
+      scheme: "fitquest",
+      path: "auth/callback",
+    });
+    const result = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: redirectUri },
+    });
     if (result.error) {
-      // Supabase API error (rate limit, network, etc.) → fall back to local
-      console.warn("Supabase signUp failed, falling back to local mode:", result.error.message);
-      return { data: { user: { id: `local-${Date.now()}`, email } }, error: null };
+      return { data: null, error: result.error };
     }
     if (result.data.user) {
       setSentryUser(result.data.user.id, result.data.user.email ?? undefined);
@@ -53,22 +64,22 @@ export async function signUpWithEmail(email: string, password: string) {
     return result;
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
-    console.warn("Supabase signUp threw, falling back to local mode:", message);
-    return { data: { user: { id: `local-${Date.now()}`, email } }, error: null };
+    return { data: null, error: new Error(message) };
   }
 }
 
 export async function signInWithEmail(email: string, password: string) {
   if (!isSupabaseConfigured()) {
-    // Local fallback: simulate sign-in (check for stored user)
-    return { data: { user: { id: "local-user", email } }, error: null };
+    return {
+      data: { user: { id: "local-user", email } },
+      error: null,
+    };
   }
 
   try {
     const result = await supabase.auth.signInWithPassword({ email, password });
     if (result.error) {
-      console.warn("Supabase signIn failed, falling back to local mode:", result.error.message);
-      return { data: { user: { id: "local-user", email } }, error: null };
+      return { data: null, error: result.error };
     }
     if (result.data.user) {
       setSentryUser(result.data.user.id, result.data.user.email ?? undefined);
@@ -76,8 +87,7 @@ export async function signInWithEmail(email: string, password: string) {
     return result;
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
-    console.warn("Supabase signIn threw, falling back to local mode:", message);
-    return { data: { user: { id: "local-user", email } }, error: null };
+    return { data: null, error: new Error(message) };
   }
 }
 
@@ -92,7 +102,7 @@ export async function signInWithGoogle() {
 
   try {
     const redirectUri = makeRedirectUri({
-      scheme: "arch",
+      scheme: "fitquest",
       path: "auth/callback",
     });
 

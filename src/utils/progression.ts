@@ -1,16 +1,14 @@
 import { WorkoutSession } from "../stores/useUserStore";
-import { workoutA, workoutB, workoutC, workoutD, Exercise } from "../data/exercises";
+import { Exercise } from "../data/exercises";
+import { getAllExercises96 } from "../data/exercises96";
 
-// Build exercise lookup from all workouts
-const allExercises = [
-  ...workoutA.exercises,
-  ...workoutB.exercises,
-  ...workoutC.exercises,
-  ...workoutD.exercises,
-];
+// Build exercise lookup from the unified 96-exercise database.
+// All exercises (muscle imbalance detection, progression tracking, etc.)
+// reference the canonical pathway IDs from the 96-database.
+const allExercises: Exercise[] = getAllExercises96();
 const exerciseMap = new Map(allExercises.map((ex) => [ex.id, ex]));
 
-/** Get all exercises across both workouts */
+/** Get all exercises from the unified 96-exercise database */
 export function getAllExercises(): Exercise[] {
   return allExercises;
 }

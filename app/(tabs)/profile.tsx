@@ -4,12 +4,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { useColors, typography, spacing, fonts } from "../../src/tokens";
-import { StatModule } from "../../src/components/ui/StatModule";
-import { SegmentedPanel } from "../../src/components/ui/SegmentedPanel";
+import { useColors, typography, spacing, fonts, Label, H4, Body } from "../../src/tokens";
+import { Card } from "../../src/components/ui/Card";
 import { XpBar } from "../../src/components/ui/XpBar";
 import { ThemeSwitcher } from "../../src/components/ui/ThemeSwitcher";
-import { GlossyOverlay } from "../../src/components/ui/GlossyOverlay";
+
 import { SyncIndicator } from "../../src/components/ui/SyncIndicator";
 import { FeedbackSheet } from "../../src/components/ui/FeedbackSheet";
 import { useUserStore, FitnessGoal, FitnessLevel } from "../../src/stores/useUserStore";
@@ -123,8 +122,10 @@ export default function ProfileScreen() {
     fitnessLevel,
     isAuthenticated,
     avatarUri,
+    voiceCoachEnabled,
     updateProfile,
     clearAuth,
+    setVoiceCoachEnabled,
     exercisePresets,
   } = useUserStore();
   const [showEditName, setShowEditName] = useState(false);
@@ -170,7 +171,10 @@ export default function ProfileScreen() {
   const handlePickAvatar = useCallback(async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      dialog.alert({ title: "Permission needed", message: "Please grant photo library access to set a profile picture." });
+      dialog.alert({
+        title: "Permission needed",
+        message: "Please grant photo library access to set a profile picture.",
+      });
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -185,14 +189,17 @@ export default function ProfileScreen() {
   }, [updateProfile]);
 
   const handleChangeGoal = useCallback(() => {
-    const goalNames = GOAL_OPTIONS.map((g) => ({ text: GOAL_LABELS[g], onPress: () => {
-      dialog.confirm({
-        title: "Change Training Program",
-        message: `Switching to ${GOAL_LABELS[g]} will update your workout program (rep ranges, sets, rest times). Your XP, streak, and workout history will be preserved. Continue?`,
-        confirmLabel: "CHANGE",
-        onConfirm: () => updateProfile({ fitnessGoal: g }),
-      });
-    }}));
+    const goalNames = GOAL_OPTIONS.map((g) => ({
+      text: GOAL_LABELS[g],
+      onPress: () => {
+        dialog.confirm({
+          title: "Change Training Program",
+          message: `Switching to ${GOAL_LABELS[g]} will update your workout program (rep ranges, sets, rest times). Your XP, streak, and workout history will be preserved. Continue?`,
+          confirmLabel: "CHANGE",
+          onConfirm: () => updateProfile({ fitnessGoal: g }),
+        });
+      },
+    }));
     dialog.select({
       title: "Change Goal",
       options: goalNames.map((g) => ({ label: g.text, onPress: g.onPress })),
@@ -200,14 +207,17 @@ export default function ProfileScreen() {
   }, [updateProfile]);
 
   const handleChangeLevel = useCallback(() => {
-    const levelNames = LEVEL_OPTIONS.map((l) => ({ text: LEVEL_LABELS[l], onPress: () => {
-      dialog.confirm({
-        title: "Change Level",
-        message: `Switching to ${LEVEL_LABELS[l]} will adjust exercise difficulty targets. Your progress will be preserved. Continue?`,
-        confirmLabel: "CHANGE",
-        onConfirm: () => updateProfile({ fitnessLevel: l }),
-      });
-    }}));
+    const levelNames = LEVEL_OPTIONS.map((l) => ({
+      text: LEVEL_LABELS[l],
+      onPress: () => {
+        dialog.confirm({
+          title: "Change Level",
+          message: `Switching to ${LEVEL_LABELS[l]} will adjust exercise difficulty targets. Your progress will be preserved. Continue?`,
+          confirmLabel: "CHANGE",
+          onConfirm: () => updateProfile({ fitnessLevel: l }),
+        });
+      },
+    }));
     dialog.select({
       title: "Change Level",
       options: levelNames.map((l) => ({ label: l.text, onPress: l.onPress })),
@@ -249,7 +259,8 @@ export default function ProfileScreen() {
   const handleSignOut = useCallback(() => {
     dialog.destructive({
       title: "Sign Out",
-      message: "Are you sure you want to sign out? Your workout data is stored locally and will be preserved.",
+      message:
+        "Are you sure you want to sign out? Your workout data is stored locally and will be preserved.",
       actionLabel: "SIGN OUT",
       onAction: async () => {
         await supabaseSignOut();
@@ -266,19 +277,19 @@ export default function ProfileScreen() {
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
-          padding: spacing[4],
+          padding: spacing.lg,
           paddingBottom: spacing[12],
         }}
       >
         {/* Header */}
-        <View style={{ marginBottom: spacing[4], position: "relative" }}>
+        <View style={{ marginBottom: spacing.lg, position: "relative" }}>
           <SyncIndicator />
           <Text
             style={{
               ...typography.label,
               color: colors.text.secondary,
               fontSize: 10,
-              marginBottom: spacing[1],
+              marginBottom: spacing.xs,
             }}
           >
             Character
@@ -294,13 +305,13 @@ export default function ProfileScreen() {
         </View>
 
         {/* Identity card */}
-        <SegmentedPanel title="IDENTITY" accent="amber">
+        <Card title="IDENTITY" accent="amber">
           {/* Rank Emblem */}
           <View
             style={{
               alignItems: "center",
-              paddingVertical: spacing[2],
-              marginBottom: spacing[2],
+              paddingVertical: spacing.sm,
+              marginBottom: spacing.sm,
               borderBottomWidth: 1,
               borderBottomColor: colors.border.subtle,
             }}
@@ -315,10 +326,12 @@ export default function ProfileScreen() {
                 backgroundColor: `${colors.accent.DEFAULT}10`,
                 alignItems: "center",
                 justifyContent: "center",
-                marginBottom: spacing[1],
+                marginBottom: spacing.xs,
               }}
             >
-              <Text style={{ fontFamily: fonts.heading, fontSize: 28, color: colors.accent.DEFAULT }}>
+              <Text
+                style={{ fontFamily: fonts.heading, fontSize: 28, color: colors.accent.DEFAULT }}
+              >
                 {level}
               </Text>
             </View>
@@ -347,11 +360,16 @@ export default function ProfileScreen() {
             style={{
               flexDirection: "row",
               alignItems: "center",
-              gap: spacing[4],
+              gap: spacing.lg,
             }}
           >
             {/* Avatar */}
-            <TouchableOpacity onPress={handlePickAvatar} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Change profile picture">
+            <TouchableOpacity
+              onPress={handlePickAvatar}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Change profile picture"
+            >
               <View
                 style={{
                   width: 72,
@@ -394,7 +412,7 @@ export default function ProfileScreen() {
             </TouchableOpacity>
             <View style={{ flex: 1 }}>
               {showEditName ? (
-                <View style={{ flexDirection: "row", gap: spacing[2], alignItems: "center" }}>
+                <View style={{ flexDirection: "row", gap: spacing.sm, alignItems: "center" }}>
                   <TextInput
                     value={editName}
                     onChangeText={setEditName}
@@ -406,13 +424,17 @@ export default function ProfileScreen() {
                       borderWidth: 1,
                       borderColor: colors.accent.DEFAULT,
                       borderRadius: 4,
-                      padding: spacing[2],
+                      padding: spacing.sm,
                       color: colors.text.primary,
                       fontFamily: fonts.body.semiBold,
                       fontSize: 16,
                     }}
                   />
-                  <TouchableOpacity onPress={handleSaveName} accessibilityRole="button" accessibilityLabel="Save name">
+                  <TouchableOpacity
+                    onPress={handleSaveName}
+                    accessibilityRole="button"
+                    accessibilityLabel="Save name"
+                  >
                     <Text
                       style={{ ...typography.label, color: colors.accent.DEFAULT, fontSize: 9 }}
                     >
@@ -421,7 +443,12 @@ export default function ProfileScreen() {
                   </TouchableOpacity>
                 </View>
               ) : (
-                <TouchableOpacity onPress={() => setShowEditName(true)} accessibilityRole="button" accessibilityLabel="Edit display name" accessibilityHint="Double tap to edit your name">
+                <TouchableOpacity
+                  onPress={() => setShowEditName(true)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Edit display name"
+                  accessibilityHint="Double tap to edit your name"
+                >
                   <Text
                     style={{
                       ...typography.h2,
@@ -437,7 +464,7 @@ export default function ProfileScreen() {
                 style={{
                   ...typography.bodySmall,
                   color: colors.text.secondary,
-                  marginTop: spacing[1],
+                  marginTop: spacing.xs,
                 }}
               >
                 Rank: {rank}
@@ -454,7 +481,7 @@ export default function ProfileScreen() {
                   {email}
                 </Text>
               ) : null}
-              <View style={{ marginTop: spacing[2] }}>
+              <View style={{ marginTop: spacing.sm }}>
                 <XpBar
                   currentXp={xpProgress.currentXp}
                   requiredXp={xpProgress.requiredXp}
@@ -469,8 +496,8 @@ export default function ProfileScreen() {
           <View
             style={{
               flexDirection: "row",
-              gap: spacing[2],
-              marginTop: spacing[3],
+              gap: spacing.sm,
+              marginTop: spacing.md,
             }}
           >
             <TouchableOpacity
@@ -484,11 +511,10 @@ export default function ProfileScreen() {
                 borderWidth: 1,
                 borderColor: colors.accent.DEFAULT,
                 borderRadius: 4,
-                padding: spacing[2],
+                padding: spacing.sm,
                 overflow: "hidden",
               }}
             >
-              <GlossyOverlay highlightOpacity={0.1} showReflection={false} />
               <Text
                 style={{
                   ...typography.label,
@@ -520,11 +546,10 @@ export default function ProfileScreen() {
                 borderWidth: 1,
                 borderColor: colors.success,
                 borderRadius: 4,
-                padding: spacing[2],
+                padding: spacing.sm,
                 overflow: "hidden",
               }}
             >
-              <GlossyOverlay highlightOpacity={0.1} showReflection={false} />
               <Text
                 style={{
                   ...typography.label,
@@ -546,12 +571,72 @@ export default function ProfileScreen() {
               </Text>
             </TouchableOpacity>
           </View>
-        </SegmentedPanel>
+        </Card>
 
         {/* ── Theme Settings ── */}
-        <SegmentedPanel title="THEME" accent="amber" style={{ marginTop: spacing[2] }}>
+        <Card title="THEME" accent="amber" style={{ marginTop: spacing.sm }}>
           <ThemeSwitcher />
-        </SegmentedPanel>
+        </Card>
+
+        {/* ── Voice Coach Toggle ── */}
+        <Card title="VOICE GUIDANCE" accent="amber" style={{ marginTop: spacing.sm }}>
+          <TouchableOpacity
+            onPress={() => setVoiceCoachEnabled(!voiceCoachEnabled)}
+            activeOpacity={0.7}
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingVertical: spacing.sm,
+            }}
+            accessibilityRole="switch"
+            accessibilityState={{ checked: voiceCoachEnabled }}
+          >
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  ...typography.bodySmall,
+                  color: colors.text.primary,
+                  fontSize: 12,
+                }}
+              >
+                Voice Coach
+              </Text>
+              <Text
+                style={{
+                  ...typography.bodySmall,
+                  color: colors.text.secondary,
+                  fontSize: 9,
+                  marginTop: 2,
+                }}
+              >
+                Audio cues during workouts
+              </Text>
+            </View>
+            <View
+              style={{
+                width: 44,
+                height: 24,
+                borderRadius: 12,
+                backgroundColor: voiceCoachEnabled ? colors.accent.DEFAULT : colors.bg.elevated,
+                borderWidth: 1,
+                borderColor: voiceCoachEnabled ? colors.accent.DEFAULT : colors.border.subtle,
+                justifyContent: "center",
+                paddingHorizontal: 2,
+              }}
+            >
+              <View
+                style={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: 9,
+                  backgroundColor: colors.bg.primary,
+                  alignSelf: voiceCoachEnabled ? "flex-end" : "flex-start",
+                }}
+              />
+            </View>
+          </TouchableOpacity>
+        </Card>
 
         {/* Stats Grid */}
         <Text
@@ -559,28 +644,48 @@ export default function ProfileScreen() {
             ...typography.subtitle,
             color: colors.text.secondary,
             fontSize: 11,
-            marginTop: spacing[2],
-            marginBottom: spacing[3],
+            marginTop: spacing.sm,
+            marginBottom: spacing.md,
           }}
         >
           Attributes
         </Text>
 
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[2] }}>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }}>
           <View style={{ width: "31%" }}>
-            <StatModule label="TOTAL XP" value={totalXp} accent="amber" size="sm" />
+            <Card>
+              <View style={{ alignItems: "center", gap: spacing.xs }}>
+                <Label variant="secondary" style={{ fontSize: 9 }}>
+                  TOTAL XP
+                </Label>
+                <H4 variant="accent">{totalXp}</H4>
+              </View>
+            </Card>
           </View>
           <View style={{ width: "31%" }}>
-            <StatModule label="WORKOUTS" value={workoutHistory.length} accent="green" size="sm" />
+            <Card>
+              <View style={{ alignItems: "center", gap: spacing.xs }}>
+                <Label variant="secondary" style={{ fontSize: 9 }}>
+                  WORKOUTS
+                </Label>
+                <H4 variant="success">{workoutHistory.length}</H4>
+              </View>
+            </Card>
           </View>
           <View style={{ width: "31%" }}>
-            <StatModule
-              label="STREAK"
-              value={streakData.currentStreak}
-              accent={streakData.currentStreak >= 3 ? "green" : "amber"}
-              size="sm"
-              subValue={`Best: ${streakData.longestStreak}`}
-            />
+            <Card>
+              <View style={{ alignItems: "center", gap: spacing.xs }}>
+                <Label variant="secondary" style={{ fontSize: 9 }}>
+                  STREAK
+                </Label>
+                <H4 variant={streakData.currentStreak >= 3 ? "success" : "accent"}>
+                  {streakData.currentStreak}
+                </H4>
+                <Body variant="secondary" size="sm" style={{ fontSize: 8 }}>
+                  Best: {streakData.longestStreak}
+                </Body>
+              </View>
+            </Card>
           </View>
         </View>
 
@@ -592,17 +697,17 @@ export default function ProfileScreen() {
                 ...typography.subtitle,
                 color: colors.text.secondary,
                 fontSize: 11,
-                marginTop: spacing[2],
-                marginBottom: spacing[3],
+                marginTop: spacing.sm,
+                marginBottom: spacing.md,
               }}
             >
               Exercise Progression
             </Text>
             {progressionSummary.exercisesReady.length > 0 && (
-              <SegmentedPanel
+              <Card
                 title={`READY TO PROGRESS (${progressionSummary.exercisesReady.length})`}
                 accent="green"
-                style={{ marginBottom: spacing[2] }}
+                style={{ marginBottom: spacing.sm }}
               >
                 {progressionSummary.exercisesReady.map((ex) => (
                   <View key={ex.exerciseId}>
@@ -635,7 +740,7 @@ export default function ProfileScreen() {
                           Avg {ex.averageReps} reps · {ex.sessionsCompleted} sessions
                         </Text>
                       </View>
-                      <View style={{ alignItems: "flex-end", marginLeft: spacing[2] }}>
+                      <View style={{ alignItems: "flex-end", marginLeft: spacing.sm }}>
                         <Text
                           style={{
                             ...typography.label,
@@ -662,14 +767,14 @@ export default function ProfileScreen() {
                       style={{
                         height: 1,
                         backgroundColor: colors.border.subtle,
-                        marginVertical: spacing[1],
+                        marginVertical: spacing.xs,
                       }}
                     />
                   </View>
                 ))}
-              </SegmentedPanel>
+              </Card>
             )}
-            <SegmentedPanel title="IN PROGRESS" accent="none" style={{ marginBottom: spacing[2] }}>
+            <Card title="IN PROGRESS" accent="none" style={{ marginBottom: spacing.sm }}>
               {progressionSummary.exercisesInProgress.slice(0, 8).map((ex, i, arr) => (
                 <View key={ex.exerciseId}>
                   <View
@@ -692,7 +797,7 @@ export default function ProfileScreen() {
                       style={{
                         flexDirection: "row",
                         alignItems: "center",
-                        gap: spacing[1],
+                        gap: spacing.xs,
                       }}
                     >
                       <Text
@@ -727,18 +832,18 @@ export default function ProfileScreen() {
                       style={{
                         height: 1,
                         backgroundColor: colors.border.subtle,
-                        marginVertical: spacing[1],
+                        marginVertical: spacing.xs,
                       }}
                     />
                   )}
                 </View>
               ))}
-            </SegmentedPanel>
+            </Card>
           </>
         )}
 
         {/* Recent Activity */}
-        <SegmentedPanel title="RECENT ACTIVITY" accent="none" style={{ marginTop: spacing[2] }}>
+        <Card title="RECENT ACTIVITY" accent="none" style={{ marginTop: spacing.sm }}>
           {workoutHistory.length === 0 ? (
             <Text
               style={{
@@ -746,13 +851,13 @@ export default function ProfileScreen() {
                 color: colors.text.secondary,
                 fontSize: 12,
                 textAlign: "center",
-                padding: spacing[4],
+                padding: spacing.lg,
               }}
             >
               No workouts recorded yet. Complete your first training session to see activity here.
             </Text>
           ) : (
-            <View style={{ gap: spacing[2] }}>
+            <View style={{ gap: spacing.sm }}>
               {[...workoutHistory]
                 .reverse()
                 .slice(0, 5)
@@ -764,7 +869,7 @@ export default function ProfileScreen() {
                       justifyContent: "space-between",
                       alignItems: "center",
                       backgroundColor: colors.bg.primary,
-                      padding: spacing[2],
+                      padding: spacing.sm,
                       borderWidth: 1,
                       borderColor: colors.border.subtle,
                       borderRadius: 4,
@@ -804,10 +909,10 @@ export default function ProfileScreen() {
                 ))}
             </View>
           )}
-        </SegmentedPanel>
+        </Card>
 
         {/* Skill Tree shortcut */}
-        <SegmentedPanel title="SKILL PROGRESSION" accent="green" style={{ marginTop: spacing[2] }}>
+        <Card title="SKILL PROGRESSION" accent="green" style={{ marginTop: spacing.sm }}>
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={() => router.push("/skills/skill-tree")}
@@ -818,10 +923,10 @@ export default function ProfileScreen() {
               borderWidth: 1,
               borderColor: `${colors.success}30`,
               borderRadius: 4,
-              padding: spacing[3],
+              padding: spacing.md,
               flexDirection: "row",
               alignItems: "center",
-              gap: spacing[3],
+              gap: spacing.md,
             }}
           >
             <View
@@ -860,11 +965,9 @@ export default function ProfileScreen() {
                 Track your movement progression · Push · Pull · Legs · Core
               </Text>
             </View>
-            <Text style={{ ...typography.label, color: colors.success, fontSize: 10 }}>
-              VIEW →
-            </Text>
+            <Text style={{ ...typography.label, color: colors.success, fontSize: 10 }}>VIEW →</Text>
           </TouchableOpacity>
-        </SegmentedPanel>
+        </Card>
 
         {/* Achievements */}
         <Text
@@ -872,14 +975,14 @@ export default function ProfileScreen() {
             ...typography.subtitle,
             color: colors.text.secondary,
             fontSize: 11,
-            marginTop: spacing[2],
-            marginBottom: spacing[3],
+            marginTop: spacing.sm,
+            marginBottom: spacing.md,
           }}
         >
           Trophies
         </Text>
 
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing[2] }}>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }}>
           {achievements.map((achievement) => (
             <View
               key={achievement.id}
@@ -889,12 +992,12 @@ export default function ProfileScreen() {
                 borderWidth: 1,
                 borderColor: achievement.unlocked ? colors.success : colors.border.subtle,
                 borderRadius: 4,
-                padding: spacing[2],
+                padding: spacing.sm,
                 alignItems: "center",
                 opacity: achievement.unlocked ? 1 : 0.5,
               }}
             >
-              <Text style={{ fontSize: 20, marginBottom: spacing[1] }}>
+              <Text style={{ fontSize: 20, marginBottom: spacing.xs }}>
                 {achievement.unlocked ? achievement.icon : "○"}
               </Text>
               <Text
@@ -920,82 +1023,83 @@ export default function ProfileScreen() {
                 ...typography.subtitle,
                 color: colors.text.secondary,
                 fontSize: 11,
-                marginTop: spacing[3],
-                marginBottom: spacing[3],
+                marginTop: spacing.md,
+                marginBottom: spacing.md,
               }}
             >
               Custom Presets ({Object.keys(exercisePresets).length})
             </Text>
-            <SegmentedPanel title="SAVED PRESETS" accent="amber" style={{ marginBottom: spacing[2] }}>
+            <Card title="SAVED PRESETS" accent="amber" style={{ marginBottom: spacing.sm }}>
               {Object.values(exercisePresets)
                 .sort((a, b) => (a.label || a.exerciseId).localeCompare(b.label || b.exerciseId))
                 .map((preset, i, arr) => (
-                <View key={preset.exerciseId}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <View style={{ flex: 1 }}>
-                      <Text
-                        style={{
-                          ...typography.bodySmall,
-                          color: colors.text.primary,
-                          fontFamily: fonts.body.semiBold,
-                          fontSize: 11,
-                        }}
-                      >
-                        {preset.label || preset.exerciseId}
-                      </Text>
-                      <Text
-                        style={{
-                          ...typography.bodySmall,
-                          color: colors.text.secondary,
-                          fontSize: 9,
-                          marginTop: 2,
-                        }}
-                      >
-                        {preset.defaultSets} × {preset.repRange[0]}-{preset.repRange[1]} · {preset.restInterval}s rest · {preset.tempo}
-                      </Text>
-                    </View>
-                    <TouchableOpacity
-                      onPress={() => {
-                        const store = useUserStore.getState();
-                        dialog.destructive({
-                          title: "Delete Preset",
-                          message: `Remove custom preset for "${preset.label || preset.exerciseId}"?`,
-                          actionLabel: "DELETE",
-                          onAction: () => store.removeExercisePreset(preset.exerciseId),
-                        });
-                      }}
-                      activeOpacity={0.7}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Delete preset for ${preset.label || preset.exerciseId}`}
-                    >
-                      <Text style={{ ...typography.label, color: colors.error, fontSize: 8 }}>
-                        DELETE
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                  {i < arr.length - 1 && (
+                  <View key={preset.exerciseId}>
                     <View
                       style={{
-                        height: 1,
-                        backgroundColor: colors.border.subtle,
-                        marginVertical: spacing[1],
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
                       }}
-                    />
-                  )}
-                </View>
-              ))}
-            </SegmentedPanel>
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={{
+                            ...typography.bodySmall,
+                            color: colors.text.primary,
+                            fontFamily: fonts.body.semiBold,
+                            fontSize: 11,
+                          }}
+                        >
+                          {preset.label || preset.exerciseId}
+                        </Text>
+                        <Text
+                          style={{
+                            ...typography.bodySmall,
+                            color: colors.text.secondary,
+                            fontSize: 9,
+                            marginTop: 2,
+                          }}
+                        >
+                          {preset.defaultSets} × {preset.repRange[0]}-{preset.repRange[1]} ·{" "}
+                          {preset.restInterval}s rest · {preset.tempo}
+                        </Text>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => {
+                          const store = useUserStore.getState();
+                          dialog.destructive({
+                            title: "Delete Preset",
+                            message: `Remove custom preset for "${preset.label || preset.exerciseId}"?`,
+                            actionLabel: "DELETE",
+                            onAction: () => store.removeExercisePreset(preset.exerciseId),
+                          });
+                        }}
+                        activeOpacity={0.7}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Delete preset for ${preset.label || preset.exerciseId}`}
+                      >
+                        <Text style={{ ...typography.label, color: colors.error, fontSize: 8 }}>
+                          DELETE
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                    {i < arr.length - 1 && (
+                      <View
+                        style={{
+                          height: 1,
+                          backgroundColor: colors.border.subtle,
+                          marginVertical: spacing.xs,
+                        }}
+                      />
+                    )}
+                  </View>
+                ))}
+            </Card>
           </>
         )}
 
         {/* Feedback */}
-        <SegmentedPanel title="SUPPORT" accent="amber" style={{ marginTop: spacing[4] }}>
+        <Card title="SUPPORT" accent="amber" style={{ marginTop: spacing.lg }}>
           <TouchableOpacity
             onPress={handleOpenFeedback}
             activeOpacity={0.7}
@@ -1005,7 +1109,7 @@ export default function ProfileScreen() {
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "center",
-              paddingVertical: spacing[2],
+              paddingVertical: spacing.sm,
             }}
           >
             <Text
@@ -1027,20 +1131,20 @@ export default function ProfileScreen() {
               →
             </Text>
           </TouchableOpacity>
-        </SegmentedPanel>
+        </Card>
 
         {/* Feedback Modal */}
         <FeedbackSheet visible={showFeedback} onClose={() => setShowFeedback(false)} />
         <dialog.Dialog />
 
         {/* Storage */}
-        <SegmentedPanel title="STORAGE" accent="none" style={{ marginTop: spacing[2] }}>
+        <Card title="STORAGE" accent="none" style={{ marginTop: spacing.sm }}>
           <View
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "center",
-              paddingVertical: spacing[2],
+              paddingVertical: spacing.sm,
             }}
           >
             <View>
@@ -1061,7 +1165,8 @@ export default function ProfileScreen() {
                   marginTop: 2,
                 }}
               >
-                {cachedVideoCount} video{cachedVideoCount !== 1 ? "s" : ""} · {formatBytes(cachedVideoSize)}
+                {cachedVideoCount} video{cachedVideoCount !== 1 ? "s" : ""} ·{" "}
+                {formatBytes(cachedVideoSize)}
               </Text>
             </View>
             {cachedVideoCount > 0 ? (
@@ -1093,10 +1198,10 @@ export default function ProfileScreen() {
               </Text>
             )}
           </View>
-        </SegmentedPanel>
+        </Card>
 
         {/* Legal */}
-        <SegmentedPanel title="LEGAL" accent="none" style={{ marginTop: spacing[2] }}>
+        <Card title="LEGAL" accent="none" style={{ marginTop: spacing.sm }}>
           <TouchableOpacity
             onPress={() => router.push("/privacy-policy")}
             activeOpacity={0.7}
@@ -1107,7 +1212,7 @@ export default function ProfileScreen() {
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "center",
-              paddingVertical: spacing[2],
+              paddingVertical: spacing.sm,
             }}
           >
             <Text
@@ -1129,7 +1234,7 @@ export default function ProfileScreen() {
               VIEW →
             </Text>
           </TouchableOpacity>
-        </SegmentedPanel>
+        </Card>
 
         {/* Sign Out */}
         {isAuthenticated && (
@@ -1139,11 +1244,11 @@ export default function ProfileScreen() {
             accessibilityRole="button"
             accessibilityLabel="Sign out of your account"
             style={{
-              marginTop: spacing[4],
+              marginTop: spacing.lg,
               borderWidth: 1,
               borderColor: colors.error,
               borderRadius: 4,
-              padding: spacing[3],
+              padding: spacing.md,
               alignItems: "center",
             }}
           >

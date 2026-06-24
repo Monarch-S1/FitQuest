@@ -1,6 +1,6 @@
-# ARCH
+# FitQuest
 
-**Private project by Monarch Training Systems**
+**Private project by FitQuest**
 
 ---
 

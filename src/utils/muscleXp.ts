@@ -1,17 +1,12 @@
 import { WorkoutSession } from "../stores/useUserStore";
-import { workoutA, workoutB, workoutC, workoutD, MuscleGroup } from "../data/exercises";
+import { getAllExercises96 } from "../data/exercises96";
+import { MuscleGroup } from "../data/exercises";
 import { XP_PER_SET } from "./xp";
 
 const MUSCLE_XP_GROWTH = 50;
 
-// Build a lookup map of all exercises by ID (across all 4 workouts)
-const allExercises = [
-  ...workoutA.exercises,
-  ...workoutB.exercises,
-  ...workoutC.exercises,
-  ...workoutD.exercises,
-];
-const exerciseMap = new Map(allExercises.map((ex) => [ex.id, ex]));
+// Build a lookup map of all exercises from the 96-exercise database
+const exerciseMap = new Map(getAllExercises96().map((ex) => [ex.id, ex]));
 
 export interface MuscleProgress {
   zone: string;
@@ -80,7 +75,6 @@ export function calculateMuscleProgress(workoutHistory: WorkoutSession[]): Muscl
     }
   }
 
-  // Convert to array, sorted by level desc, then name
   return Object.entries(muscleXp)
     .filter(([zone]) => MUSCLE_META[zone])
     .map(([zone, xp]) => {
@@ -116,9 +110,9 @@ export function getAllMuscleGroups(): MuscleProgress[] {
 export interface MuscleXpPoint {
   sessionId: string;
   date: string;
-  xpGained: number; // XP earned this session
-  totalXp: number;  // cumulative XP after this session
-  level: number;    // level after this session
+  xpGained: number;
+  totalXp: number;
+  level: number;
 }
 
 /** Per-muscle XP history for progress-over-time charts */
@@ -130,7 +124,6 @@ export interface MuscleXpHistory {
 
 /**
  * Calculate per-session XP history for a specific muscle.
- * Returns an array of MuscleXpHistory, one per muscle that has been trained.
  */
 export function getMuscleXpHistory(workoutHistory: WorkoutSession[]): MuscleXpHistory[] {
   const muscleXp: Record<string, number> = {};

@@ -28,7 +28,7 @@ export function HUDModule({ children, label, accent = "none", style }: HUDModule
         borderWidth: 1,
         borderColor: accentColor,
         borderRadius: 12,
-        padding: spacing[3],
+        padding: spacing.md,
         position: "relative",
         ...style,
       }}
@@ -39,9 +39,9 @@ export function HUDModule({ children, label, accent = "none", style }: HUDModule
           style={{
             position: "absolute",
             top: -9,
-            left: spacing[2],
+            left: spacing.sm,
             backgroundColor: colors.bg.elevated,
-            paddingHorizontal: spacing[1],
+            paddingHorizontal: spacing.xs,
           }}
         >
           <Text

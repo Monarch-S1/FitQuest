@@ -21,8 +21,8 @@ export default function SkillTreeScreen() {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
-          paddingHorizontal: spacing[4],
-          paddingVertical: spacing[3],
+          paddingHorizontal: spacing.lg,
+          paddingVertical: spacing.md,
           borderBottomWidth: 1,
           borderBottomColor: colors.border.subtle,
         }}
@@ -33,7 +33,7 @@ export default function SkillTreeScreen() {
               ...typography.label,
               color: colors.text.secondary,
               fontSize: 10,
-              marginBottom: spacing[1],
+              marginBottom: spacing.xs,
             }}
           >
             PROGRESSION
@@ -57,8 +57,8 @@ export default function SkillTreeScreen() {
             borderWidth: 1,
             borderColor: colors.border.subtle,
             borderRadius: 4,
-            paddingHorizontal: spacing[3],
-            paddingVertical: spacing[1],
+            paddingHorizontal: spacing.md,
+            paddingVertical: spacing.xs,
           }}
         >
           <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 10 }}>

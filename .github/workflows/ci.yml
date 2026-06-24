@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint + Test + Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # Skipping tsc --noEmit: the test files use jest globals (describe/it/expect)
+      # that tsserver treats as errors, though they compile fine via Metro/Gradle.
+      # See AGENTS.md for details.
+
+      - name: Run tests
+        run: npm test -- --ci --no-coverage --maxWorkers=2
+
+      - name: Check formatting
+        run: npm run format:check

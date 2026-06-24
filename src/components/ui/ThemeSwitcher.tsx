@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { useColors, useThemeMode, useAccentColor } from "../../tokens/useColors";
 import { useUserStore } from "../../stores/useUserStore";
 import { ACCENT_LABELS, AccentKey, accentOptions } from "../../tokens/themes";
-import { typography, spacing } from "../../tokens";
+import { spacing, Label, Tag } from "../../tokens";
 
 export function ThemeSwitcher() {
   const colors = useColors();
@@ -16,25 +16,18 @@ export function ThemeSwitcher() {
   return (
     <View>
       {/* ── Theme Mode Toggle ── */}
-      <Text
-        style={{
-          ...typography.label,
-          color: colors.text.secondary,
-          fontSize: 9,
-          marginBottom: spacing[2],
-        }}
-      >
+      <Label variant="secondary" style={{ marginBottom: spacing.sm }}>
         APPEARANCE
-      </Text>
+      </Label>
       <View
         style={{
           flexDirection: "row",
-          backgroundColor: colors.bg.primary,
+          backgroundColor: colors.bg.base,
           borderWidth: 1,
           borderColor: colors.border.subtle,
           borderRadius: 4,
           padding: 2,
-          marginBottom: spacing[3],
+          marginBottom: spacing.md,
         }}
       >
         {(["dark", "light"] as const).map((mode) => {
@@ -46,7 +39,7 @@ export function ThemeSwitcher() {
               activeOpacity={0.7}
               style={{
                 flex: 1,
-                paddingVertical: spacing[2],
+                paddingVertical: spacing.sm,
                 alignItems: "center",
                 backgroundColor: isActive ? colors.accent.DEFAULT : "transparent",
                 borderRadius: 1,
@@ -54,10 +47,11 @@ export function ThemeSwitcher() {
             >
               <Text
                 style={{
-                  ...typography.label,
+                  fontFamily: "Inter-SemiBold",
                   fontSize: 9,
-                  color: isActive ? colors.bg.primary : colors.text.secondary,
                   letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                  color: isActive ? colors.bg.primary : colors.text.secondary,
                 }}
               >
                 {mode === "dark" ? "DARK" : "LIGHT"}
@@ -68,17 +62,10 @@ export function ThemeSwitcher() {
       </View>
 
       {/* ── Accent Color Picker ── */}
-      <Text
-        style={{
-          ...typography.label,
-          color: colors.text.secondary,
-          fontSize: 9,
-          marginBottom: spacing[2],
-        }}
-      >
+      <Label variant="secondary" style={{ marginBottom: spacing.sm }}>
         ACCENT COLOR
-      </Text>
-      <View style={{ flexDirection: "row", gap: spacing[2] }}>
+      </Label>
+      <View style={{ flexDirection: "row", gap: spacing.sm }}>
         {accentKeys.map((key) => {
           const accent = accentOptions[key];
           const isActive = accentColor === key;
@@ -90,7 +77,7 @@ export function ThemeSwitcher() {
               style={{
                 flex: 1,
                 alignItems: "center",
-                gap: spacing[1],
+                gap: spacing.xs,
               }}
             >
               <View
@@ -109,24 +96,15 @@ export function ThemeSwitcher() {
                   <Text
                     style={{
                       fontSize: 14,
-                      color: "#fff",
                       fontWeight: "700",
+                      color: colors.bg.primary,
                     }}
                   >
                     ✓
                   </Text>
                 )}
               </View>
-              <Text
-                style={{
-                  ...typography.bodySmall,
-                  color: isActive ? colors.accent.DEFAULT : colors.text.secondary,
-                  fontSize: 8,
-                }}
-                numberOfLines={1}
-              >
-                {ACCENT_LABELS[key]}
-              </Text>
+              <Tag variant={isActive ? "accent" : "secondary"}>{ACCENT_LABELS[key]}</Tag>
             </TouchableOpacity>
           );
         })}

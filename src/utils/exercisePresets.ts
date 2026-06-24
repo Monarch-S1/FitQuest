@@ -1,5 +1,5 @@
 /**
- * Custom Exercise Presets — ARCH
+ * Custom Exercise Presets — FitQuest
  *
  * Allows users to override default exercise parameters (sets, reps, tempo, rest)
  * with their own custom values. Presets are stored per-exercise in useUserStore
@@ -33,9 +33,7 @@ export interface EffectiveExerciseParams {
  * Priority: preset → default
  * (Goal transformation is applied elsewhere in goalWorkouts.ts)
  */
-export function getEffectiveExerciseParams(
-  exercise: Exercise,
-): EffectiveExerciseParams {
+export function getEffectiveExerciseParams(exercise: Exercise): EffectiveExerciseParams {
   const state = useUserStore.getState();
   const preset: ExercisePreset | undefined = state.exercisePresets?.[exercise.id];
 

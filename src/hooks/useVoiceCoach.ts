@@ -67,7 +67,7 @@ export function useVoiceCoach(options: UseVoiceCoachOptions = {}) {
       // ── Workout started: idle → exercise ──
       if (prevPhase === "idle" && phase === "exercise" && !workoutStartedRef.current) {
         workoutStartedRef.current = true;
-        const workoutName = currentExercise ? "ARCH Training" : "Workout";
+        const workoutName = currentExercise ? "FitQuest Training" : "Workout";
         const cue = getWorkoutStartCue(workoutName, exerciseProgress.length);
         voiceCoach.speak(cue, "high");
 

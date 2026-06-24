@@ -37,13 +37,11 @@ export function FeedbackSheet({ visible, onClose }: FeedbackSheetProps) {
     hapticPress();
 
     const typeLabel = TYPE_OPTIONS.find((o) => o.key === type)?.label ?? "FEEDBACK";
-    const subject = encodeURIComponent(`[ARCH Beta] ${typeLabel}`);
+    const subject = encodeURIComponent(`[FitQuest Beta] ${typeLabel}`);
     const body = encodeURIComponent(
       `${message.trim()}\n\n---\nType: ${typeLabel}\nDevice: ${Platform.OS} ${Platform.Version}\nApp Version: 1.0.0`,
     );
-    Linking.openURL(
-      `mailto:chamber.enterprise.1@gmail.com?subject=${subject}&body=${body}`,
-    );
+    Linking.openURL(`mailto:chamber.enterprise.1@gmail.com?subject=${subject}&body=${body}`);
 
     // Reset and close
     setMessage("");
@@ -74,9 +72,9 @@ export function FeedbackSheet({ visible, onClose }: FeedbackSheetProps) {
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "center",
-              paddingHorizontal: spacing[4],
+              paddingHorizontal: spacing.lg,
               paddingTop: spacing[5],
-              paddingBottom: spacing[3],
+              paddingBottom: spacing.md,
               borderBottomWidth: 1,
               borderBottomColor: colors.border.subtle,
             }}
@@ -100,8 +98,8 @@ export function FeedbackSheet({ visible, onClose }: FeedbackSheetProps) {
                 borderWidth: 1,
                 borderColor: colors.border.subtle,
                 borderRadius: 4,
-                paddingVertical: spacing[1],
-                paddingHorizontal: spacing[3],
+                paddingVertical: spacing.xs,
+                paddingHorizontal: spacing.md,
               }}
             >
               <Text
@@ -119,7 +117,7 @@ export function FeedbackSheet({ visible, onClose }: FeedbackSheetProps) {
           <ScrollView
             style={{ flex: 1 }}
             contentContainerStyle={{
-              padding: spacing[4],
+              padding: spacing.lg,
               paddingBottom: spacing[12],
             }}
             keyboardShouldPersistTaps="handled"
@@ -130,12 +128,12 @@ export function FeedbackSheet({ visible, onClose }: FeedbackSheetProps) {
                 ...typography.label,
                 color: colors.text.secondary,
                 fontSize: 9,
-                marginBottom: spacing[2],
+                marginBottom: spacing.sm,
               }}
             >
               TYPE
             </Text>
-            <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: spacing[4] }}>
+            <View style={{ flexDirection: "row", gap: spacing.sm, marginBottom: spacing.lg }}>
               {TYPE_OPTIONS.map((option) => {
                 const isSelected = type === option.key;
                 const accentColor =
@@ -152,21 +150,20 @@ export function FeedbackSheet({ visible, onClose }: FeedbackSheetProps) {
                     activeOpacity={0.7}
                     style={{
                       flex: 1,
-                      backgroundColor: isSelected
-                        ? `${accentColor}15`
-                        : colors.bg.elevated,
+                      backgroundColor: isSelected ? `${accentColor}15` : colors.bg.elevated,
                       borderWidth: 1,
                       borderColor: isSelected ? accentColor : colors.border.subtle,
                       borderRadius: 4,
-                      padding: spacing[2],
+                      padding: spacing.sm,
                       alignItems: "center",
                       overflow: "hidden",
                     }}
                   >
-                    <GlossyOverlay highlightOpacity={isSelected ? 0.1 : 0.04} showReflection={false} />
-                    <Text style={{ fontSize: 16, marginBottom: spacing[1] }}>
-                      {option.icon}
-                    </Text>
+                    <GlossyOverlay
+                      highlightOpacity={isSelected ? 0.1 : 0.04}
+                      showReflection={false}
+                    />
+                    <Text style={{ fontSize: 16, marginBottom: spacing.xs }}>{option.icon}</Text>
                     <Text
                       style={{
                         ...typography.label,
@@ -188,7 +185,7 @@ export function FeedbackSheet({ visible, onClose }: FeedbackSheetProps) {
                 ...typography.label,
                 color: colors.text.secondary,
                 fontSize: 9,
-                marginBottom: spacing[2],
+                marginBottom: spacing.sm,
               }}
             >
               MESSAGE
@@ -219,7 +216,7 @@ export function FeedbackSheet({ visible, onClose }: FeedbackSheetProps) {
                 maxLength={1000}
                 style={{
                   flex: 1,
-                  padding: spacing[3],
+                  padding: spacing.md,
                   color: colors.text.primary,
                   fontFamily: fonts.body.regular,
                   fontSize: 13,
@@ -234,12 +231,11 @@ export function FeedbackSheet({ visible, onClose }: FeedbackSheetProps) {
                 ...typography.bodySmall,
                 color: colors.text.tertiary,
                 fontSize: 9,
-                marginTop: spacing[2],
-                marginBottom: spacing[4],
+                marginTop: spacing.sm,
+                marginBottom: spacing.lg,
               }}
             >
-              Device info ({Platform.OS} {Platform.Version}) will be included
-              automatically.
+              Device info ({Platform.OS} {Platform.Version}) will be included automatically.
             </Text>
 
             {/* Send button */}
@@ -248,15 +244,11 @@ export function FeedbackSheet({ visible, onClose }: FeedbackSheetProps) {
               disabled={!message.trim()}
               activeOpacity={0.8}
               style={{
-                backgroundColor: message.trim()
-                  ? colors.accent.DEFAULT
-                  : colors.bg.elevated,
+                backgroundColor: message.trim() ? colors.accent.DEFAULT : colors.bg.elevated,
                 borderWidth: 1,
-                borderColor: message.trim()
-                  ? colors.accent.DEFAULT
-                  : colors.border.subtle,
+                borderColor: message.trim() ? colors.accent.DEFAULT : colors.border.subtle,
                 borderRadius: 4,
-                paddingVertical: spacing[3],
+                paddingVertical: spacing.md,
                 alignItems: "center",
                 opacity: message.trim() ? 1 : 0.5,
               }}
@@ -264,9 +256,7 @@ export function FeedbackSheet({ visible, onClose }: FeedbackSheetProps) {
               <Text
                 style={{
                   ...typography.label,
-                  color: message.trim()
-                    ? colors.bg.primary
-                    : colors.text.secondary,
+                  color: message.trim() ? colors.bg.primary : colors.text.secondary,
                   fontSize: 11,
                   letterSpacing: 2,
                 }}

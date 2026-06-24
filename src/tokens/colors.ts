@@ -1,29 +1,45 @@
+/**
+ * FitQuest Design Tokens — Colors
+ *
+ * Warm, calming palette inspired by the Solo Leveling system UI —
+ * deep charcoals, sepia stone, parchment text, and muted bronze accents.
+ * Designed for tranquility and readability, not visual noise.
+ *
+ * Legacy keys (primary, elevated, surface) are preserved as aliases
+ * for backward compatibility during the redesign migration.
+ */
+
 export const colors = {
   bg: {
-    primary: "#070814",
-    elevated: "#0D1021",
-    highlight: "#151A30",
-    surface: "#0A0D1A",
+    // New names (preferred)
+    base: "#100E13",
+    card: "#1B1820",
+    highlight: "#26222E",
+    // Legacy aliases
+    primary: "#100E13",
+    elevated: "#1B1820",
+    surface: "#1B1820",
   },
   accent: {
-    DEFAULT: "#F59E0B",
-    light: "#FBBF24",
-    dark: "#D97706",
-    glow: "rgba(245, 158, 11, 0.25)",
+    DEFAULT: "#C9954A",
+    light: "#E0BC6A",
+    dark: "#A67B32",
+    glow: "rgba(201, 149, 74, 0.2)",
   },
-  success: "#10B981",
-  successGlow: "rgba(16, 185, 129, 0.2)",
-  error: "#EF4444",
-  errorGlow: "rgba(239, 68, 68, 0.2)",
-  warning: "#F59E0B",
+  success: "#7A9A6D",
+  successGlow: "rgba(122, 154, 109, 0.2)",
+  error: "#C4715A",
+  errorGlow: "rgba(196, 113, 90, 0.2)",
+  warning: "#D4A853",
+  recovery: "#6E9490",
   text: {
-    primary: "#EDE7D9",
-    secondary: "#9B8E7A",
-    tertiary: "#5A4F42",
-    accent: "#F59E0B",
+    primary: "#EDE8DC",
+    secondary: "#9C9285",
+    tertiary: "#655D53",
+    accent: "#C9954A",
   },
   border: {
-    subtle: "#1C1F33",
-    accent: "#F59E0B",
+    subtle: "#2A2730",
+    accent: "#C9954A",
   },
 } as const;

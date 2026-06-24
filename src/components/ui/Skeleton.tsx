@@ -76,12 +76,7 @@ export function SkeletonBone({
       importantForAccessibility="no"
       accessibilityElementsHidden
     >
-      <Animated.View
-        style={[
-          styles.shimmerOverlay,
-          { transform: [{ translateX }] },
-        ]}
-      />
+      <Animated.View style={[styles.shimmerOverlay, { transform: [{ translateX }] }]} />
     </View>
   );
 }
@@ -94,11 +89,7 @@ interface SkeletonRowProps {
 }
 
 export function SkeletonRow({ children, style }: SkeletonRowProps) {
-  return (
-    <View style={[styles.row, style]}>
-      {children}
-    </View>
-  );
+  return <View style={[styles.row, style]}>{children}</View>;
 }
 
 // ── Shared panel styles ──
@@ -113,7 +104,7 @@ function PanelCard({ children, style }: { children: React.ReactNode; style?: Vie
           borderWidth: 1,
           borderColor: colors.border.subtle,
           borderRadius: 4,
-          padding: spacing[3],
+          padding: spacing.md,
         },
         style,
       ]}
@@ -142,15 +133,19 @@ export function HomeScreenSkeleton() {
         </View>
 
         {/* Insight cards */}
-        <View style={{ gap: spacing[2], marginBottom: spacing[4] }}>
-          <PanelCard style={{ flexDirection: "row", alignItems: "center", gap: 10, padding: spacing[3] }}>
+        <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
+          <PanelCard
+            style={{ flexDirection: "row", alignItems: "center", gap: 10, padding: spacing.md }}
+          >
             <SkeletonBone width={32} height={32} borderRadius={4} />
             <View style={{ flex: 1 }}>
               <SkeletonBone width={80} height={8} style={{ marginBottom: 6 }} />
               <SkeletonBone width="100%" height={12} />
             </View>
           </PanelCard>
-          <PanelCard style={{ flexDirection: "row", alignItems: "center", gap: 10, padding: spacing[3] }}>
+          <PanelCard
+            style={{ flexDirection: "row", alignItems: "center", gap: 10, padding: spacing.md }}
+          >
             <SkeletonBone width={32} height={32} borderRadius={4} />
             <View style={{ flex: 1 }}>
               <SkeletonBone width={100} height={8} style={{ marginBottom: 6 }} />
@@ -160,7 +155,14 @@ export function HomeScreenSkeleton() {
         </View>
 
         {/* Streak row */}
-        <PanelCard style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: spacing[2] }}>
+        <PanelCard
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: spacing.sm,
+          }}
+        >
           <SkeletonRow>
             <SkeletonBone width={40} height={40} borderRadius={4} />
             <View>
@@ -175,7 +177,9 @@ export function HomeScreenSkeleton() {
         </PanelCard>
 
         {/* Recovery row */}
-        <PanelCard style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: spacing[4] }}>
+        <PanelCard
+          style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: spacing.lg }}
+        >
           <SkeletonBone width={36} height={36} borderRadius={4} />
           <View style={{ flex: 1 }}>
             <SkeletonBone width={60} height={8} style={{ marginBottom: 6 }} />
@@ -190,40 +194,40 @@ export function HomeScreenSkeleton() {
             borderWidth: 1.5,
             borderColor: colors.border.subtle,
             borderRadius: 4,
-            padding: spacing[4],
-            marginBottom: spacing[4],
+            padding: spacing.lg,
+            marginBottom: spacing.lg,
           }}
         >
           <SkeletonBone width={90} height={8} style={{ marginBottom: 8 }} />
           <SkeletonBone width="90%" height={16} style={{ marginBottom: 4 }} />
-          <SkeletonBone width="60%" height={16} style={{ marginBottom: spacing[3] }} />
+          <SkeletonBone width="60%" height={16} style={{ marginBottom: spacing.md }} />
           <SkeletonBone width="100%" height={36} borderRadius={4} />
         </View>
 
         {/* Quick Start Button */}
-        <SkeletonBone width="100%" height={48} style={{ marginBottom: spacing[6] }} />
+        <SkeletonBone width="100%" height={48} style={{ marginBottom: spacing.xl }} />
 
         {/* Section label */}
-        <SkeletonBone width={90} height={11} style={{ marginBottom: spacing[3] }} />
+        <SkeletonBone width={90} height={11} style={{ marginBottom: spacing.md }} />
 
         {/* Stat cards row */}
-        <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: spacing[2] }}>
-          <PanelCard style={{ flex: 1, padding: spacing[2], minHeight: 60 }}>
+        <View style={{ flexDirection: "row", gap: spacing.sm, marginBottom: spacing.sm }}>
+          <PanelCard style={{ flex: 1, padding: spacing.sm, minHeight: 60 }}>
             <SkeletonBone width={50} height={8} style={{ marginBottom: 8 }} />
             <SkeletonBone width={40} height={20} />
           </PanelCard>
-          <PanelCard style={{ flex: 1, padding: spacing[2], minHeight: 60 }}>
+          <PanelCard style={{ flex: 1, padding: spacing.sm, minHeight: 60 }}>
             <SkeletonBone width={60} height={8} style={{ marginBottom: 8 }} />
             <SkeletonBone width={40} height={20} />
           </PanelCard>
         </View>
 
         {/* Bento: Featured + Library */}
-        <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: spacing[2] }}>
-          <PanelCard style={{ flex: 2, padding: spacing[4] }}>
+        <View style={{ flexDirection: "row", gap: spacing.sm, marginBottom: spacing.sm }}>
+          <PanelCard style={{ flex: 2, padding: spacing.lg }}>
             <SkeletonBone width="70%" height={16} style={{ marginBottom: 6 }} />
-            <SkeletonBone width="90%" height={10} style={{ marginBottom: spacing[3] }} />
-            <SkeletonRow style={{ flexWrap: "wrap", gap: 4, marginBottom: spacing[3] }}>
+            <SkeletonBone width="90%" height={10} style={{ marginBottom: spacing.md }} />
+            <SkeletonRow style={{ flexWrap: "wrap", gap: 4, marginBottom: spacing.md }}>
               <SkeletonBone width={60} height={20} borderRadius={4} />
               <SkeletonBone width={50} height={20} borderRadius={4} />
               <SkeletonBone width={70} height={20} borderRadius={4} />
@@ -231,20 +235,33 @@ export function HomeScreenSkeleton() {
             <SkeletonBone width="100%" height={1} style={{ marginBottom: 8 }} />
             <SkeletonBone width={50} height={10} />
           </PanelCard>
-          <PanelCard style={{ flex: 1, padding: spacing[3], alignItems: "center", justifyContent: "center", minHeight: 120 }}>
-            <SkeletonBone width={36} height={36} borderRadius={18} style={{ marginBottom: spacing[2] }} />
+          <PanelCard
+            style={{
+              flex: 1,
+              padding: spacing.md,
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: 120,
+            }}
+          >
+            <SkeletonBone
+              width={36}
+              height={36}
+              borderRadius={18}
+              style={{ marginBottom: spacing.sm }}
+            />
             <SkeletonBone width={60} height={8} style={{ marginBottom: 4 }} />
             <SkeletonBone width={50} height={8} />
           </PanelCard>
         </View>
 
         {/* Remaining workout cards */}
-        <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: spacing[2] }}>
+        <View style={{ flexDirection: "row", gap: spacing.sm, marginBottom: spacing.sm }}>
           {[0, 1].map((i) => (
-            <PanelCard key={i} style={{ flex: 1, padding: spacing[4] }}>
+            <PanelCard key={i} style={{ flex: 1, padding: spacing.lg }}>
               <SkeletonBone width="60%" height={14} style={{ marginBottom: 6 }} />
-              <SkeletonBone width="80%" height={10} style={{ marginBottom: spacing[3] }} />
-              <SkeletonRow style={{ flexWrap: "wrap", gap: 4, marginBottom: spacing[3] }}>
+              <SkeletonBone width="80%" height={10} style={{ marginBottom: spacing.md }} />
+              <SkeletonRow style={{ flexWrap: "wrap", gap: 4, marginBottom: spacing.md }}>
                 <SkeletonBone width={50} height={18} borderRadius={4} />
                 <SkeletonBone width={40} height={18} borderRadius={4} />
               </SkeletonRow>
@@ -255,10 +272,13 @@ export function HomeScreenSkeleton() {
         </View>
 
         {/* Program structure panel */}
-        <PanelCard style={{ marginTop: spacing[2] }}>
-          <SkeletonBone width={120} height={9} style={{ marginBottom: spacing[3] }} />
+        <PanelCard style={{ marginTop: spacing.sm }}>
+          <SkeletonBone width={120} height={9} style={{ marginBottom: spacing.md }} />
           {[0, 1, 2].map((i) => (
-            <SkeletonRow key={i} style={{ justifyContent: "space-between", marginBottom: spacing[2] }}>
+            <SkeletonRow
+              key={i}
+              style={{ justifyContent: "space-between", marginBottom: spacing.sm }}
+            >
               <SkeletonBone width={80} height={9} />
               <SkeletonBone width={120} height={11} />
             </SkeletonRow>
@@ -278,34 +298,47 @@ export function TrainScreenSkeleton() {
     <ShimmerProvider>
       <View style={styles.container}>
         {/* Header */}
-        <View style={{ marginBottom: spacing[4] }}>
+        <View style={{ marginBottom: spacing.lg }}>
           <SkeletonBone width={140} height={10} style={{ marginBottom: 6 }} />
           <SkeletonBone width={160} height={28} />
         </View>
 
         {/* Recommendation panel */}
-        <PanelCard style={{ marginBottom: spacing[2] }}>
-          <SkeletonBone width={160} height={9} style={{ marginBottom: spacing[3] }} />
+        <PanelCard style={{ marginBottom: spacing.sm }}>
+          <SkeletonBone width={160} height={9} style={{ marginBottom: spacing.md }} />
           <SkeletonBone width="100%" height={12} style={{ marginBottom: 6 }} />
-          <SkeletonBone width="85%" height={12} style={{ marginBottom: spacing[3] }} />
-          <SkeletonBone width="100%" height={36} borderRadius={4} style={{ marginBottom: spacing[2] }} />
+          <SkeletonBone width="85%" height={12} style={{ marginBottom: spacing.md }} />
+          <SkeletonBone
+            width="100%"
+            height={36}
+            borderRadius={4}
+            style={{ marginBottom: spacing.sm }}
+          />
           <SkeletonBone width={100} height={8} />
         </PanelCard>
 
         {/* Section label */}
-        <SkeletonBone width={110} height={11} style={{ marginBottom: spacing[3] }} />
+        <SkeletonBone width={110} height={11} style={{ marginBottom: spacing.md }} />
 
         {/* Workout cards */}
         {[0, 1, 2, 3].map((i) => (
-          <PanelCard key={i} style={{ padding: spacing[4], marginBottom: spacing[3] }}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <View style={{ flex: 1, marginRight: spacing[3] }}>
+          <PanelCard key={i} style={{ padding: spacing.lg, marginBottom: spacing.md }}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+              }}
+            >
+              <View style={{ flex: 1, marginRight: spacing.md }}>
                 <SkeletonBone width="60%" height={16} style={{ marginBottom: 6 }} />
                 <SkeletonBone width="80%" height={10} />
               </View>
               <SkeletonBone width={40} height={20} borderRadius={4} />
             </View>
-            <SkeletonRow style={{ flexWrap: "wrap", gap: 4, marginTop: spacing[3], marginBottom: spacing[3] }}>
+            <SkeletonRow
+              style={{ flexWrap: "wrap", gap: 4, marginTop: spacing.md, marginBottom: spacing.md }}
+            >
               <SkeletonBone width={60} height={18} borderRadius={4} />
               <SkeletonBone width={50} height={18} borderRadius={4} />
               <SkeletonBone width={70} height={18} borderRadius={4} />
@@ -323,21 +356,24 @@ export function TrainScreenSkeleton() {
             borderColor: colors.border.subtle,
             borderRadius: 4,
             borderStyle: "dashed",
-            padding: spacing[4],
-            marginBottom: spacing[3],
+            padding: spacing.lg,
+            marginBottom: spacing.md,
             alignItems: "center",
           }}
         >
           <SkeletonBone width={140} height={18} style={{ marginBottom: 6 }} />
-          <SkeletonBone width="70%" height={11} style={{ marginBottom: spacing[3] }} />
+          <SkeletonBone width="70%" height={11} style={{ marginBottom: spacing.md }} />
           <SkeletonBone width={70} height={24} borderRadius={4} />
         </View>
 
         {/* Program info */}
         <PanelCard>
-          <SkeletonBone width={130} height={9} style={{ marginBottom: spacing[3] }} />
+          <SkeletonBone width={130} height={9} style={{ marginBottom: spacing.md }} />
           {[0, 1, 2, 3, 4].map((i) => (
-            <SkeletonRow key={i} style={{ justifyContent: "space-between", marginBottom: spacing[2] }}>
+            <SkeletonRow
+              key={i}
+              style={{ justifyContent: "space-between", marginBottom: spacing.sm }}
+            >
               <SkeletonBone width={80} height={9} />
               <SkeletonBone width={140} height={11} />
             </SkeletonRow>
@@ -352,7 +388,7 @@ export function TrainScreenSkeleton() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: spacing[4],
+    padding: spacing.lg,
   },
   heroRow: {
     flexDirection: "row",
@@ -362,7 +398,7 @@ const styles = StyleSheet.create({
   },
   heroLeft: {
     flex: 1,
-    marginRight: spacing[3],
+    marginRight: spacing.md,
   },
   bone: {
     overflow: "hidden",

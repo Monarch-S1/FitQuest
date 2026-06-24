@@ -1,0 +1,133 @@
+# FitQuest Onboarding → Workout E2E Flow
+#
+# Walks through the full onboarding journey and verifies the home screen
+# appears. Assumes a clean app state (first launch).
+#
+# Steps:
+#   1. Launch app with cleared state → auth gate
+#   2. Auth gate → redirect to onboarding (not authenticated by default)
+#   3. Welcome screen → tap "BEGIN SETUP"
+#   4. Name screen → enter name → tap "CONTINUE"
+#   5. Goal screen → tap "GENERAL FITNESS"
+#   6. Level screen → tap "BEGINNER"
+#   7. Rep counter → tap "GOT IT"
+#   8. Quest intro → tap "CONTINUE"
+#   9. Complete → tap "ENTER FITQUEST"
+#  10. Verify home screen loads with key elements
+#  11. Navigate to Train tab and verify workout cards appear
+
+appId: com.fitquest.app
+---
+# ────────────────────────────────────────────────────────────
+# 1. Launch app with cleared state
+# ────────────────────────────────────────────────────────────
+- launchApp:
+    clearState: true
+    stopApp: true
+    timeout: 15000
+
+- launchApp:
+    timeout: 15000
+
+# Wait for the app to initialize (hydration + fonts)
+- waitForAnimationToEnd:
+    timeout: 8000
+
+# ────────────────────────────────────────────────────────────
+# 2. Welcome Screen
+# ────────────────────────────────────────────────────────────
+- assertVisible: "WELCOME, ATHLETE"
+- tapOn:
+    text: "BEGIN SETUP"
+    index: 0
+
+# ────────────────────────────────────────────────────────────
+# 3. Name Screen
+# ────────────────────────────────────────────────────────────
+- assertVisible: "WHAT'S YOUR NAME?"
+- tapOn:
+    text: "Enter your name"
+- inputText: "Athlete"
+- tapOn:
+    text: "CONTINUE"
+    index: 0
+
+# ────────────────────────────────────────────────────────────
+# 4. Goal Screen
+# ────────────────────────────────────────────────────────────
+- assertVisible: "WHAT'S YOUR GOAL?"
+- tapOn:
+    text: "GENERAL FITNESS"
+    index: 0
+
+# Wait for the level step transition animation (200ms setTimeout)
+- waitForAnimationToEnd
+
+# ────────────────────────────────────────────────────────────
+# 5. Level Screen
+# ────────────────────────────────────────────────────────────
+- assertVisible: "WHAT'S YOUR LEVEL?"
+- tapOn:
+    text: "BEGINNER"
+    index: 0
+
+# Wait for rep counter step transition
+- waitForAnimationToEnd
+
+# ────────────────────────────────────────────────────────────
+# 6. Rep Counter Screen
+# ────────────────────────────────────────────────────────────
+- assertVisible: "AUTO REP COUNTER"
+- tapOn:
+    text: "GOT IT"
+
+# ────────────────────────────────────────────────────────────
+# 7. Quest Intro Screen
+# ────────────────────────────────────────────────────────────
+- assertVisible: "QUEST SYSTEM"
+- assertVisible: "YOUR JOURNEY AWAITS"
+- tapOn:
+    text: "CONTINUE"
+    index: 0
+
+# ────────────────────────────────────────────────────────────
+# 8. Complete Screen
+# ────────────────────────────────────────────────────────────
+- assertVisible: "READY"
+- tapOn:
+    text: "ENTER FITQUEST"
+    index: 0
+
+# ────────────────────────────────────────────────────────────
+# 9. Home Screen — Verify main elements
+# ────────────────────────────────────────────────────────────
+- waitForAnimationToEnd:
+    timeout: 5000
+- assertVisible: "FitQuest"
+- assertVisible: "SYSTEM ONLINE"
+- assertVisible: "FEATURED QUEST"
+- assertVisible: "ALL WORKOUTS"
+
+# ────────────────────────────────────────────────────────────
+# 10. Navigate to Train tab
+# ────────────────────────────────────────────────────────────
+- tapOn:
+    text: "TRAIN"
+    index: 0
+
+- waitForAnimationToEnd:
+    timeout: 5000
+- assertVisible: "Train"
+- assertVisible: "Workouts"
+- assertVisible: "Pick a workout"
+
+# ────────────────────────────────────────────────────────────
+# 11. Navigate back to Home tab
+# ────────────────────────────────────────────────────────────
+- tapOn:
+    text: "QUEST"
+    index: 0
+
+- waitForAnimationToEnd:
+    timeout: 3000
+- assertVisible: "FitQuest"

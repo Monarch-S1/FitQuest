@@ -1,9 +1,19 @@
-import { Tabs } from "expo-router";
+import { useEffect } from "react";
+import { Tabs, useRouter } from "expo-router";
 import { View, Text } from "react-native";
 import { useColors, typography, spacing, fonts } from "../../src/tokens";
+import { useUserStore } from "../../src/stores/useUserStore";
 
 export default function TabLayout() {
   const colors = useColors();
+  const router = useRouter();
+  const isAuthenticated = useUserStore((s) => s.isAuthenticated);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace("/(auth)/login");
+    }
+  }, [isAuthenticated, router]);
 
   return (
     <Tabs
@@ -38,9 +48,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="history"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon="▤" label="LOG" focused={focused} />
-          ),
+          tabBarIcon: ({ focused }) => <TabIcon icon="▤" label="LOG" focused={focused} />,
         }}
       />
       <Tabs.Screen
@@ -52,9 +60,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon="♛" label="CHARACTER" focused={focused} />
-          ),
+          tabBarIcon: ({ focused }) => <TabIcon icon="♛" label="CHARACTER" focused={focused} />,
         }}
       />
     </Tabs>

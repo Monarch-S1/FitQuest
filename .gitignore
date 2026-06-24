@@ -32,7 +32,8 @@ yarn-error.*
 
 # local env files with secrets (never commit!)
 .env
-.env*.local
+.env.local
+.env.*.local
 
 # typescript
 *.tsbuildinfo
@@ -68,10 +69,10 @@ CLAUDE.md
 AGENTS_LIST.md
 beta-launch-spec.md
 assets/logo-prompt.md
+assets/logo-source.png
 agency-agents/
 scripts/
 docs/
-.github/
 .claude/
 .vscode/
 .prettierignore

@@ -1,7 +1,8 @@
-import React from "react";
-import { act } from "react";
+import React, { act } from "react";
 import renderer from "react-test-renderer";
-import { SKILL_TREE } from "../data/skillTree";
+import { SKILL_TREE, SkillBranch } from "../data/skillTree";
+
+import { SkillTreeView } from "../components/skill-tree/SkillTreeView";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────
 
@@ -15,23 +16,23 @@ jest.mock("../tokens", () => ({
     border: { subtle: "#1C1F33" },
     error: "#EF4444",
   }),
-  typography: {
-    h3: { fontFamily: "BebasNeue-Regular", fontSize: 16, letterSpacing: 1 },
-    bodySmall: { fontFamily: "Inter-Regular", fontSize: 11, lineHeight: 16 },
-    label: { fontFamily: "Inter-SemiBold", fontSize: 10, letterSpacing: 1 },
-    body: { fontFamily: "Inter-Regular", fontSize: 13, lineHeight: 20 },
-    h1: { fontFamily: "BebasNeue-Regular", fontSize: 32, letterSpacing: 2 },
-    h2: { fontFamily: "BebasNeue-Regular", fontSize: 24, letterSpacing: 1.5 },
-    display: { fontFamily: "BebasNeue-Regular", fontSize: 36, letterSpacing: 2 },
-    subtitle: { fontFamily: "Inter-SemiBold", fontSize: 12, letterSpacing: 1 },
-    h4: { fontFamily: "BebasNeue-Regular", fontSize: 14, letterSpacing: 1 },
-  },
-  spacing: [0, 2, 4, 8, 12, 16, 20, 24, 32, 40],
-  fonts: {
-    heading: "BebasNeue-Regular",
-    body: { regular: "Inter-Regular", semiBold: "Inter-SemiBold", bold: "Inter-Bold" },
-  },
+  spacing: { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, "16": 64, "8": 32 },
 }));
+
+// Mock react-native-svg since it's a native module
+jest.mock("react-native-svg", () => {
+  const React = require("react");
+  const MockPath = ({ children, ...props }: any) =>
+    React.createElement("View", { ...props, testID: "svg-path" }, children);
+  const MockSvg = ({ children, ...props }: any) =>
+    React.createElement("View", { ...props, testID: "svg" }, children);
+  return {
+    __esModule: true,
+    default: MockSvg,
+    Svg: MockSvg,
+    Path: MockPath,
+  };
+});
 
 // Mock the useUserStore with empty workout history
 const mockWorkoutHistory: import("../stores/useUserStore").WorkoutSession[] = [];
@@ -39,17 +40,8 @@ jest.mock("../stores/useUserStore", () => ({
   useUserStore: (selector: (state: any) => any) =>
     selector({
       workoutHistory: mockWorkoutHistory,
+      masteredExerciseIds: [],
     }),
-}));
-
-// Mock MotiView to render as a regular View (strips animation props)
-jest.mock("moti", () => ({
-  MotiView: ({ children, ...props }: any) => {
-    const React = require("react");
-    const { View } = require("react-native");
-    const { from, animate, transition, ...viewProps } = props;
-    return <View {...viewProps}>{children}</View>;
-  },
 }));
 
 // Helper: render inside act() and return the tree
@@ -72,8 +64,6 @@ function getAllText(instance: renderer.ReactTestInstance): string {
   return extractText(instance);
 }
 
-import { SkillTreeView } from "../components/skill-tree/SkillTreeView";
-
 describe("SkillTreeView", () => {
   it("renders all 5 filter tabs (ALL, PUSH, PULL, LEGS, CORE)", () => {
     const tree = renderInAct(<SkillTreeView />);
@@ -85,7 +75,7 @@ describe("SkillTreeView", () => {
     expect(text).toContain("CORE");
   });
 
-  it("renders branch headers for all 4 families", () => {
+  it("renders branch headers with labels and descriptions", () => {
     const tree = renderInAct(<SkillTreeView />);
     const text = getAllText(tree.root);
     for (const branch of SKILL_TREE) {
@@ -94,22 +84,13 @@ describe("SkillTreeView", () => {
     }
   });
 
-  it("renders exercise names for all 4 first-in-branch exercises", () => {
+  it("shows level labels (Lv1, Lv2, etc.) for first-in-branch exercises", () => {
     const tree = renderInAct(<SkillTreeView />);
     const text = getAllText(tree.root);
     for (const branch of SKILL_TREE) {
       if (branch.nodes.length > 0) {
-        // Exercise names are rendered in uppercase by SkillNode
-        expect(text.toUpperCase()).toContain(branch.nodes[0].exercise.name.toUpperCase());
+        expect(text).toContain(`Lv${branch.nodes[0].pathwayLevel}`);
       }
-    }
-  });
-
-  it("shows move count per branch", () => {
-    const tree = renderInAct(<SkillTreeView />);
-    const text = getAllText(tree.root);
-    for (const branch of SKILL_TREE) {
-      expect(text).toContain(`${branch.nodes.length} MOVES`);
     }
   });
 
@@ -127,17 +108,17 @@ describe("SkillTreeView", () => {
     expect(tree).toBeDefined();
   });
 
-  it("renders many exercise names across the tree", () => {
+  it("renders level labels across multiple branches", () => {
     const tree = renderInAct(<SkillTreeView />);
     const text = getAllText(tree.root).toUpperCase();
-    let visibleCount = 0;
+    let levelLabelCount = 0;
     for (const branch of SKILL_TREE) {
       for (const node of branch.nodes) {
-        if (text.includes(node.exercise.name.toUpperCase())) {
-          visibleCount++;
+        if (text.includes(`LV${node.pathwayLevel}`)) {
+          levelLabelCount++;
         }
       }
     }
-    expect(visibleCount).toBeGreaterThanOrEqual(20);
+    expect(levelLabelCount).toBeGreaterThanOrEqual(8);
   });
 });

@@ -38,7 +38,7 @@ const LEVELS: { id: FitnessLevel; label: string; description: string }[] = [
   {
     id: "beginner",
     label: "BEGINNER",
-    description: "New to calisthenics. Focus on fundamentals and form.",
+    description: "New to bodyweight training. Focus on fundamentals and form.",
   },
   {
     id: "intermediate",
@@ -52,7 +52,7 @@ const LEVELS: { id: FitnessLevel; label: string; description: string }[] = [
   },
 ];
 
-type Step = "welcome" | "name" | "goal" | "level" | "rep_counter" | "complete";
+type Step = "welcome" | "name" | "goal" | "level" | "rep_counter" | "quest_intro" | "complete";
 
 export default function OnboardingScreen() {
   const colors = useColors();
@@ -92,13 +92,17 @@ export default function OnboardingScreen() {
   }, [name, goal, level, completeOnboarding, router]);
 
   const handleRepCounterNext = useCallback(() => {
+    setStep("quest_intro");
+  }, []);
+
+  const handleQuestIntroNext = useCallback(() => {
     setStep("complete");
   }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1, padding: spacing[6] }}
+        contentContainerStyle={{ flexGrow: 1, padding: spacing.xl }}
         keyboardShouldPersistTaps="handled"
       >
         {/* Step indicator */}
@@ -106,27 +110,38 @@ export default function OnboardingScreen() {
           style={{
             flexDirection: "row",
             justifyContent: "center",
-            gap: spacing[2],
-            marginBottom: spacing[8],
+            gap: spacing.sm,
+            marginBottom: spacing.xxl,
           }}
         >
-          {(["welcome", "name", "goal", "level", "rep_counter"] as Step[]).map((s) => (
-            <View
-              key={s}
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: 4,
-                backgroundColor:
-                  step === s
-                    ? colors.accent.DEFAULT
-                    : ["name", "goal", "level", "rep_counter", "complete"].indexOf(step) >=
-                        ["welcome", "name", "goal", "level", "rep_counter"].indexOf(s)
-                      ? colors.success
-                      : colors.border.subtle,
-              }}
-            />
-          ))}
+          {(["welcome", "name", "goal", "level", "rep_counter", "quest_intro"] as Step[]).map(
+            (s) => (
+              <View
+                key={s}
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor:
+                    step === s
+                      ? colors.accent.DEFAULT
+                      : ["name", "goal", "level", "rep_counter", "quest_intro", "complete"].indexOf(
+                            step,
+                          ) >=
+                          [
+                            "welcome",
+                            "name",
+                            "goal",
+                            "level",
+                            "rep_counter",
+                            "quest_intro",
+                          ].indexOf(s)
+                        ? colors.success
+                        : colors.border.subtle,
+                }}
+              />
+            ),
+          )}
         </View>
 
         {/* Step: Welcome */}
@@ -146,18 +161,18 @@ export default function OnboardingScreen() {
                   letterSpacing: 4,
                 }}
               >
-                ARCH
+                FitQuest
               </Text>
               <Text
                 style={{
                   ...typography.label,
                   color: colors.text.secondary,
                   fontSize: 10,
-                  marginTop: spacing[2],
+                  marginTop: spacing.sm,
                   letterSpacing: 3,
                 }}
               >
-                WELCOME, OPERATOR
+                WELCOME, ATHLETE
               </Text>
               <Text
                 style={{
@@ -166,12 +181,12 @@ export default function OnboardingScreen() {
                   fontSize: 13,
                   lineHeight: 20,
                   textAlign: "center",
-                  marginTop: spacing[6],
+                  marginTop: spacing.xl,
                   maxWidth: 300,
                 }}
               >
-                Your personal calisthenics training system. Track workouts, build strength, and
-                level up — one rep at a time.
+                Your personal gamified fitness system. Track workouts, build strength, and level up
+                — one rep at a time.
               </Text>
               <TouchableOpacity
                 onPress={handleStart}
@@ -181,10 +196,10 @@ export default function OnboardingScreen() {
                 style={{
                   backgroundColor: colors.accent.DEFAULT,
                   borderRadius: 4,
-                  paddingVertical: spacing[3],
+                  paddingVertical: spacing.md,
                   paddingHorizontal: spacing[10],
                   alignItems: "center",
-                  marginTop: spacing[8],
+                  marginTop: spacing.xxl,
                 }}
               >
                 <Text
@@ -216,7 +231,7 @@ export default function OnboardingScreen() {
                   ...typography.label,
                   color: colors.accent.DEFAULT,
                   fontSize: 9,
-                  marginBottom: spacing[2],
+                  marginBottom: spacing.sm,
                 }}
               >
                 STEP 1 OF 3
@@ -226,10 +241,10 @@ export default function OnboardingScreen() {
                   ...typography.h2,
                   color: colors.text.primary,
                   fontSize: 28,
-                  marginBottom: spacing[2],
+                  marginBottom: spacing.sm,
                 }}
               >
-                WHAT'S YOUR NAME?
+                WHAT&apos;S YOUR NAME?
               </Text>
               <Text
                 style={{
@@ -240,7 +255,7 @@ export default function OnboardingScreen() {
                   marginBottom: spacing[5],
                 }}
               >
-                This is how ARCH will address you on your training journey.
+                This is how FitQuest will address you on your training journey.
               </Text>
               <TextInput
                 value={name}
@@ -255,7 +270,7 @@ export default function OnboardingScreen() {
                   borderWidth: 1,
                   borderColor: name.trim() ? colors.accent.DEFAULT : colors.border.subtle,
                   borderRadius: 4,
-                  padding: spacing[3],
+                  padding: spacing.md,
                   color: colors.text.primary,
                   fontFamily: fonts.heading,
                   fontSize: 24,
@@ -272,9 +287,9 @@ export default function OnboardingScreen() {
                 style={{
                   backgroundColor: name.trim() ? colors.accent.DEFAULT : colors.border.subtle,
                   borderRadius: 4,
-                  paddingVertical: spacing[3],
+                  paddingVertical: spacing.md,
                   alignItems: "center",
-                  marginTop: spacing[4],
+                  marginTop: spacing.lg,
                 }}
               >
                 <Text
@@ -305,7 +320,7 @@ export default function OnboardingScreen() {
                 ...typography.label,
                 color: colors.accent.DEFAULT,
                 fontSize: 9,
-                marginBottom: spacing[2],
+                marginBottom: spacing.sm,
               }}
             >
               STEP 2 OF 3
@@ -318,10 +333,10 @@ export default function OnboardingScreen() {
                 marginBottom: spacing[5],
               }}
             >
-              WHAT'S YOUR GOAL?
+              WHAT&apos;S YOUR GOAL?
             </Text>
 
-            <View style={{ gap: spacing[2] }}>
+            <View style={{ gap: spacing.sm }}>
               {GOALS.map((g) => (
                 <TouchableOpacity
                   key={g.id}
@@ -336,10 +351,10 @@ export default function OnboardingScreen() {
                     borderWidth: 1,
                     borderColor: goal === g.id ? colors.accent.DEFAULT : colors.border.subtle,
                     borderRadius: 4,
-                    padding: spacing[3],
+                    padding: spacing.md,
                     flexDirection: "row",
                     alignItems: "center",
-                    gap: spacing[3],
+                    gap: spacing.md,
                     overflow: "hidden",
                   }}
                 >
@@ -400,7 +415,7 @@ export default function OnboardingScreen() {
                 ...typography.label,
                 color: colors.accent.DEFAULT,
                 fontSize: 9,
-                marginBottom: spacing[2],
+                marginBottom: spacing.sm,
               }}
             >
               STEP 3 OF 3
@@ -413,10 +428,10 @@ export default function OnboardingScreen() {
                 marginBottom: spacing[5],
               }}
             >
-              WHAT'S YOUR LEVEL?
+              WHAT&apos;S YOUR LEVEL?
             </Text>
 
-            <View style={{ gap: spacing[2] }}>
+            <View style={{ gap: spacing.sm }}>
               {LEVELS.map((l) => (
                 <TouchableOpacity
                   key={l.id}
@@ -431,7 +446,7 @@ export default function OnboardingScreen() {
                     borderWidth: 1,
                     borderColor: level === l.id ? colors.accent.DEFAULT : colors.border.subtle,
                     borderRadius: 4,
-                    padding: spacing[4],
+                    padding: spacing.lg,
                     overflow: "hidden",
                   }}
                 >
@@ -441,7 +456,7 @@ export default function OnboardingScreen() {
                       ...typography.label,
                       color: level === l.id ? colors.accent.DEFAULT : colors.text.primary,
                       fontSize: 11,
-                      marginBottom: spacing[1],
+                      marginBottom: spacing.xs,
                     }}
                   >
                     {l.label}
@@ -475,7 +490,7 @@ export default function OnboardingScreen() {
                 ...typography.label,
                 color: colors.accent.DEFAULT,
                 fontSize: 9,
-                marginBottom: spacing[2],
+                marginBottom: spacing.sm,
               }}
             >
               BONUS FEATURE
@@ -485,7 +500,7 @@ export default function OnboardingScreen() {
                 ...typography.h2,
                 color: colors.text.primary,
                 fontSize: 28,
-                marginBottom: spacing[2],
+                marginBottom: spacing.sm,
               }}
             >
               AUTO REP COUNTER
@@ -496,14 +511,14 @@ export default function OnboardingScreen() {
                 color: colors.text.secondary,
                 fontSize: 12,
                 lineHeight: 18,
-                marginBottom: spacing[4],
+                marginBottom: spacing.lg,
               }}
             >
-              ARCH can count your reps automatically using your phone's motion sensors. No tapping
-              required.
+              FitQuest can count your reps automatically using your phone&apos;s motion sensors. No
+              tapping required.
             </Text>
 
-            <View style={{ gap: spacing[2] }}>
+            <View style={{ gap: spacing.sm }}>
               {/* Tip 1 */}
               <View
                 style={{
@@ -511,10 +526,10 @@ export default function OnboardingScreen() {
                   borderWidth: 1,
                   borderColor: colors.border.subtle,
                   borderRadius: 4,
-                  padding: spacing[3],
+                  padding: spacing.md,
                   flexDirection: "row",
                   alignItems: "center",
-                  gap: spacing[3],
+                  gap: spacing.md,
                   overflow: "hidden",
                 }}
               >
@@ -565,10 +580,10 @@ export default function OnboardingScreen() {
                   borderWidth: 1,
                   borderColor: colors.border.subtle,
                   borderRadius: 4,
-                  padding: spacing[3],
+                  padding: spacing.md,
                   flexDirection: "row",
                   alignItems: "center",
-                  gap: spacing[3],
+                  gap: spacing.md,
                   overflow: "hidden",
                 }}
               >
@@ -606,7 +621,7 @@ export default function OnboardingScreen() {
                       marginTop: 2,
                     }}
                   >
-                    Stay still for ~3 seconds at the start of each exercise. ARCH calibrates to
+                    Stay still for ~3 seconds at the start of each exercise. FitQuest calibrates to
                     detect your movement axis.
                   </Text>
                 </View>
@@ -619,10 +634,10 @@ export default function OnboardingScreen() {
                   borderWidth: 1,
                   borderColor: colors.border.subtle,
                   borderRadius: 4,
-                  padding: spacing[3],
+                  padding: spacing.md,
                   flexDirection: "row",
                   alignItems: "center",
-                  gap: spacing[3],
+                  gap: spacing.md,
                   overflow: "hidden",
                 }}
               >
@@ -675,7 +690,7 @@ export default function OnboardingScreen() {
               style={{
                 backgroundColor: colors.accent.DEFAULT,
                 borderRadius: 4,
-                paddingVertical: spacing[3],
+                paddingVertical: spacing.md,
                 alignItems: "center",
                 marginTop: spacing[5],
               }}
@@ -689,6 +704,440 @@ export default function OnboardingScreen() {
                 }}
               >
                 GOT IT
+              </Text>
+            </TouchableOpacity>
+          </MotiView>
+        )}
+
+        {/* Step: Quest Intro */}
+        {step === "quest_intro" && (
+          <MotiView
+            from={{ opacity: 0, translateY: 20 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: "timing", duration: 400 }}
+            style={{ flex: 1, justifyContent: "center" }}
+          >
+            <Text
+              style={{
+                ...typography.label,
+                color: colors.accent.DEFAULT,
+                fontSize: 9,
+                marginBottom: spacing.sm,
+                letterSpacing: 1.5,
+              }}
+            >
+              QUEST SYSTEM
+            </Text>
+            <Text
+              style={{
+                ...typography.h2,
+                color: colors.text.primary,
+                fontSize: 28,
+                marginBottom: spacing.xs,
+              }}
+            >
+              YOUR JOURNEY AWAITS
+            </Text>
+            <Text
+              style={{
+                ...typography.body,
+                color: colors.text.secondary,
+                fontSize: 12,
+                lineHeight: 18,
+                marginBottom: spacing.lg,
+              }}
+            >
+              FitQuest organizes your training into 4 daily quests, each targeting different
+              movement pathways. Complete quests to earn XP, level up, and unlock the skill tree.
+            </Text>
+
+            {/* ── 4 Quest Cards ── */}
+            <View style={{ gap: spacing.sm, marginBottom: spacing.lg }}>
+              {/* Quest 1: Iron Gate */}
+              <MotiView
+                from={{ opacity: 0, translateX: -15 }}
+                animate={{ opacity: 1, translateX: 0 }}
+                transition={{ type: "timing", duration: 350, delay: 150 }}
+              >
+                <View
+                  style={{
+                    backgroundColor: `${colors.accent.DEFAULT}08`,
+                    borderWidth: 1,
+                    borderColor: `${colors.accent.DEFAULT}18`,
+                    borderRadius: 4,
+                    padding: spacing.md,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: spacing.md,
+                    overflow: "hidden",
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 34,
+                      height: 34,
+                      backgroundColor: "#EF444415",
+                      borderWidth: 1,
+                      borderColor: "#EF444425",
+                      borderRadius: 4,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text style={{ fontSize: 14, color: "#EF4444" }}>⚔</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        ...typography.label,
+                        color: "#EF4444",
+                        fontSize: 9,
+                        letterSpacing: 1.2,
+                      }}
+                    >
+                      THE VANGUARD
+                    </Text>
+                    <Text
+                      style={{
+                        ...typography.bodySmall,
+                        color: colors.text.secondary,
+                        fontSize: 8,
+                        lineHeight: 13,
+                        marginTop: 1,
+                      }}
+                    >
+                      Horizontal Push · Vertical Push · Anterior Legs · Core Flexion
+                    </Text>
+                  </View>
+                </View>
+              </MotiView>
+
+              {/* Quest 2: Deep Sanctum */}
+              <MotiView
+                from={{ opacity: 0, translateX: -15 }}
+                animate={{ opacity: 1, translateX: 0 }}
+                transition={{ type: "timing", duration: 350, delay: 220 }}
+              >
+                <View
+                  style={{
+                    backgroundColor: `${colors.accent.DEFAULT}08`,
+                    borderWidth: 1,
+                    borderColor: `${colors.accent.DEFAULT}18`,
+                    borderRadius: 4,
+                    padding: spacing.md,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: spacing.md,
+                    overflow: "hidden",
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 34,
+                      height: 34,
+                      backgroundColor: "#3B82F615",
+                      borderWidth: 1,
+                      borderColor: "#3B82F625",
+                      borderRadius: 4,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text style={{ fontSize: 14, color: "#3B82F6" }}>⬇</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        ...typography.label,
+                        color: "#3B82F6",
+                        fontSize: 9,
+                        letterSpacing: 1.2,
+                      }}
+                    >
+                      THE SHADOW
+                    </Text>
+                    <Text
+                      style={{
+                        ...typography.bodySmall,
+                        color: colors.text.secondary,
+                        fontSize: 8,
+                        lineHeight: 13,
+                        marginTop: 1,
+                      }}
+                    >
+                      Horizontal Pull · Vertical Pull · Posterior Legs · Core Extension
+                    </Text>
+                  </View>
+                </View>
+              </MotiView>
+
+              {/* Quest 3: Ashen Trial */}
+              <MotiView
+                from={{ opacity: 0, translateX: -15 }}
+                animate={{ opacity: 1, translateX: 0 }}
+                transition={{ type: "timing", duration: 350, delay: 290 }}
+              >
+                <View
+                  style={{
+                    backgroundColor: `${colors.accent.DEFAULT}08`,
+                    borderWidth: 1,
+                    borderColor: `${colors.accent.DEFAULT}18`,
+                    borderRadius: 4,
+                    padding: spacing.md,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: spacing.md,
+                    overflow: "hidden",
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 34,
+                      height: 34,
+                      backgroundColor: "#10B98115",
+                      borderWidth: 1,
+                      borderColor: "#10B98125",
+                      borderRadius: 4,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text style={{ fontSize: 14, color: "#10B981" }}>⬍</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        ...typography.label,
+                        color: "#10B981",
+                        fontSize: 9,
+                        letterSpacing: 1.2,
+                      }}
+                    >
+                      THE TEMPEST
+                    </Text>
+                    <Text
+                      style={{
+                        ...typography.bodySmall,
+                        color: colors.text.secondary,
+                        fontSize: 8,
+                        lineHeight: 13,
+                        marginTop: 1,
+                      }}
+                    >
+                      Horizontal Push · Vertical Push · Horizontal Pull · Vertical Pull
+                    </Text>
+                  </View>
+                </View>
+              </MotiView>
+
+              {/* Quest 4: Monarch's Will */}
+              <MotiView
+                from={{ opacity: 0, translateX: -15 }}
+                animate={{ opacity: 1, translateX: 0 }}
+                transition={{ type: "timing", duration: 350, delay: 360 }}
+              >
+                <View
+                  style={{
+                    backgroundColor: `${colors.accent.DEFAULT}08`,
+                    borderWidth: 1,
+                    borderColor: `${colors.accent.DEFAULT}18`,
+                    borderRadius: 4,
+                    padding: spacing.md,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: spacing.md,
+                    overflow: "hidden",
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 34,
+                      height: 34,
+                      backgroundColor: "#F59E0B15",
+                      borderWidth: 1,
+                      borderColor: "#F59E0B25",
+                      borderRadius: 4,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text style={{ fontSize: 14, color: "#F59E0B" }}>◈</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        ...typography.label,
+                        color: "#F59E0B",
+                        fontSize: 9,
+                        letterSpacing: 1.2,
+                      }}
+                    >
+                      THE COLOSSUS
+                    </Text>
+                    <Text
+                      style={{
+                        ...typography.bodySmall,
+                        color: colors.text.secondary,
+                        fontSize: 8,
+                        lineHeight: 13,
+                        marginTop: 1,
+                      }}
+                    >
+                      Anterior Legs · Posterior Legs · Core Flexion · Core Extension
+                    </Text>
+                  </View>
+                </View>
+              </MotiView>
+            </View>
+
+            {/* ── Progression Summary ── */}
+            <MotiView
+              from={{ opacity: 0, translateY: 10 }}
+              animate={{ opacity: 1, translateY: 0 }}
+              transition={{ type: "timing", duration: 350, delay: 430 }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  gap: spacing.sm,
+                  justifyContent: "center",
+                }}
+              >
+                <View
+                  style={{
+                    flex: 1,
+                    backgroundColor: colors.bg.elevated,
+                    borderRadius: 4,
+                    padding: spacing.sm,
+                    alignItems: "center",
+                    borderWidth: 1,
+                    borderColor: colors.border.subtle,
+                    overflow: "hidden",
+                  }}
+                >
+                  <Text style={{ fontSize: 16, marginBottom: 2 }}>⚔</Text>
+                  <Text
+                    style={{
+                      ...typography.label,
+                      color: colors.text.primary,
+                      fontSize: 8,
+                      letterSpacing: 0.5,
+                      textAlign: "center",
+                    }}
+                  >
+                    COMPLETE QUESTS
+                  </Text>
+                  <Text
+                    style={{
+                      ...typography.bodySmall,
+                      color: colors.text.secondary,
+                      fontSize: 7,
+                      textAlign: "center",
+                      marginTop: 1,
+                    }}
+                  >
+                    4 exercises per session
+                  </Text>
+                </View>
+
+                <View
+                  style={{
+                    flex: 1,
+                    backgroundColor: colors.bg.elevated,
+                    borderRadius: 4,
+                    padding: spacing.sm,
+                    alignItems: "center",
+                    borderWidth: 1,
+                    borderColor: colors.border.subtle,
+                    overflow: "hidden",
+                  }}
+                >
+                  <Text style={{ fontSize: 16, marginBottom: 2 }}>✦</Text>
+                  <Text
+                    style={{
+                      ...typography.label,
+                      color: colors.text.primary,
+                      fontSize: 8,
+                      letterSpacing: 0.5,
+                      textAlign: "center",
+                    }}
+                  >
+                    EARN XP
+                  </Text>
+                  <Text
+                    style={{
+                      ...typography.bodySmall,
+                      color: colors.text.secondary,
+                      fontSize: 7,
+                      textAlign: "center",
+                      marginTop: 1,
+                    }}
+                  >
+                    Level up your profile
+                  </Text>
+                </View>
+
+                <View
+                  style={{
+                    flex: 1,
+                    backgroundColor: colors.bg.elevated,
+                    borderRadius: 4,
+                    padding: spacing.sm,
+                    alignItems: "center",
+                    borderWidth: 1,
+                    borderColor: colors.border.subtle,
+                    overflow: "hidden",
+                  }}
+                >
+                  <Text style={{ fontSize: 16, marginBottom: 2 }}>◎</Text>
+                  <Text
+                    style={{
+                      ...typography.label,
+                      color: colors.text.primary,
+                      fontSize: 8,
+                      letterSpacing: 0.5,
+                      textAlign: "center",
+                    }}
+                  >
+                    MASTER SKILLS
+                  </Text>
+                  <Text
+                    style={{
+                      ...typography.bodySmall,
+                      color: colors.text.secondary,
+                      fontSize: 7,
+                      textAlign: "center",
+                      marginTop: 1,
+                    }}
+                  >
+                    Unlock the skill tree
+                  </Text>
+                </View>
+              </View>
+            </MotiView>
+
+            <TouchableOpacity
+              onPress={handleQuestIntroNext}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Continue to final step"
+              style={{
+                backgroundColor: colors.accent.DEFAULT,
+                borderRadius: 4,
+                paddingVertical: spacing.md,
+                alignItems: "center",
+                marginTop: spacing[5],
+              }}
+            >
+              <Text
+                style={{
+                  ...typography.label,
+                  color: colors.bg.primary,
+                  fontSize: 11,
+                  letterSpacing: 2,
+                }}
+              >
+                CONTINUE
               </Text>
             </TouchableOpacity>
           </MotiView>
@@ -713,7 +1162,7 @@ export default function OnboardingScreen() {
                   borderRadius: 4,
                   alignItems: "center",
                   justifyContent: "center",
-                  marginBottom: spacing[4],
+                  marginBottom: spacing.lg,
                 }}
               >
                 <Text style={{ fontSize: 28, color: colors.success }}>✦</Text>
@@ -735,25 +1184,25 @@ export default function OnboardingScreen() {
                   fontSize: 13,
                   lineHeight: 20,
                   textAlign: "center",
-                  marginTop: spacing[3],
+                  marginTop: spacing.md,
                   maxWidth: 280,
                 }}
               >
-                Your profile is set. You're focused on{" "}
+                Your profile is set. You&apos;re focused on{" "}
                 {GOALS.find((g) => g.id === goal)?.label.toLowerCase()} at a {level} level.
               </Text>
               <TouchableOpacity
                 onPress={handleFinish}
                 activeOpacity={0.8}
                 accessibilityRole="button"
-                accessibilityLabel="Enter ARCH"
+                accessibilityLabel="Enter FitQuest"
                 style={{
                   backgroundColor: colors.accent.DEFAULT,
                   borderRadius: 4,
-                  paddingVertical: spacing[3],
+                  paddingVertical: spacing.md,
                   paddingHorizontal: spacing[10],
                   alignItems: "center",
-                  marginTop: spacing[8],
+                  marginTop: spacing.xxl,
                 }}
               >
                 <Text
@@ -764,7 +1213,7 @@ export default function OnboardingScreen() {
                     letterSpacing: 2,
                   }}
                 >
-                  ENTER ARCH
+                  ENTER FITQUEST
                 </Text>
               </TouchableOpacity>
             </View>

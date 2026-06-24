@@ -92,8 +92,7 @@ export const videoCache = {
         {},
         (downloadProgress) => {
           const progress =
-            downloadProgress.totalBytesWritten /
-            downloadProgress.totalBytesExpectedToWrite;
+            downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
           onProgress?.(progress);
         },
       );

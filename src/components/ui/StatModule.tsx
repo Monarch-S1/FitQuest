@@ -31,9 +31,9 @@ export function StatModule({
   };
 
   const sizes = {
-    sm: { padding: spacing[2], minHeight: 60 },
-    md: { padding: spacing[3], minHeight: 80 },
-    lg: { padding: spacing[4], minHeight: 100 },
+    sm: { padding: spacing.sm, minHeight: 60 },
+    md: { padding: spacing.md, minHeight: 80 },
+    lg: { padding: spacing.lg, minHeight: 100 },
   };
 
   return (
@@ -65,7 +65,7 @@ export function StatModule({
       />
 
       <View style={{ flex: 1, justifyContent: "space-between" }}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[1] }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.xs }}>
           {icon && <Text style={{ fontSize: 14 }}>{icon}</Text>}
           <Text
             style={{
@@ -83,7 +83,7 @@ export function StatModule({
             ...typography.stat,
             color: colors.text.primary,
             fontSize: size === "lg" ? 36 : size === "sm" ? 20 : 28,
-            marginTop: spacing[1],
+            marginTop: spacing.xs,
           }}
         >
           {value}
@@ -94,7 +94,7 @@ export function StatModule({
             style={{
               ...typography.bodySmall,
               color: accentColor[accent],
-              marginTop: spacing[0],
+              marginTop: 0,
             }}
           >
             {subValue}

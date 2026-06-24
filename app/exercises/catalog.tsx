@@ -3,25 +3,34 @@ import { View, Text, ScrollView, TouchableOpacity, TextInput } from "react-nativ
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useColors, typography, spacing, fonts } from "../../src/tokens";
-import {
-  workoutA,
-  workoutB,
-  workoutC,
-  workoutD,
-  Exercise,
-  Tempo,
-  MuscleGroup,
-} from "../../src/data/exercises";
-import { workouts } from "../../src/data/workouts";
+import { Exercise, Tempo, MuscleGroup } from "../../src/data/exercises";
+import { getAllExercises96 } from "../../src/data/exercises96";
+import { PATHWAYS, PathwayId } from "../../src/data/pathways";
 import { useUserStore, ExercisePreset } from "../../src/stores/useUserStore";
 import { hasPreset, createPresetFromExercise } from "../../src/utils/exercisePresets";
 
-const ALL_EXERCISES = [
-  ...workoutA.exercises,
-  ...workoutB.exercises,
-  ...workoutC.exercises,
-  ...workoutD.exercises,
-];
+/** Strip Exercise96 fields to plain Exercise */
+function toExercise(ex96: import("../../src/data/exercises96").Exercise96): Exercise {
+  const { pathwayId: _pw, pathwayLevel: _lvl, overloadMechanism: _om, ...exercise } = ex96;
+  return exercise as Exercise;
+}
+
+/** Check if an exercise ID is a 96-pathway ID (e.g. "HP6", "AQL3") */
+function isPathwayId(id: string): boolean {
+  return /^[A-Z]{2,4}\d+$/.test(id);
+}
+
+/** Get pathway label from a 96 exercise ID */
+function getPathwayLabel(id: string): string | null {
+  const match = id.match(/^([A-Z]{2,4})/);
+  if (!match) return null;
+  const pwKey = match[1].toLowerCase() as PathwayId;
+  const pw = PATHWAYS[pwKey];
+  if (!pw) return null;
+  return `${pw.label} Lv${id.slice(match[1].length)} · ${pw.fullLabel}`;
+}
+
+const ALL_EXERCISES: Exercise[] = getAllExercises96().map(toExercise);
 
 const MUSCLE_GROUP_LABELS: Record<MuscleGroup, string> = {
   quadriceps: "Quads",
@@ -85,18 +94,16 @@ const MUSCLE_GROUP_COLORS: Record<MuscleGroup, string> = {
   rectus_abdominis: "#06B6D4",
 };
 
-// Map exercise IDs back to their workout for context
-function findWorkoutForExercise(exerciseId: string): string {
-  const workout = workouts.find((w) => w.exercises.some((e) => e.id === exerciseId));
-  return workout?.name ?? "";
+// Map exercise IDs back to their pathway for context
+function findWorkoutForExercise(exerciseId: string): { label: string; routeId: string | null } {
+  if (isPathwayId(exerciseId)) {
+    const label = getPathwayLabel(exerciseId);
+    if (label) {
+      return { label, routeId: "workout-96-0" };
+    }
+  }
+  return { label: "", routeId: null };
 }
-
-const WORKOUT_ID_MAP: Record<string, string> = {
-  "WORKOUT A": "workout-a",
-  "WORKOUT B": "workout-b",
-  "WORKOUT C": "workout-c",
-  "WORKOUT D": "workout-d",
-};
 
 export default function ExerciseCatalogScreen() {
   const colors = useColors();
@@ -140,7 +147,9 @@ export default function ExerciseCatalogScreen() {
   }, []);
 
   const handleOpenPresetEditor = useCallback((exercise: Exercise) => {
-    const preset = hasPreset(exercise.id) ? useUserStore.getState().exercisePresets?.[exercise.id] : null;
+    const preset = hasPreset(exercise.id)
+      ? useUserStore.getState().exercisePresets?.[exercise.id]
+      : null;
     setEditPresetId(exercise.id);
     if (preset) {
       setEditSets(preset.defaultSets);
@@ -161,23 +170,32 @@ export default function ExerciseCatalogScreen() {
 
   const handleSavePreset = useCallback(() => {
     if (!editPresetId) return;
-    const preset = createPresetFromExercise(
-      { id: editPresetId } as Exercise,
-      {
-        label: editLabel || undefined,
-        defaultSets: editSets,
-        repRange: [editRepLow, editRepHigh],
-        restInterval: editRest,
-        tempo: editTempo,
-      },
-    );
+    const preset = createPresetFromExercise({ id: editPresetId } as Exercise, {
+      label: editLabel || undefined,
+      defaultSets: editSets,
+      repRange: [editRepLow, editRepHigh],
+      restInterval: editRest,
+      tempo: editTempo,
+    });
     setExercisePreset(preset);
     setEditPresetId(null);
-  }, [editPresetId, editLabel, editSets, editRepLow, editRepHigh, editRest, editTempo, setExercisePreset]);
+  }, [
+    editPresetId,
+    editLabel,
+    editSets,
+    editRepLow,
+    editRepHigh,
+    editRest,
+    editTempo,
+    setExercisePreset,
+  ]);
 
-  const handleRemovePreset = useCallback((exerciseId: string) => {
-    removeExercisePreset(exerciseId);
-  }, [removeExercisePreset]);
+  const handleRemovePreset = useCallback(
+    (exerciseId: string) => {
+      removeExercisePreset(exerciseId);
+    },
+    [removeExercisePreset],
+  );
 
   const handleTrainWorkout = useCallback(
     (workoutId: string) => {
@@ -190,10 +208,10 @@ export default function ExerciseCatalogScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: spacing[4], paddingBottom: spacing[12] }}
+        contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing[12] }}
       >
         {/* Header */}
-        <View style={{ marginBottom: spacing[4] }}>
+        <View style={{ marginBottom: spacing.lg }}>
           <View
             style={{
               flexDirection: "row",
@@ -207,7 +225,7 @@ export default function ExerciseCatalogScreen() {
                   ...typography.label,
                   color: colors.text.secondary,
                   fontSize: 10,
-                  marginBottom: spacing[1],
+                  marginBottom: spacing.xs,
                 }}
               >
                 SKILLS CATALOG
@@ -230,8 +248,8 @@ export default function ExerciseCatalogScreen() {
                 borderWidth: 1,
                 borderColor: colors.border.subtle,
                 borderRadius: 4,
-                paddingHorizontal: spacing[3],
-                paddingVertical: spacing[1],
+                paddingHorizontal: spacing.md,
+                paddingVertical: spacing.xs,
               }}
             >
               <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 10 }}>
@@ -244,12 +262,12 @@ export default function ExerciseCatalogScreen() {
               ...typography.bodySmall,
               color: colors.text.secondary,
               fontSize: 11,
-              marginTop: spacing[2],
+              marginTop: spacing.sm,
               lineHeight: 16,
             }}
           >
-            Browse all {ALL_EXERCISES.length} exercises across {workouts.length} workouts. Filter by
-            muscle group to find targeted movements.
+            Browse all {ALL_EXERCISES.length} exercises across 8 movement pathways. Filter by muscle
+            group to find targeted movements.
           </Text>
         </View>
 
@@ -257,8 +275,8 @@ export default function ExerciseCatalogScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          style={{ marginBottom: spacing[3] }}
-          contentContainerStyle={{ gap: spacing[2] }}
+          style={{ marginBottom: spacing.md }}
+          contentContainerStyle={{ gap: spacing.sm }}
         >
           <TouchableOpacity
             activeOpacity={0.7}
@@ -271,8 +289,8 @@ export default function ExerciseCatalogScreen() {
               borderWidth: 1,
               borderColor: !selectedMuscle ? colors.accent.DEFAULT : colors.border.subtle,
               borderRadius: 4,
-              paddingHorizontal: spacing[3],
-              paddingVertical: spacing[1],
+              paddingHorizontal: spacing.md,
+              paddingVertical: spacing.xs,
             }}
           >
             <Text
@@ -301,11 +319,11 @@ export default function ExerciseCatalogScreen() {
                   borderWidth: 1,
                   borderColor: isSelected ? muscleColor : colors.border.subtle,
                   borderRadius: 4,
-                  paddingHorizontal: spacing[3],
-                  paddingVertical: spacing[1],
+                  paddingHorizontal: spacing.md,
+                  paddingVertical: spacing.xs,
                   flexDirection: "row",
                   alignItems: "center",
-                  gap: spacing[1],
+                  gap: spacing.xs,
                 }}
               >
                 <View
@@ -336,7 +354,7 @@ export default function ExerciseCatalogScreen() {
             ...typography.bodySmall,
             color: colors.text.secondary,
             fontSize: 10,
-            marginBottom: spacing[3],
+            marginBottom: spacing.md,
           }}
         >
           {filteredExercises.length} EXERCISE{filteredExercises.length !== 1 ? "S" : ""}
@@ -346,7 +364,10 @@ export default function ExerciseCatalogScreen() {
         {/* Exercise Cards */}
         {filteredExercises.map((exercise) => {
           const isExpanded = expandedExercise === exercise.id;
-          const workoutName = findWorkoutForExercise(exercise.id);
+          const { label: workoutName, routeId: workoutRouteId } = findWorkoutForExercise(
+            exercise.id,
+          );
+          const is96Exercise = isPathwayId(exercise.id);
 
           return (
             <TouchableOpacity
@@ -354,14 +375,14 @@ export default function ExerciseCatalogScreen() {
               activeOpacity={0.85}
               onPress={() => handleToggleExpand(exercise.id)}
               accessibilityRole="button"
-              accessibilityLabel={`${exercise.name}. ${isExpanded ? 'Collapse details' : 'Expand details'}`}
+              accessibilityLabel={`${exercise.name}. ${isExpanded ? "Collapse details" : "Expand details"}`}
               accessibilityState={{ expanded: isExpanded }}
               style={{
                 backgroundColor: isExpanded ? colors.bg.highlight : colors.bg.elevated,
                 borderWidth: 1,
                 borderColor: isExpanded ? colors.accent.DEFAULT : colors.border.subtle,
                 borderRadius: 4,
-                marginBottom: spacing[2],
+                marginBottom: spacing.sm,
                 position: "relative",
                 overflow: "hidden",
               }}
@@ -379,7 +400,7 @@ export default function ExerciseCatalogScreen() {
               />
 
               {/* Collapsed view */}
-              <View style={{ padding: spacing[3], paddingLeft: spacing[4] }}>
+              <View style={{ padding: spacing.md, paddingLeft: spacing.lg }}>
                 <View
                   style={{
                     flexDirection: "row",
@@ -387,7 +408,7 @@ export default function ExerciseCatalogScreen() {
                     alignItems: "flex-start",
                   }}
                 >
-                  <View style={{ flex: 1, marginRight: spacing[3] }}>
+                  <View style={{ flex: 1, marginRight: spacing.md }}>
                     <Text
                       style={{
                         ...typography.body,
@@ -402,8 +423,8 @@ export default function ExerciseCatalogScreen() {
                       style={{
                         flexDirection: "row",
                         flexWrap: "wrap",
-                        gap: spacing[1],
-                        marginTop: spacing[1],
+                        gap: spacing.xs,
+                        marginTop: spacing.xs,
                       }}
                     >
                       {exercise.targetMuscles.map((muscle) => (
@@ -414,7 +435,7 @@ export default function ExerciseCatalogScreen() {
                             borderWidth: 1,
                             borderColor: `${MUSCLE_GROUP_COLORS[muscle]}40`,
                             borderRadius: 4,
-                            paddingHorizontal: spacing[1],
+                            paddingHorizontal: spacing.xs,
                             paddingVertical: 1,
                           }}
                         >
@@ -433,15 +454,15 @@ export default function ExerciseCatalogScreen() {
                   </View>
 
                   {/* Info badges */}
-                  <View style={{ alignItems: "flex-end", gap: spacing[1] }}>
+                  <View style={{ alignItems: "flex-end", gap: spacing.xs }}>
                     <View
                       style={{
                         backgroundColor: colors.bg.primary,
                         borderWidth: 1,
                         borderColor: colors.border.subtle,
                         borderRadius: 4,
-                        paddingHorizontal: spacing[2],
-                        paddingVertical: spacing[0],
+                        paddingHorizontal: spacing.sm,
+                        paddingVertical: 0,
                       }}
                     >
                       <Text
@@ -463,19 +484,23 @@ export default function ExerciseCatalogScreen() {
                 </View>
 
                 {/* Workout badge */}
-                <View style={{ flexDirection: "row", marginTop: spacing[2], gap: spacing[1] }}>
+                <View style={{ flexDirection: "row", marginTop: spacing.sm, gap: spacing.xs }}>
                   <View
                     style={{
-                      backgroundColor: colors.bg.primary,
+                      backgroundColor: is96Exercise ? `${colors.success}10` : colors.bg.primary,
                       borderWidth: 1,
-                      borderColor: colors.border.subtle,
+                      borderColor: is96Exercise ? `${colors.success}40` : colors.border.subtle,
                       borderRadius: 4,
-                      paddingHorizontal: spacing[2],
-                      paddingVertical: spacing[0],
+                      paddingHorizontal: spacing.sm,
+                      paddingVertical: 0,
                     }}
                   >
                     <Text
-                      style={{ ...typography.label, color: colors.text.secondary, fontSize: 7 }}
+                      style={{
+                        ...typography.label,
+                        color: is96Exercise ? colors.success : colors.text.secondary,
+                        fontSize: 7,
+                      }}
                     >
                       {workoutName}
                     </Text>
@@ -486,8 +511,8 @@ export default function ExerciseCatalogScreen() {
                       borderWidth: 1,
                       borderColor: colors.border.subtle,
                       borderRadius: 4,
-                      paddingHorizontal: spacing[2],
-                      paddingVertical: spacing[0],
+                      paddingHorizontal: spacing.sm,
+                      paddingVertical: 0,
                     }}
                   >
                     <Text
@@ -502,8 +527,8 @@ export default function ExerciseCatalogScreen() {
                       borderWidth: 1,
                       borderColor: colors.border.subtle,
                       borderRadius: 4,
-                      paddingHorizontal: spacing[2],
-                      paddingVertical: spacing[0],
+                      paddingHorizontal: spacing.sm,
+                      paddingVertical: 0,
                     }}
                   >
                     <Text
@@ -521,8 +546,8 @@ export default function ExerciseCatalogScreen() {
                   style={{
                     borderTopWidth: 1,
                     borderTopColor: colors.border.subtle,
-                    padding: spacing[3],
-                    paddingLeft: spacing[4],
+                    padding: spacing.md,
+                    paddingLeft: spacing.lg,
                   }}
                 >
                   {/* Description */}
@@ -541,12 +566,12 @@ export default function ExerciseCatalogScreen() {
                   {exercise.biomechanicalNotes && (
                     <View
                       style={{
-                        marginTop: spacing[3],
+                        marginTop: spacing.md,
                         backgroundColor: colors.bg.primary,
                         borderWidth: 1,
                         borderColor: colors.border.subtle,
                         borderRadius: 4,
-                        padding: spacing[2],
+                        padding: spacing.sm,
                       }}
                     >
                       <Text
@@ -554,7 +579,7 @@ export default function ExerciseCatalogScreen() {
                           ...typography.label,
                           color: colors.accent.DEFAULT,
                           fontSize: 8,
-                          marginBottom: spacing[1],
+                          marginBottom: spacing.xs,
                         }}
                       >
                         BIOMECHANICS
@@ -575,12 +600,12 @@ export default function ExerciseCatalogScreen() {
                   {/* Progression pathway */}
                   <View
                     style={{
-                      marginTop: spacing[2],
+                      marginTop: spacing.sm,
                       backgroundColor: colors.bg.primary,
                       borderWidth: 1,
                       borderColor: colors.border.subtle,
                       borderRadius: 4,
-                      padding: spacing[2],
+                      padding: spacing.sm,
                     }}
                   >
                     <Text
@@ -588,7 +613,7 @@ export default function ExerciseCatalogScreen() {
                         ...typography.label,
                         color: colors.success,
                         fontSize: 8,
-                        marginBottom: spacing[1],
+                        marginBottom: spacing.xs,
                       }}
                     >
                       SKILL PATH
@@ -607,13 +632,13 @@ export default function ExerciseCatalogScreen() {
 
                   {/* Form checkpoints */}
                   {exercise.visualGuide?.checkpoints && (
-                    <View style={{ marginTop: spacing[2] }}>
+                    <View style={{ marginTop: spacing.sm }}>
                       <Text
                         style={{
                           ...typography.label,
                           color: colors.text.secondary,
                           fontSize: 8,
-                          marginBottom: spacing[1],
+                          marginBottom: spacing.xs,
                         }}
                       >
                         FORM CHECKPOINTS
@@ -624,13 +649,13 @@ export default function ExerciseCatalogScreen() {
                           style={{
                             flexDirection: "row",
                             alignItems: "flex-start",
-                            gap: spacing[2],
-                            marginBottom: spacing[1],
+                            gap: spacing.sm,
+                            marginBottom: spacing.xs,
                             backgroundColor: colors.bg.primary,
                             borderWidth: 1,
                             borderColor: colors.border.subtle,
                             borderRadius: 4,
-                            padding: spacing[2],
+                            padding: spacing.sm,
                           }}
                         >
                           <View
@@ -642,7 +667,7 @@ export default function ExerciseCatalogScreen() {
                                     ? colors.success
                                     : colors.error,
                               borderRadius: 4,
-                              paddingHorizontal: spacing[1],
+                              paddingHorizontal: spacing.xs,
                               paddingVertical: 1,
                               marginTop: 1,
                             }}
@@ -688,12 +713,12 @@ export default function ExerciseCatalogScreen() {
                   {editPresetId === exercise.id ? (
                     <View
                       style={{
-                        marginTop: spacing[3],
+                        marginTop: spacing.md,
                         backgroundColor: colors.bg.primary,
                         borderWidth: 1,
                         borderColor: `${colors.warning ?? "#F59E0B"}40`,
                         borderRadius: 4,
-                        padding: spacing[3],
+                        padding: spacing.md,
                       }}
                     >
                       <Text
@@ -701,7 +726,7 @@ export default function ExerciseCatalogScreen() {
                           ...typography.label,
                           color: colors.warning ?? "#F59E0B",
                           fontSize: 8,
-                          marginBottom: spacing[2],
+                          marginBottom: spacing.sm,
                         }}
                       >
                         CUSTOM PRESET
@@ -718,17 +743,26 @@ export default function ExerciseCatalogScreen() {
                           borderWidth: 1,
                           borderColor: colors.border.subtle,
                           borderRadius: 4,
-                          padding: spacing[2],
+                          padding: spacing.sm,
                           color: colors.text.primary,
                           fontSize: 12,
-                          marginBottom: spacing[2],
+                          marginBottom: spacing.sm,
                         }}
                       />
 
                       {/* Sets */}
-                      <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: spacing[2] }}>
+                      <View
+                        style={{ flexDirection: "row", gap: spacing.sm, marginBottom: spacing.sm }}
+                      >
                         <View style={{ flex: 1 }}>
-                          <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 7, marginBottom: spacing[0] }}>
+                          <Text
+                            style={{
+                              ...typography.label,
+                              color: colors.text.secondary,
+                              fontSize: 7,
+                              marginBottom: 0,
+                            }}
+                          >
                             SETS
                           </Text>
                           <TextInput
@@ -740,7 +774,7 @@ export default function ExerciseCatalogScreen() {
                               borderWidth: 1,
                               borderColor: colors.border.subtle,
                               borderRadius: 4,
-                              padding: spacing[2],
+                              padding: spacing.sm,
                               color: colors.text.primary,
                               fontSize: 14,
                               textAlign: "center",
@@ -748,7 +782,14 @@ export default function ExerciseCatalogScreen() {
                           />
                         </View>
                         <View style={{ flex: 1 }}>
-                          <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 7, marginBottom: spacing[0] }}>
+                          <Text
+                            style={{
+                              ...typography.label,
+                              color: colors.text.secondary,
+                              fontSize: 7,
+                              marginBottom: 0,
+                            }}
+                          >
                             REPS LOW
                           </Text>
                           <TextInput
@@ -760,7 +801,7 @@ export default function ExerciseCatalogScreen() {
                               borderWidth: 1,
                               borderColor: colors.border.subtle,
                               borderRadius: 4,
-                              padding: spacing[2],
+                              padding: spacing.sm,
                               color: colors.text.primary,
                               fontSize: 14,
                               textAlign: "center",
@@ -768,19 +809,33 @@ export default function ExerciseCatalogScreen() {
                           />
                         </View>
                         <View style={{ flex: 1 }}>
-                          <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 7, marginBottom: spacing[0] }}>
+                          <Text
+                            style={{
+                              ...typography.label,
+                              color: colors.text.secondary,
+                              fontSize: 7,
+                              marginBottom: 0,
+                            }}
+                          >
                             REPS HIGH
                           </Text>
                           <TextInput
                             keyboardType="number-pad"
                             value={String(editRepHigh)}
-                            onChangeText={(v) => setEditRepHigh(Math.max(Number(editRepLow) + 1, Number(v) || Number(editRepLow) + 1))}
+                            onChangeText={(v) =>
+                              setEditRepHigh(
+                                Math.max(
+                                  Number(editRepLow) + 1,
+                                  Number(v) || Number(editRepLow) + 1,
+                                ),
+                              )
+                            }
                             style={{
                               backgroundColor: colors.bg.elevated,
                               borderWidth: 1,
                               borderColor: colors.border.subtle,
                               borderRadius: 4,
-                              padding: spacing[2],
+                              padding: spacing.sm,
                               color: colors.text.primary,
                               fontSize: 14,
                               textAlign: "center",
@@ -790,9 +845,18 @@ export default function ExerciseCatalogScreen() {
                       </View>
 
                       {/* Rest & Tempo */}
-                      <View style={{ flexDirection: "row", gap: spacing[2], marginBottom: spacing[2] }}>
+                      <View
+                        style={{ flexDirection: "row", gap: spacing.sm, marginBottom: spacing.sm }}
+                      >
                         <View style={{ flex: 1 }}>
-                          <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 7, marginBottom: spacing[0] }}>
+                          <Text
+                            style={{
+                              ...typography.label,
+                              color: colors.text.secondary,
+                              fontSize: 7,
+                              marginBottom: 0,
+                            }}
+                          >
                             REST (s)
                           </Text>
                           <TextInput
@@ -804,7 +868,7 @@ export default function ExerciseCatalogScreen() {
                               borderWidth: 1,
                               borderColor: colors.border.subtle,
                               borderRadius: 4,
-                              padding: spacing[2],
+                              padding: spacing.sm,
                               color: colors.text.primary,
                               fontSize: 14,
                               textAlign: "center",
@@ -812,7 +876,14 @@ export default function ExerciseCatalogScreen() {
                           />
                         </View>
                         <View style={{ flex: 1 }}>
-                          <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 7, marginBottom: spacing[0] }}>
+                          <Text
+                            style={{
+                              ...typography.label,
+                              color: colors.text.secondary,
+                              fontSize: 7,
+                              marginBottom: 0,
+                            }}
+                          >
                             TEMPO
                           </Text>
                           <TextInput
@@ -825,7 +896,7 @@ export default function ExerciseCatalogScreen() {
                               borderWidth: 1,
                               borderColor: colors.border.subtle,
                               borderRadius: 4,
-                              padding: spacing[2],
+                              padding: spacing.sm,
                               color: colors.text.primary,
                               fontSize: 14,
                               textAlign: "center",
@@ -835,7 +906,7 @@ export default function ExerciseCatalogScreen() {
                       </View>
 
                       {/* Action buttons */}
-                      <View style={{ flexDirection: "row", gap: spacing[2] }}>
+                      <View style={{ flexDirection: "row", gap: spacing.sm }}>
                         <View style={{ flex: 1 }}>
                           <TouchableOpacity
                             onPress={() => setEditPresetId(null)}
@@ -844,11 +915,17 @@ export default function ExerciseCatalogScreen() {
                               borderWidth: 1,
                               borderColor: colors.border.subtle,
                               borderRadius: 4,
-                              padding: spacing[2],
+                              padding: spacing.sm,
                               alignItems: "center",
                             }}
                           >
-                            <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 9 }}>
+                            <Text
+                              style={{
+                                ...typography.label,
+                                color: colors.text.secondary,
+                                fontSize: 9,
+                              }}
+                            >
                               CANCEL
                             </Text>
                           </TouchableOpacity>
@@ -860,11 +937,13 @@ export default function ExerciseCatalogScreen() {
                             style={{
                               backgroundColor: colors.accent.DEFAULT,
                               borderRadius: 4,
-                              padding: spacing[2],
+                              padding: spacing.sm,
                               alignItems: "center",
                             }}
                           >
-                            <Text style={{ ...typography.label, color: colors.bg.primary, fontSize: 9 }}>
+                            <Text
+                              style={{ ...typography.label, color: colors.bg.primary, fontSize: 9 }}
+                            >
                               SAVE PRESET
                             </Text>
                           </TouchableOpacity>
@@ -874,7 +953,9 @@ export default function ExerciseCatalogScreen() {
                   ) : (
                     <>
                       {/* Preset indicator & CUSTOMIZE button */}
-                      <View style={{ flexDirection: "row", gap: spacing[2], marginTop: spacing[2] }}>
+                      <View
+                        style={{ flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm }}
+                      >
                         {hasPreset(exercise.id) && (
                           <View
                             style={{
@@ -882,8 +963,8 @@ export default function ExerciseCatalogScreen() {
                               borderWidth: 1,
                               borderColor: colors.warning ?? "#F59E0B",
                               borderRadius: 4,
-                              paddingHorizontal: spacing[2],
-                              paddingVertical: spacing[0],
+                              paddingHorizontal: spacing.sm,
+                              paddingVertical: 0,
                             }}
                           >
                             <Text
@@ -905,11 +986,17 @@ export default function ExerciseCatalogScreen() {
                             borderWidth: 1,
                             borderColor: colors.border.subtle,
                             borderRadius: 4,
-                            paddingHorizontal: spacing[2],
-                            paddingVertical: spacing[0],
+                            paddingHorizontal: spacing.sm,
+                            paddingVertical: 0,
                           }}
                         >
-                          <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 7 }}>
+                          <Text
+                            style={{
+                              ...typography.label,
+                              color: colors.text.secondary,
+                              fontSize: 7,
+                            }}
+                          >
                             {hasPreset(exercise.id) ? "EDIT" : "CUSTOMIZE"}
                           </Text>
                         </TouchableOpacity>
@@ -921,8 +1008,8 @@ export default function ExerciseCatalogScreen() {
                               borderWidth: 1,
                               borderColor: colors.error,
                               borderRadius: 4,
-                              paddingHorizontal: spacing[2],
-                              paddingVertical: spacing[0],
+                              paddingHorizontal: spacing.sm,
+                              paddingVertical: 0,
                             }}
                           >
                             <Text style={{ ...typography.label, color: colors.error, fontSize: 7 }}>
@@ -933,29 +1020,60 @@ export default function ExerciseCatalogScreen() {
                       </View>
 
                       {/* Action: Train this workout */}
-                      <TouchableOpacity
-                        activeOpacity={0.85}
-                        onPress={() => handleTrainWorkout(WORKOUT_ID_MAP[workoutName] || "workout-a")}
-                        accessibilityRole="button"
-                        accessibilityLabel={`Start ${workoutName}`}
-                        style={{
-                          marginTop: spacing[2],
-                          backgroundColor: colors.accent.DEFAULT,
-                          borderRadius: 4,
-                          padding: spacing[3],
-                          alignItems: "center",
-                        }}
-                      >
-                        <Text
+                      {workoutRouteId && (
+                        <TouchableOpacity
+                          activeOpacity={0.85}
+                          onPress={() => handleTrainWorkout(workoutRouteId)}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Start ${workoutName}`}
                           style={{
-                            ...typography.label,
-                            color: colors.bg.primary,
-                            fontSize: 11,
+                            marginTop: spacing.sm,
+                            backgroundColor: colors.accent.DEFAULT,
+                            borderRadius: 4,
+                            padding: spacing.md,
+                            alignItems: "center",
                           }}
                         >
-                          START {workoutName}
-                        </Text>
-                      </TouchableOpacity>
+                          <Text
+                            style={{
+                              ...typography.label,
+                              color: colors.bg.primary,
+                              fontSize: 11,
+                            }}
+                          >
+                            {is96Exercise ? "TRAIN PATHWAY →" : `START ${workoutName}`}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+
+                      {/* Link to Skill Tree for 96 exercises */}
+                      {is96Exercise && (
+                        <TouchableOpacity
+                          activeOpacity={0.85}
+                          onPress={() => router.push("/skills/skill-tree")}
+                          accessibilityRole="button"
+                          accessibilityLabel="View in Skill Tree"
+                          style={{
+                            marginTop: spacing.xs,
+                            backgroundColor: `${colors.success}12`,
+                            borderWidth: 1,
+                            borderColor: `${colors.success}30`,
+                            borderRadius: 4,
+                            padding: spacing.md,
+                            alignItems: "center",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              ...typography.label,
+                              color: colors.success,
+                              fontSize: 9,
+                            }}
+                          >
+                            VIEW IN SKILL TREE ✦
+                          </Text>
+                        </TouchableOpacity>
+                      )}
                     </>
                   )}
                 </View>
@@ -971,7 +1089,7 @@ export default function ExerciseCatalogScreen() {
               borderWidth: 1,
               borderColor: colors.border.subtle,
               borderRadius: 4,
-              padding: spacing[6],
+              padding: spacing.xl,
               alignItems: "center",
             }}
           >

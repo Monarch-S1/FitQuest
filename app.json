@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "ARCH",
-    "slug": "arch",
+    "name": "FitQuest",
+    "slug": "fitquest",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "scheme": "arch",
+    "scheme": "fitquest",
     "ios": {
       "supportsTablet": true
     },
@@ -18,8 +18,8 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.monarch.arch",
-      "versionCode": 1
+      "package": "com.fitquest.app",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -39,15 +39,12 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "e5f54d00-a6c4-4e3a-87ea-4f88ff38badd"
-      }
+        "projectId": "376d6ab5-4f87-43fa-bbed-055e710c9eb5"
+      },
+      "supabaseUrl": "https://aetxbbjisaqvdtrhvzcn.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFldHhiYmppc2FxdmR0cmh2emNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MjUzNDUsImV4cCI6MjA5NTMwMTM0NX0.4jj-HYsogF2szjyIvXa2G2g1OugHKJ6Hp2z2X4te8jQ"
     },
     "owner": "bored_wanderer",
-    "updates": {
-      "url": "https://u.expo.dev/e5f54d00-a6c4-4e3a-87ea-4f88ff38badd"
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    }
+    "versionCode": 2
   }
 }

@@ -1,10 +1,10 @@
-# Privacy Policy — ARCH
+# Privacy Policy — FitQuest
 
 **Last updated:** June 6, 2026
 
 ## Overview
 
-ARCH ("we", "our", "us") is a calisthenics training application built for Android devices. We respect your privacy and are committed to protecting your personal data.
+FitQuest ("we", "our", "us") is a gamified fitness training application built for Android devices. We respect your privacy and are committed to protecting your personal data.
 
 ## Data We Collect
 
@@ -23,7 +23,7 @@ ARCH ("we", "our", "us") is a calisthenics training application built for Androi
 
 ## How We Use Your Data
 
-- To provide and maintain the ARCH training experience
+- To provide and maintain the FitQuest training experience
 - To track your workout progress and calculate XP/leveling
 - To provide personalized workout recommendations
 - To enable the auto rep counter feature using motion sensors
@@ -56,7 +56,7 @@ ARCH ("we", "our", "us") is a calisthenics training application built for Androi
 
 ## Children's Privacy
 
-ARCH is not intended for use by children under the age of 13. We do not knowingly collect data from children under 13.
+FitQuest is not intended for use by children under the age of 13. We do not knowingly collect data from children under 13.
 
 ## Changes to This Policy
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useMemo, useState } from "react";
 import { View, Text, Animated, Easing, AccessibilityInfo } from "react-native";
-import { useColors, typography, spacing } from "../../tokens";
+import { useColors, spacing, Label } from "../../tokens";
 
 interface LevelBadgeProps {
   level: number;
@@ -63,8 +63,18 @@ export function LevelBadge({ level, size = "md" }: LevelBadgeProps) {
     if (reduceMotion) return;
     Animated.loop(
       Animated.sequence([
-        Animated.timing(glowAnim, { toValue: 0.7, duration: 1500, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
-        Animated.timing(glowAnim, { toValue: 0.3, duration: 1500, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
+        Animated.timing(glowAnim, {
+          toValue: 0.7,
+          duration: 1500,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: false,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0.3,
+          duration: 1500,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: false,
+        }),
       ]),
     ).start();
   }, [glowAnim, reduceMotion]);
@@ -76,8 +86,18 @@ export function LevelBadge({ level, size = "md" }: LevelBadgeProps) {
       Animated.loop(
         Animated.sequence([
           Animated.delay(PARTICLE_POSITIONS[i].delay),
-          Animated.timing(anim, { toValue: 1, duration: 800, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
-          Animated.timing(anim, { toValue: 0.2, duration: 800, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
+          Animated.timing(anim, {
+            toValue: 1,
+            duration: 800,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: false,
+          }),
+          Animated.timing(anim, {
+            toValue: 0.2,
+            duration: 800,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: false,
+          }),
         ]),
       ),
     );
@@ -95,24 +115,28 @@ export function LevelBadge({ level, size = "md" }: LevelBadgeProps) {
     >
       <View style={{ position: "relative", width: s.container + 24, height: s.container + 24 }}>
         {/* Particles */}
-        {!reduceMotion && PARTICLE_POSITIONS.map((particle, i) => {
-          const centerX = (s.container + 24) / 2;
-          const centerY = (s.container + 24) / 2;
-          const px = centerX + particle.x * (s.container / 2 + 10) - particle.size / 2;
-          const py = centerY + particle.y * (s.container / 2 + 10) - particle.size / 2;
-          return (
-            <Animated.View
-              key={i}
-              style={{
-                position: "absolute", left: px, top: py,
-                width: particle.size, height: particle.size,
-                borderRadius: particle.size / 2,
-                backgroundColor: rankColor,
-                opacity: particleAnims[i],
-              }}
-            />
-          );
-        })}
+        {!reduceMotion &&
+          PARTICLE_POSITIONS.map((particle, i) => {
+            const centerX = (s.container + 24) / 2;
+            const centerY = (s.container + 24) / 2;
+            const px = centerX + particle.x * (s.container / 2 + 10) - particle.size / 2;
+            const py = centerY + particle.y * (s.container / 2 + 10) - particle.size / 2;
+            return (
+              <Animated.View
+                key={i}
+                style={{
+                  position: "absolute",
+                  left: px,
+                  top: py,
+                  width: particle.size,
+                  height: particle.size,
+                  borderRadius: particle.size / 2,
+                  backgroundColor: rankColor,
+                  opacity: particleAnims[i],
+                }}
+              />
+            );
+          })}
 
         {/* Glow ring */}
         <Animated.View
@@ -120,28 +144,48 @@ export function LevelBadge({ level, size = "md" }: LevelBadgeProps) {
             position: "absolute",
             top: (s.container + 24) / 2 - s.container / 2 - 6,
             left: (s.container + 24) / 2 - s.container / 2 - 6,
-            width: s.container + 12, height: s.container + 12,
-            borderRadius: 6, backgroundColor: "transparent",
-            borderWidth: 1, borderColor: rankColor,
+            width: s.container + 12,
+            height: s.container + 12,
+            borderRadius: 6,
+            backgroundColor: "transparent",
+            borderWidth: 1,
+            borderColor: rankColor,
             opacity: reduceMotion ? 0.5 : glowAnim,
-            shadowColor: rankColor, shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.6, shadowRadius: 12, elevation: 8,
+            shadowColor: rankColor,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.6,
+            shadowRadius: 12,
+            elevation: 8,
           }}
         />
 
         {/* Main badge */}
         <View
           style={{
-            position: "absolute", top: 12, left: 12,
-            width: s.container, height: s.container,
+            position: "absolute",
+            top: 12,
+            left: 12,
+            width: s.container,
+            height: s.container,
             backgroundColor: rankColor,
-            alignItems: "center", justifyContent: "center",
+            alignItems: "center",
+            justifyContent: "center",
             borderRadius: 4,
-            shadowColor: rankColor, shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.4, shadowRadius: 8, elevation: 6,
+            shadowColor: rankColor,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.4,
+            shadowRadius: 8,
+            elevation: 6,
           }}
         >
-          <Text style={{ fontFamily: typography.h1.fontFamily, fontSize: s.fontSize, color: colors.bg.primary, lineHeight: s.fontSize }}>
+          <Text
+            style={{
+              fontFamily: "BebasNeue-Regular",
+              fontSize: s.fontSize,
+              color: colors.bg.primary,
+              lineHeight: s.fontSize,
+            }}
+          >
             {level}
           </Text>
           {[
@@ -154,9 +198,14 @@ export function LevelBadge({ level, size = "md" }: LevelBadgeProps) {
               key={i}
               style={{
                 position: "absolute",
-                top: n.top, left: n.left, right: n.right, bottom: n.bottom,
-                borderTopWidth: n.bt, borderBottomWidth: n.bb,
-                borderLeftWidth: n.bl, borderRightWidth: n.br,
+                top: n.top,
+                left: n.left,
+                right: n.right,
+                bottom: n.bottom,
+                borderTopWidth: n.bt,
+                borderBottomWidth: n.bb,
+                borderLeftWidth: n.bl,
+                borderRightWidth: n.br,
                 borderColor: rankColor,
               }}
             />
@@ -165,15 +214,20 @@ export function LevelBadge({ level, size = "md" }: LevelBadgeProps) {
       </View>
 
       {/* Chevrons */}
-      <View style={{ flexDirection: "row", gap: 2, marginTop: spacing[1] }}>
+      <View style={{ flexDirection: "row", gap: 2, marginTop: spacing.xs }}>
         {Array.from({ length: chevronCount }).map((_, i) => (
-          <Text key={i} style={{ color: rankColor, fontSize: s.chevronSize, lineHeight: s.chevronSize }}>▲</Text>
+          <Text
+            key={i}
+            style={{ color: rankColor, fontSize: s.chevronSize, lineHeight: s.chevronSize }}
+          >
+            ▲
+          </Text>
         ))}
       </View>
 
-      <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 8, marginTop: spacing[0] }}>
+      <Label variant="secondary" style={{ fontSize: 8 }}>
         {getLevelTitle(level)}
-      </Text>
+      </Label>
     </View>
   );
 }

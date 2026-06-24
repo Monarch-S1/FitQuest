@@ -1,8 +1,4 @@
-import {
-  getUnlockedExerciseIds,
-  extractCompletedIds,
-  findNewUnlocks,
-} from "../utils/skillUnlocks";
+import { getUnlockedExerciseIds, extractCompletedIds, findNewUnlocks } from "../utils/skillUnlocks";
 import { SKILL_TREE_8 } from "../data/skillTree";
 import type { WorkoutSession } from "../stores/useUserStore";
 
@@ -25,16 +21,20 @@ describe("getUnlockedExerciseIds", () => {
     }
   });
 
-  it("unlocks entire pathway when one exercise in that pathway is completed", () => {
+  it("unlocks one level ahead when an exercise in that pathway is completed", () => {
     // Find an HP exercise to mark as completed
     const hpBranch = SKILL_TREE_8.find((b) => b.id === "hp")!;
-    const completedId = hpBranch.nodes[3].exercise.id; // HP4 - Standard Push-up
+    const completedId = hpBranch.nodes[3].exercise.id; // HP4 - Standard Push-up (level 4)
 
     const unlocked = getUnlockedExerciseIds(new Set([completedId]));
 
-    // All HP exercises should be unlocked
+    // HP1-HP5 should be unlocked (maxCompletedLevel + 1 = 5)
     for (const node of hpBranch.nodes) {
-      expect(unlocked.has(node.exercise.id)).toBe(true);
+      if (node.pathwayLevel <= 5) {
+        expect(unlocked.has(node.exercise.id)).toBe(true);
+      } else {
+        expect(unlocked.has(node.exercise.id)).toBe(false);
+      }
     }
 
     // Non-HP pathways are locked (except level 1 auto-unlock)
@@ -45,7 +45,7 @@ describe("getUnlockedExerciseIds", () => {
     }
   });
 
-  it("unlocks all pathways when at least one exercise in each is completed", () => {
+  it("unlocks up to level 2 in all pathways when level 1 of each is completed", () => {
     const completedIds = new Set<string>();
     for (const branch of SKILL_TREE_8) {
       completedIds.add(branch.nodes[0].exercise.id);
@@ -53,14 +53,19 @@ describe("getUnlockedExerciseIds", () => {
 
     const unlocked = getUnlockedExerciseIds(completedIds);
 
-    // Every single exercise should now be unlocked
+    // Levels 1-2 should be unlocked (maxCompletedLevel + 1 = 2)
     for (const branch of SKILL_TREE_8) {
       for (const node of branch.nodes) {
-        expect(unlocked.has(node.exercise.id)).toBe(true);
+        if (node.pathwayLevel <= 2) {
+          expect(unlocked.has(node.exercise.id)).toBe(true);
+        } else {
+          expect(unlocked.has(node.exercise.id)).toBe(false);
+        }
       }
     }
 
-    expect(unlocked.size).toBe(96);
+    // 8 pathways × 2 levels = 16
+    expect(unlocked.size).toBe(16);
   });
 
   it("returns a Set with valid exercise IDs", () => {
@@ -116,9 +121,7 @@ describe("extractCompletedIds", () => {
         duration: 600,
         setsCompleted: 1,
         xpEarned: 25,
-        exercises: [
-          { exerciseId: "HP4", sets: 1, repsCompleted: [] },
-        ],
+        exercises: [{ exerciseId: "HP4", sets: 1, repsCompleted: [] }],
       },
     ];
 
@@ -135,9 +138,7 @@ describe("extractCompletedIds", () => {
         duration: 1800,
         setsCompleted: 3,
         xpEarned: 100,
-        exercises: [
-          { exerciseId: "HP4", sets: 3, repsCompleted: [10, 10, 10] },
-        ],
+        exercises: [{ exerciseId: "HP4", sets: 3, repsCompleted: [10, 10, 10] }],
       },
       {
         id: "2",
@@ -146,9 +147,7 @@ describe("extractCompletedIds", () => {
         duration: 1800,
         setsCompleted: 3,
         xpEarned: 100,
-        exercises: [
-          { exerciseId: "HP4", sets: 3, repsCompleted: [12, 12, 12] },
-        ],
+        exercises: [{ exerciseId: "HP4", sets: 3, repsCompleted: [12, 12, 12] }],
       },
     ];
 
@@ -204,9 +203,7 @@ describe("findNewUnlocks", () => {
 
   it("excludes the just-completed exercise from notifications", () => {
     const result = findNewUnlocks(new Set(), new Set(["HP4"]));
-    const completedInUnlocks = result.skillUnlocks.some(
-      (u) => u.node.exercise.id === "HP4",
-    );
+    const completedInUnlocks = result.skillUnlocks.some((u) => u.node.exercise.id === "HP4");
     expect(completedInUnlocks).toBe(false);
   });
 
