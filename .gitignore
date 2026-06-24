@@ -50,6 +50,9 @@ build_log.txt
 build_log_decompressed.txt
 expo-output.log
 
+# lint output
+lint*.txt
+
 # Windows artifacts
 nul
 
