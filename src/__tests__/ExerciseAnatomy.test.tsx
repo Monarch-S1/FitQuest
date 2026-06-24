@@ -170,10 +170,7 @@ describe("ExerciseAnatomy", () => {
     const exercise = createExercise("horizontal_push");
     const tree = renderInAct(<ExerciseAnatomy exercise={exercise} activeTab="SETUP" />);
     const circles = tree.root.findAll(
-      (n) =>
-        n.props["data-testid"] === "svg-circle" &&
-        n.props.r &&
-        n.props.fill === "none",
+      (n) => n.props["data-testid"] === "svg-circle" && n.props.r && n.props.fill === "none",
       { deep: true },
     );
     // Head circle has fill="none" (unfilled)
@@ -274,9 +271,7 @@ describe("ExerciseAnatomy", () => {
     const labels = categories.map((cat) => {
       const exercise = createExercise(cat);
       const tree = renderInAct(<ExerciseAnatomy exercise={exercise} activeTab="SETUP" />);
-      return getAllText(tree.root)
-        .split("·")[0]
-        .trim();
+      return getAllText(tree.root).split("·")[0].trim();
     });
 
     // All labels should be unique

@@ -1,0 +1,1030 @@
+
+> fitquest@1.0.0 lint
+> eslint "**/*.{js,jsx,ts,tsx}"
+
+
+C:\Users\J\Desktop\arch\app\(tabs)\_layout.tsx
+  3:21  warning  'typography' is defined but never used  @typescript-eslint/no-unused-vars
+  3:33  warning  'spacing' is defined but never used     @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\app\(tabs)\index.tsx
+  103:18  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\app\(tabs)\index.tsx:103:18
+  101 |
+  102 |   // Fade-in animation when content loads
+> 103 |   const fadeIn = useRef(new Animated.Value(0)).current;
+      |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  104 |   useEffect(() => {
+  105 |     if (isHydrated) {
+  106 |       Animated.timing(fadeIn, {  react-hooks/refs
+  103:18  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\app\(tabs)\index.tsx:103:18
+  101 |
+  102 |   // Fade-in animation when content loads
+> 103 |   const fadeIn = useRef(new Animated.Value(0)).current;
+      |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  104 |   useEffect(() => {
+  105 |     if (isHydrated) {
+  106 |       Animated.timing(fadeIn, {  react-hooks/refs
+  103:18  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\app\(tabs)\index.tsx:103:18
+  101 |
+  102 |   // Fade-in animation when content loads
+> 103 |   const fadeIn = useRef(new Animated.Value(0)).current;
+      |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  104 |   useEffect(() => {
+  105 |     if (isHydrated) {
+  106 |       Animated.timing(fadeIn, {  react-hooks/refs
+  103:18  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\app\(tabs)\index.tsx:103:18
+  101 |
+  102 |   // Fade-in animation when content loads
+> 103 |   const fadeIn = useRef(new Animated.Value(0)).current;
+      |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  104 |   useEffect(() => {
+  105 |     if (isHydrated) {
+  106 |       Animated.timing(fadeIn, {  react-hooks/refs
+  343:9   warning  'colors' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\app\(tabs)\profile.tsx
+    2:70  warning  'Platform' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+    4:13  warning  'Linking' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+  172:7   warning  Error: Cannot access variable before it is declared
+
+`dialog` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+C:\Users\J\Desktop\arch\app\(tabs)\profile.tsx:172:7
+  170 |     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  171 |     if (status !== "granted") {
+> 172 |       dialog.alert({
+      |       ^^^^^^ `dialog` accessed before it is declared
+  173 |         title: "Permission needed",
+  174 |         message: "Please grant photo library access to set a profile picture.",
+  175 |       });
+
+C:\Users\J\Desktop\arch\app\(tabs)\profile.tsx:271:3
+  269 |
+  270 |   const router = useRouter();
+> 271 |   const dialog = useDialog();
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^ `dialog` is declared here
+  272 |
+  273 |   return (
+  274 |     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>  react-hooks/immutability
+  187:6   warning  React Hook useCallback has a missing dependency: 'dialog'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+  205:6   warning  React Hook useCallback has a missing dependency: 'dialog'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+  223:6   warning  React Hook useCallback has a missing dependency: 'dialog'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+  251:6   warning  React Hook useCallback has a missing dependency: 'dialog'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+  268:6   warning  React Hook useCallback has a missing dependency: 'dialog'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+
+C:\Users\J\Desktop\arch\app\(tabs)\train.tsx
+   85:18  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\app\(tabs)\train.tsx:85:18
+  83 |
+  84 |   // Fade-in animation when content loads
+> 85 |   const fadeIn = useRef(new Animated.Value(0)).current;
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  86 |   useEffect(() => {
+  87 |     if (isHydrated) {
+  88 |       Animated.timing(fadeIn, {  react-hooks/refs
+   85:18  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\app\(tabs)\train.tsx:85:18
+  83 |
+  84 |   // Fade-in animation when content loads
+> 85 |   const fadeIn = useRef(new Animated.Value(0)).current;
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  86 |   useEffect(() => {
+  87 |     if (isHydrated) {
+  88 |       Animated.timing(fadeIn, {  react-hooks/refs
+   85:18  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\app\(tabs)\train.tsx:85:18
+  83 |
+  84 |   // Fade-in animation when content loads
+> 85 |   const fadeIn = useRef(new Animated.Value(0)).current;
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  86 |   useEffect(() => {
+  87 |     if (isHydrated) {
+  88 |       Animated.timing(fadeIn, {  react-hooks/refs
+   85:18  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\app\(tabs)\train.tsx:85:18
+  83 |
+  84 |   // Fade-in animation when content loads
+> 85 |   const fadeIn = useRef(new Animated.Value(0)).current;
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  86 |   useEffect(() => {
+  87 |     if (isHydrated) {
+  88 |       Animated.timing(fadeIn, {  react-hooks/refs
+  330:97  error    Replace `·weeks.` with `{"·"}`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     prettier/prettier
+  331:14  error    Replace `·Reduce·volume·by·40-50%·this·week:·2·sets·per·exercise,·leave·4-5·reps·in·reserve.` with `·weeks.·Reduce·volume·by·40-50%·this·week:·2·sets·per·exercise,·leave·4-5·reps·in`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             prettier/prettier
+  332:14  error    Insert `·reserve.`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 prettier/prettier
+
+C:\Users\J\Desktop\arch\app\_layout.tsx
+   3:10  warning  'View' is defined but never used               @typescript-eslint/no-unused-vars
+   3:16  warning  'Text' is defined but never used               @typescript-eslint/no-unused-vars
+   3:22  warning  'ActivityIndicator' is defined but never used  @typescript-eslint/no-unused-vars
+  21:9   warning  'colors' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\app\exercises\catalog.tsx
+  9:24  warning  'ExercisePreset' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\app\index.tsx
+  16:7  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\J\Desktop\arch\app\index.tsx:16:7
+  14 |     // Wait for Zustand persist to rehydrate from AsyncStorage
+  15 |     if (useUserStore.persist.hasHydrated()) {
+> 16 |       setHydrated(true);
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  17 |     } else {
+  18 |       const unsub = useUserStore.persist.onFinishHydration(() => {
+  19 |         setHydrated(true);  react-hooks/set-state-in-effect
+
+C:\Users\J\Desktop\arch\app\onboarding\index.tsx
+   247:21  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   336:19  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   431:19  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   517:70  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   975:34  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  1191:41  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\J\Desktop\arch\app\privacy-policy.tsx
+   90:94  error  Replace `·application·built·for·Android⏎············devices.·We·respect·your·privacy·and·are·committed·to` with `⏎············application·built·for·Android·devices.·We·respect·your·privacy·and·are·committed·to⏎···········`  prettier/prettier
+  166:58  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                 react/no-unescaped-entities
+
+C:\Users\J\Desktop\arch\app\workout\[id].tsx
+    5:42   warning  'fonts' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+    8:10   warning  'HUDModule' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+   26:10   warning  'GlossyOverlay' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+   47:5    warning  'level' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+   63:9    warning  'hasStartedWorkout' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  112:7    warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\J\Desktop\arch\app\workout\[id].tsx:112:7
+  110 |   useEffect(() => {
+  111 |     if (currentExercise) {
+> 112 |       setIsHolding(false);
+      |       ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  113 |       setHoldElapsed(0);
+  114 |       setHoldCompleted(false);
+  115 |       holdCompletedRef.current = false;  react-hooks/set-state-in-effect
+  346:16   warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\app\workout\[id].tsx:346:16
+  344 |       <CompletionAnimation
+  345 |         xpBreakdown={xpBreakdown}
+> 346 |         level={preWorkoutLevelRef.current}
+      |                ^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  347 |         newLevel={freshUserState.level}
+  348 |         duration={totalDuration}
+  349 |         workoutName={workout.name}                                                                                                                                                                                                                                                                                                           react-hooks/refs
+  738:36   warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\app\workout\[id].tsx:738:36
+  736 |         <Card
+  737 |           title={
+> 738 |             currentExerciseIndex < warmUpCountRef.current
+      |                                    ^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  739 |               ? `WARM-UP ${currentExerciseIndex + 1} OF ${warmUpCountRef.current}`
+  740 |               : `EXERCISE ${currentExerciseIndex + 1 - warmUpCountRef.current} OF ${exerciseProgress.length - warmUpCountRef.current}`
+  741 |           }                                                                                                                                                                               react-hooks/refs
+  739:59   warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\app\workout\[id].tsx:739:59
+  737 |           title={
+  738 |             currentExerciseIndex < warmUpCountRef.current
+> 739 |               ? `WARM-UP ${currentExerciseIndex + 1} OF ${warmUpCountRef.current}`
+      |                                                           ^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  740 |               : `EXERCISE ${currentExerciseIndex + 1 - warmUpCountRef.current} OF ${exerciseProgress.length - warmUpCountRef.current}`
+  741 |           }
+  742 |           accent="amber"                                                                                                                                             react-hooks/refs
+  740:56   warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\app\workout\[id].tsx:740:56
+  738 |             currentExerciseIndex < warmUpCountRef.current
+  739 |               ? `WARM-UP ${currentExerciseIndex + 1} OF ${warmUpCountRef.current}`
+> 740 |               : `EXERCISE ${currentExerciseIndex + 1 - warmUpCountRef.current} OF ${exerciseProgress.length - warmUpCountRef.current}`
+      |                                                        ^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  741 |           }
+  742 |           accent="amber"
+  743 |           style={{ marginBottom: spacing.lg }}                                                                                                                   react-hooks/refs
+  740:111  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\app\workout\[id].tsx:740:111
+  738 |             currentExerciseIndex < warmUpCountRef.current
+  739 |               ? `WARM-UP ${currentExerciseIndex + 1} OF ${warmUpCountRef.current}`
+> 740 |               : `EXERCISE ${currentExerciseIndex + 1 - warmUpCountRef.current} OF ${exerciseProgress.length - warmUpCountRef.current}`
+      |                                                                                                               ^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  741 |           }
+  742 |           accent="amber"
+  743 |           style={{ marginBottom: spacing.lg }}                                                           react-hooks/refs
+  753:41   warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\app\workout\[id].tsx:753:41
+  751 |                   {exercise.name}
+  752 |                 </Text>
+> 753 |                 {currentExerciseIndex < warmUpCountRef.current && (
+      |                                         ^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  754 |                   <View
+  755 |                     style={{
+  756 |                       backgroundColor: `${"#F59E0B"}20`,                                                                                                                                                                                                                                                              react-hooks/refs
+
+C:\Users\J\Desktop\arch\scripts\check-native-deps.js
+  19:35  error  '__dirname' is not defined  no-undef
+  20:36  error  '__dirname' is not defined  no-undef
+
+C:\Users\J\Desktop\arch\scripts\fix-theme-imports.js
+  11:72  error  '__dirname' is not defined  no-undef
+  17:32  error  '__dirname' is not defined  no-undef
+
+C:\Users\J\Desktop\arch\scripts\generate-icons.js
+  18:26  error  '__dirname' is not defined  no-undef
+  19:30  error  '__dirname' is not defined  no-undef
+
+C:\Users\J\Desktop\arch\scripts\generate-splash.js
+  24:31  error  '__dirname' is not defined  no-undef
+  25:33  error  '__dirname' is not defined  no-undef
+  44:20  error  'Buffer' is not defined     no-undef
+  63:19  error  'Buffer' is not defined     no-undef
+
+C:\Users\J\Desktop\arch\scripts\setup-video-storage.js
+  25:44  error  '__dirname' is not defined  no-undef
+  38:30  error  '__dirname' is not defined  no-undef
+
+C:\Users\J\Desktop\arch\src\__tests__\SkillTreeView.test.tsx
+   3:22  warning  'SkillBranch' is defined but never used  @typescript-eslint/no-unused-vars
+  24:17  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\J\Desktop\arch\src\__tests__\exercises96.test.ts
+   18:3   warning  'Exercise96' is defined but never used        @typescript-eslint/no-unused-vars
+  309:17  warning  '_legacy' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\src\__tests__\streak.test.ts
+  1:27  warning  'StreakData' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\src\__tests__\supabase-fallback-stress.test.ts
+    8:3   warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   71:38  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   76:33  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   86:33  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   95:25  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  101:31  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  107:35  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  114:41  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  122:59  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  137:33  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  152:7   warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\J\Desktop\arch\src\__tests__\theme-stress.test.ts
+   8:21  warning  'accentOptions' is defined but never used  @typescript-eslint/no-unused-vars
+  11:3   warning  A `require()` style import is forbidden    @typescript-eslint/no-require-imports
+
+C:\Users\J\Desktop\arch\src\__tests__\warmup.test.ts
+  13:48  warning  'Exercise96' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\src\components\home\StreakMilestone.tsx
+  70:28  warning  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\J\Desktop\arch\src\components\home\StreakMilestone.tsx:70:28
+  68 |     () =>
+  69 |       Array.from({ length: 20 }, (_, i) => ({
+> 70 |         translateY: -500 - Math.random() * 400,
+     |                            ^^^^^^^^^^^^^ Cannot call impure function
+  71 |         translateX: (Math.random() - 0.5) * 120,
+  72 |         duration: 1500 + Math.random() * 2000,
+  73 |         left: `${5 + Math.random() * 90}%`,                                                 react-hooks/purity
+  71:22  warning  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\J\Desktop\arch\src\components\home\StreakMilestone.tsx:71:22
+  69 |       Array.from({ length: 20 }, (_, i) => ({
+  70 |         translateY: -500 - Math.random() * 400,
+> 71 |         translateX: (Math.random() - 0.5) * 120,
+     |                      ^^^^^^^^^^^^^ Cannot call impure function
+  72 |         duration: 1500 + Math.random() * 2000,
+  73 |         left: `${5 + Math.random() * 90}%`,
+  74 |         size: 3 + Math.random() * 8,                            react-hooks/purity
+  72:26  warning  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\J\Desktop\arch\src\components\home\StreakMilestone.tsx:72:26
+  70 |         translateY: -500 - Math.random() * 400,
+  71 |         translateX: (Math.random() - 0.5) * 120,
+> 72 |         duration: 1500 + Math.random() * 2000,
+     |                          ^^^^^^^^^^^^^ Cannot call impure function
+  73 |         left: `${5 + Math.random() * 90}%`,
+  74 |         size: 3 + Math.random() * 8,
+  75 |         color: tier.particleColors[i % tier.particleColors.length],  react-hooks/purity
+  73:22  warning  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\J\Desktop\arch\src\components\home\StreakMilestone.tsx:73:22
+  71 |         translateX: (Math.random() - 0.5) * 120,
+  72 |         duration: 1500 + Math.random() * 2000,
+> 73 |         left: `${5 + Math.random() * 90}%`,
+     |                      ^^^^^^^^^^^^^ Cannot call impure function
+  74 |         size: 3 + Math.random() * 8,
+  75 |         color: tier.particleColors[i % tier.particleColors.length],
+  76 |         rotation: Math.random() * 360,               react-hooks/purity
+  74:19  warning  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\J\Desktop\arch\src\components\home\StreakMilestone.tsx:74:19
+  72 |         duration: 1500 + Math.random() * 2000,
+  73 |         left: `${5 + Math.random() * 90}%`,
+> 74 |         size: 3 + Math.random() * 8,
+     |                   ^^^^^^^^^^^^^ Cannot call impure function
+  75 |         color: tier.particleColors[i % tier.particleColors.length],
+  76 |         rotation: Math.random() * 360,
+  77 |         delay: i * 60,                                            react-hooks/purity
+  76:19  warning  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\J\Desktop\arch\src\components\home\StreakMilestone.tsx:76:19
+  74 |         size: 3 + Math.random() * 8,
+  75 |         color: tier.particleColors[i % tier.particleColors.length],
+> 76 |         rotation: Math.random() * 360,
+     |                   ^^^^^^^^^^^^^ Cannot call impure function
+  77 |         delay: i * 60,
+  78 |       })),
+  79 |     [tier.particleColors],                                                                                                 react-hooks/purity
+
+C:\Users\J\Desktop\arch\src\components\skill-tree\SkillNode.tsx
+  93:20  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\skill-tree\SkillNode.tsx:93:20
+  91 |
+  92 |   const prevStateRef = useRef(state);
+> 93 |   const popScale = useRef(new Animated.Value(1)).current;
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  94 |
+  95 |   useEffect(() => {
+  96 |     const prev = prevStateRef.current;  react-hooks/refs
+  93:20  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\skill-tree\SkillNode.tsx:93:20
+  91 |
+  92 |   const prevStateRef = useRef(state);
+> 93 |   const popScale = useRef(new Animated.Value(1)).current;
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  94 |
+  95 |   useEffect(() => {
+  96 |     const prev = prevStateRef.current;  react-hooks/refs
+  93:20  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\skill-tree\SkillNode.tsx:93:20
+  91 |
+  92 |   const prevStateRef = useRef(state);
+> 93 |   const popScale = useRef(new Animated.Value(1)).current;
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  94 |
+  95 |   useEffect(() => {
+  96 |     const prev = prevStateRef.current;  react-hooks/refs
+  93:20  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\skill-tree\SkillNode.tsx:93:20
+  91 |
+  92 |   const prevStateRef = useRef(state);
+> 93 |   const popScale = useRef(new Animated.Value(1)).current;
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  94 |
+  95 |   useEffect(() => {
+  96 |     const prev = prevStateRef.current;  react-hooks/refs
+  93:20  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\skill-tree\SkillNode.tsx:93:20
+  91 |
+  92 |   const prevStateRef = useRef(state);
+> 93 |   const popScale = useRef(new Animated.Value(1)).current;
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  94 |
+  95 |   useEffect(() => {
+  96 |     const prev = prevStateRef.current;  react-hooks/refs
+  93:20  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\skill-tree\SkillNode.tsx:93:20
+  91 |
+  92 |   const prevStateRef = useRef(state);
+> 93 |   const popScale = useRef(new Animated.Value(1)).current;
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  94 |
+  95 |   useEffect(() => {
+  96 |     const prev = prevStateRef.current;  react-hooks/refs
+
+C:\Users\J\Desktop\arch\src\components\skill-tree\SkillTreeView.tsx
+   136:15  warning  'sourceRow' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+   137:15  warning  'targetRow' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+  1073:5   warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\J\Desktop\arch\src\components\skill-tree\SkillTreeView.tsx:1073:5
+  1071 |   useEffect(() => {
+  1072 |     getSkillTree8();
+> 1073 |     setTreeReady(true);
+       |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  1074 |   }, []);
+  1075 |
+  1076 |   const completedExercises = useMemo(() => extractCompletedIds(workoutHistory), [workoutHistory]);  react-hooks/set-state-in-effect
+  1154:6   warning  React Hook useMemo has an unnecessary dependency: 'filteredBranches'. Either exclude it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react-hooks/exhaustive-deps
+
+C:\Users\J\Desktop\arch\src\components\ui\GlossyOverlay.tsx
+  1:10  warning  'View' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\src\components\ui\LevelBadge.tsx
+  61:20  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\ui\LevelBadge.tsx:61:20
+  59 |   const rankColor = getRankColor(level, colors.accent.DEFAULT);
+  60 |
+> 61 |   const glowAnim = useRef(new Animated.Value(0.3)).current;
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  62 |   useEffect(() => {
+  63 |     if (reduceMotion) return;
+  64 |     Animated.loop(  react-hooks/refs
+  61:20  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\ui\LevelBadge.tsx:61:20
+  59 |   const rankColor = getRankColor(level, colors.accent.DEFAULT);
+  60 |
+> 61 |   const glowAnim = useRef(new Animated.Value(0.3)).current;
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  62 |   useEffect(() => {
+  63 |     if (reduceMotion) return;
+  64 |     Animated.loop(  react-hooks/refs
+  61:20  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\ui\LevelBadge.tsx:61:20
+  59 |   const rankColor = getRankColor(level, colors.accent.DEFAULT);
+  60 |
+> 61 |   const glowAnim = useRef(new Animated.Value(0.3)).current;
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  62 |   useEffect(() => {
+  63 |     if (reduceMotion) return;
+  64 |     Animated.loop(  react-hooks/refs
+  61:20  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\ui\LevelBadge.tsx:61:20
+  59 |   const rankColor = getRankColor(level, colors.accent.DEFAULT);
+  60 |
+> 61 |   const glowAnim = useRef(new Animated.Value(0.3)).current;
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  62 |   useEffect(() => {
+  63 |     if (reduceMotion) return;
+  64 |     Animated.loop(  react-hooks/refs
+
+C:\Users\J\Desktop\arch\src\components\ui\Skeleton.tsx
+  10:20  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\ui\Skeleton.tsx:10:20
+   8 | /** Provides a single shimmer animation to all child SkeletonBones */
+   9 | function ShimmerProvider({ children }: { children: React.ReactNode }) {
+> 10 |   const shimmerX = useRef(new Animated.Value(-1)).current;
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  11 |
+  12 |   useEffect(() => {
+  13 |     const animation = Animated.loop(       react-hooks/refs
+  10:20  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\ui\Skeleton.tsx:10:20
+   8 | /** Provides a single shimmer animation to all child SkeletonBones */
+   9 | function ShimmerProvider({ children }: { children: React.ReactNode }) {
+> 10 |   const shimmerX = useRef(new Animated.Value(-1)).current;
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  11 |
+  12 |   useEffect(() => {
+  13 |     const animation = Animated.loop(       react-hooks/refs
+  10:20  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\ui\Skeleton.tsx:10:20
+   8 | /** Provides a single shimmer animation to all child SkeletonBones */
+   9 | function ShimmerProvider({ children }: { children: React.ReactNode }) {
+> 10 |   const shimmerX = useRef(new Animated.Value(-1)).current;
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  11 |
+  12 |   useEffect(() => {
+  13 |     const animation = Animated.loop(       react-hooks/refs
+  47:22  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\ui\Skeleton.tsx:47:22
+  45 |   const parentShimmer = useContext(ShimmerContext);
+  46 |   // Fallback for standalone use outside ShimmerProvider
+> 47 |   const ownShimmer = useRef(new Animated.Value(-1)).current;
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  48 |   const shimmerX = parentShimmer ?? ownShimmer;
+  49 |
+  50 |   useEffect(() => {                         react-hooks/refs
+  47:22  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\ui\Skeleton.tsx:47:22
+  45 |   const parentShimmer = useContext(ShimmerContext);
+  46 |   // Fallback for standalone use outside ShimmerProvider
+> 47 |   const ownShimmer = useRef(new Animated.Value(-1)).current;
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  48 |   const shimmerX = parentShimmer ?? ownShimmer;
+  49 |
+  50 |   useEffect(() => {                         react-hooks/refs
+  47:22  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\ui\Skeleton.tsx:47:22
+  45 |   const parentShimmer = useContext(ShimmerContext);
+  46 |   // Fallback for standalone use outside ShimmerProvider
+> 47 |   const ownShimmer = useRef(new Animated.Value(-1)).current;
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Passing a ref to a function may read its value during render
+  48 |   const shimmerX = parentShimmer ?? ownShimmer;
+  49 |
+  50 |   useEffect(() => {  react-hooks/refs
+  47:22  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\ui\Skeleton.tsx:47:22
+  45 |   const parentShimmer = useContext(ShimmerContext);
+  46 |   // Fallback for standalone use outside ShimmerProvider
+> 47 |   const ownShimmer = useRef(new Animated.Value(-1)).current;
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Passing a ref to a function may read its value during render
+  48 |   const shimmerX = parentShimmer ?? ownShimmer;
+  49 |
+  50 |   useEffect(() => {  react-hooks/refs
+
+C:\Users\J\Desktop\arch\src\components\ui\SyncIndicator.tsx
+  15:19  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\ui\SyncIndicator.tsx:15:19
+  13 |   const [status, setStatus] = useState<SyncStatus>(getSyncStatus);
+  14 |   const [visible, setVisible] = useState(false);
+> 15 |   const opacity = useRef(new Animated.Value(0)).current;
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  16 |
+  17 |   useEffect(() => {
+  18 |     // Don't show if Supabase isn't configured  react-hooks/refs
+  15:19  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\ui\SyncIndicator.tsx:15:19
+  13 |   const [status, setStatus] = useState<SyncStatus>(getSyncStatus);
+  14 |   const [visible, setVisible] = useState(false);
+> 15 |   const opacity = useRef(new Animated.Value(0)).current;
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  16 |
+  17 |   useEffect(() => {
+  18 |     // Don't show if Supabase isn't configured  react-hooks/refs
+  15:19  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\ui\SyncIndicator.tsx:15:19
+  13 |   const [status, setStatus] = useState<SyncStatus>(getSyncStatus);
+  14 |   const [visible, setVisible] = useState(false);
+> 15 |   const opacity = useRef(new Animated.Value(0)).current;
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  16 |
+  17 |   useEffect(() => {
+  18 |     // Don't show if Supabase isn't configured  react-hooks/refs
+  15:19  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\ui\SyncIndicator.tsx:15:19
+  13 |   const [status, setStatus] = useState<SyncStatus>(getSyncStatus);
+  14 |   const [visible, setVisible] = useState(false);
+> 15 |   const opacity = useRef(new Animated.Value(0)).current;
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  16 |
+  17 |   useEffect(() => {
+  18 |     // Don't show if Supabase isn't configured  react-hooks/refs
+
+C:\Users\J\Desktop\arch\src\components\ui\XpBar.tsx
+  37:6  warning  React Hook useEffect has missing dependencies: 'glowValue' and 'widthValue'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\J\Desktop\arch\src\components\workout\CompletionAnimation.tsx
+   56:24  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\workout\CompletionAnimation.tsx:56:24
+  54 |
+  55 |   // Screen flash animation value
+> 56 |   const flashOpacity = useRef(new Animated.Value(1)).current;
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  57 |
+  58 |   // Check for newly unlocked achievements
+  59 |   const unlockedAchievements = useMemo(() => {                                                                                       react-hooks/refs
+   56:24  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\workout\CompletionAnimation.tsx:56:24
+  54 |
+  55 |   // Screen flash animation value
+> 56 |   const flashOpacity = useRef(new Animated.Value(1)).current;
+     |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  57 |
+  58 |   // Check for newly unlocked achievements
+  59 |   const unlockedAchievements = useMemo(() => {                                                                                       react-hooks/refs
+   88:6   warning  React Hook useEffect has missing dependencies: 'flashOpacity' and 'leveledUp'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+   95:31  warning  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\J\Desktop\arch\src\components\workout\CompletionAnimation.tsx:95:31
+  93 |       Array.from({ length: 24 }, (_, i) => {
+  94 |         const angle = (i / 24) * Math.PI * 2;
+> 95 |         const distance = 80 + Math.random() * 180;
+     |                               ^^^^^^^^^^^^^ Cannot call impure function
+  96 |         const isStar = i % 3 === 0;
+  97 |         const isCircle = i % 3 === 1;
+  98 |         return {                                                                                      react-hooks/purity
+  101:27  warning  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\J\Desktop\arch\src\components\workout\CompletionAnimation.tsx:101:27
+   99 |           translateX: Math.cos(angle) * distance,
+  100 |           translateY: Math.sin(angle) * distance,
+> 101 |           duration: 600 + Math.random() * 400,
+      |                           ^^^^^^^^^^^^^ Cannot call impure function
+  102 |           size: isStar ? 6 : isCircle ? 4 + Math.random() * 4 : 3 + Math.random() * 3,
+  103 |           color: [
+  104 |             colors.accent.DEFAULT,                           react-hooks/purity
+  102:45  warning  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\J\Desktop\arch\src\components\workout\CompletionAnimation.tsx:102:45
+  100 |           translateY: Math.sin(angle) * distance,
+  101 |           duration: 600 + Math.random() * 400,
+> 102 |           size: isStar ? 6 : isCircle ? 4 + Math.random() * 4 : 3 + Math.random() * 3,
+      |                                             ^^^^^^^^^^^^^ Cannot call impure function
+  103 |           color: [
+  104 |             colors.accent.DEFAULT,
+  105 |             colors.accent.light,                          react-hooks/purity
+  102:69  warning  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\J\Desktop\arch\src\components\workout\CompletionAnimation.tsx:102:69
+  100 |           translateY: Math.sin(angle) * distance,
+  101 |           duration: 600 + Math.random() * 400,
+> 102 |           size: isStar ? 6 : isCircle ? 4 + Math.random() * 4 : 3 + Math.random() * 3,
+      |                                                                     ^^^^^^^^^^^^^ Cannot call impure function
+  103 |           color: [
+  104 |             colors.accent.DEFAULT,
+  105 |             colors.accent.light,  react-hooks/purity
+  111:21  warning  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\J\Desktop\arch\src\components\workout\CompletionAnimation.tsx:111:21
+  109 |             colors.accent.dark,
+  110 |           ][i % 6],
+> 111 |           rotation: Math.random() * 720,
+      |                     ^^^^^^^^^^^^^ Cannot call impure function
+  112 |           borderRadius: isCircle ? 50 : isStar ? 2 : 0,
+  113 |         };
+  114 |       }),                                                                                                                                                       react-hooks/purity
+  115:5   warning  React Hook useMemo has missing dependencies: 'colors.accent.DEFAULT', 'colors.accent.dark', 'colors.accent.light', 'colors.success', and 'colors.warning'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-hooks/exhaustive-deps
+  122:28  warning  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\J\Desktop\arch\src\components\workout\CompletionAnimation.tsx:122:28
+  120 |     () =>
+  121 |       Array.from({ length: 20 }, (_, i) => ({
+> 122 |         translateY: -300 - Math.random() * 200,
+      |                            ^^^^^^^^^^^^^ Cannot call impure function
+  123 |         translateX: (Math.random() - 0.5) * 120,
+  124 |         duration: 1000 + Math.random() * 1200,
+  125 |         left: `${5 + Math.random() * 90}%`,                                                                      react-hooks/purity
+  123:22  warning  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\J\Desktop\arch\src\components\workout\CompletionAnimation.tsx:123:22
+  121 |       Array.from({ length: 20 }, (_, i) => ({
+  122 |         translateY: -300 - Math.random() * 200,
+> 123 |         translateX: (Math.random() - 0.5) * 120,
+      |                      ^^^^^^^^^^^^^ Cannot call impure function
+  124 |         duration: 1000 + Math.random() * 1200,
+  125 |         left: `${5 + Math.random() * 90}%`,
+  126 |         size: 2 + Math.random() * 5,                                                 react-hooks/purity
+  124:26  warning  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\J\Desktop\arch\src\components\workout\CompletionAnimation.tsx:124:26
+  122 |         translateY: -300 - Math.random() * 200,
+  123 |         translateX: (Math.random() - 0.5) * 120,
+> 124 |         duration: 1000 + Math.random() * 1200,
+      |                          ^^^^^^^^^^^^^ Cannot call impure function
+  125 |         left: `${5 + Math.random() * 90}%`,
+  126 |         size: 2 + Math.random() * 5,
+  127 |         color: [                                                                          react-hooks/purity
+  125:22  warning  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\J\Desktop\arch\src\components\workout\CompletionAnimation.tsx:125:22
+  123 |         translateX: (Math.random() - 0.5) * 120,
+  124 |         duration: 1000 + Math.random() * 1200,
+> 125 |         left: `${5 + Math.random() * 90}%`,
+      |                      ^^^^^^^^^^^^^ Cannot call impure function
+  126 |         size: 2 + Math.random() * 5,
+  127 |         color: [
+  128 |           colors.accent.DEFAULT,                                                                                             react-hooks/purity
+  126:19  warning  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\J\Desktop\arch\src\components\workout\CompletionAnimation.tsx:126:19
+  124 |         duration: 1000 + Math.random() * 1200,
+  125 |         left: `${5 + Math.random() * 90}%`,
+> 126 |         size: 2 + Math.random() * 5,
+      |                   ^^^^^^^^^^^^^ Cannot call impure function
+  127 |         color: [
+  128 |           colors.accent.DEFAULT,
+  129 |           colors.accent.light,                                                                                                                  react-hooks/purity
+  134:19  warning  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\J\Desktop\arch\src\components\workout\CompletionAnimation.tsx:134:19
+  132 |           "#FFFFFF",
+  133 |         ][i % 5],
+> 134 |         rotation: Math.random() * 360,
+      |                   ^^^^^^^^^^^^^ Cannot call impure function
+  135 |       })),
+  136 |     [],
+  137 |   );                                                                                                                                                                                                                             react-hooks/purity
+  136:5   warning  React Hook useMemo has missing dependencies: 'colors.accent.DEFAULT', 'colors.accent.light', 'colors.success', and 'colors.warning'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+
+C:\Users\J\Desktop\arch\src\components\workout\ExerciseAnatomy.tsx
+  3:58  warning  'Path' is defined but never used        @typescript-eslint/no-unused-vars
+  4:21  warning  'typography' is defined but never used  @typescript-eslint/no-unused-vars
+  4:33  warning  'spacing' is defined but never used     @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\src\components\workout\ExerciseDemo.tsx
+  111:6  warning  React Hook useCallback has a missing dependency: 'dialog'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\J\Desktop\arch\src\components\workout\RepCounterPanel.tsx
+    5:25  warning  'RepAxis' is defined but never used                 @typescript-eslint/no-unused-vars
+  106:9   warning  'isCalibrating' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\src\components\workout\TempoTimer.tsx
+  12:22  warning  'TempoPhase' is defined but never used                                                                                      @typescript-eslint/no-unused-vars
+  46:6   warning  React Hook useEffect has missing dependencies: 'phases' and 'progress'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\J\Desktop\arch\src\components\workout\VideoPlayerModal.tsx
+  21:21  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\workout\VideoPlayerModal.tsx:21:21
+  19 | }: VideoPlayerModalProps) {
+  20 |   const colors = useColors();
+> 21 |   const scaleAnim = useRef(new Animated.Value(0.9)).current;
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  22 |   const fadeAnim = useRef(new Animated.Value(0)).current;
+  23 |   const [loaded, setLoaded] = useState(false);
+  24 |   const [error, setError] = useState(false);  react-hooks/refs
+  21:21  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\workout\VideoPlayerModal.tsx:21:21
+  19 | }: VideoPlayerModalProps) {
+  20 |   const colors = useColors();
+> 21 |   const scaleAnim = useRef(new Animated.Value(0.9)).current;
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  22 |   const fadeAnim = useRef(new Animated.Value(0)).current;
+  23 |   const [loaded, setLoaded] = useState(false);
+  24 |   const [error, setError] = useState(false);  react-hooks/refs
+  21:21  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\workout\VideoPlayerModal.tsx:21:21
+  19 | }: VideoPlayerModalProps) {
+  20 |   const colors = useColors();
+> 21 |   const scaleAnim = useRef(new Animated.Value(0.9)).current;
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  22 |   const fadeAnim = useRef(new Animated.Value(0)).current;
+  23 |   const [loaded, setLoaded] = useState(false);
+  24 |   const [error, setError] = useState(false);  react-hooks/refs
+  21:21  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\workout\VideoPlayerModal.tsx:21:21
+  19 | }: VideoPlayerModalProps) {
+  20 |   const colors = useColors();
+> 21 |   const scaleAnim = useRef(new Animated.Value(0.9)).current;
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  22 |   const fadeAnim = useRef(new Animated.Value(0)).current;
+  23 |   const [loaded, setLoaded] = useState(false);
+  24 |   const [error, setError] = useState(false);  react-hooks/refs
+  21:21  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\workout\VideoPlayerModal.tsx:21:21
+  19 | }: VideoPlayerModalProps) {
+  20 |   const colors = useColors();
+> 21 |   const scaleAnim = useRef(new Animated.Value(0.9)).current;
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  22 |   const fadeAnim = useRef(new Animated.Value(0)).current;
+  23 |   const [loaded, setLoaded] = useState(false);
+  24 |   const [error, setError] = useState(false);  react-hooks/refs
+  22:20  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\workout\VideoPlayerModal.tsx:22:20
+  20 |   const colors = useColors();
+  21 |   const scaleAnim = useRef(new Animated.Value(0.9)).current;
+> 22 |   const fadeAnim = useRef(new Animated.Value(0)).current;
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  23 |   const [loaded, setLoaded] = useState(false);
+  24 |   const [error, setError] = useState(false);
+  25 |                                 react-hooks/refs
+  22:20  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\workout\VideoPlayerModal.tsx:22:20
+  20 |   const colors = useColors();
+  21 |   const scaleAnim = useRef(new Animated.Value(0.9)).current;
+> 22 |   const fadeAnim = useRef(new Animated.Value(0)).current;
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  23 |   const [loaded, setLoaded] = useState(false);
+  24 |   const [error, setError] = useState(false);
+  25 |                                 react-hooks/refs
+  22:20  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\workout\VideoPlayerModal.tsx:22:20
+  20 |   const colors = useColors();
+  21 |   const scaleAnim = useRef(new Animated.Value(0.9)).current;
+> 22 |   const fadeAnim = useRef(new Animated.Value(0)).current;
+     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  23 |   const [loaded, setLoaded] = useState(false);
+  24 |   const [error, setError] = useState(false);
+  25 |                                 react-hooks/refs
+  45:6   warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\J\Desktop\arch\src\components\workout\VideoPlayerModal.tsx:45:6
+  43 |       ]).start();
+  44 |     }
+> 45 |   }, [visible, scaleAnim, fadeAnim]);
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  46 |
+  47 |   const handleClose = useCallback(() => {
+  48 |     Animated.parallel([                                                                                                                                                                        react-hooks/refs
+
+C:\Users\J\Desktop\arch\src\components\workout\VoiceCoachToggle.tsx
+  2:34  warning  'View' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\src\components\workout\WorkoutChart.tsx
+  310:9  warning  'totalW' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\src\data\exercises96\index.ts
+  30:18  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  31:18  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  32:20  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  33:20  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  34:19  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  35:19  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  36:18  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  37:19  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\J\Desktop\arch\src\data\goalWorkouts.ts
+  140:32  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\J\Desktop\arch\src\data\workoutGenerator96.ts
+  22:23  warning  'useUserStore' is defined but never used  @typescript-eslint/no-unused-vars
+  23:10  warning  'GOAL_CONFIGS' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\src\data\workouts.ts
+  1:10  warning  'WorkoutDay' is defined but never used   @typescript-eslint/no-unused-vars
+  2:10  warning  'FitnessGoal' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\src\hooks\useVoiceCoach.ts
+  11:29  warning  'useCallback' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\src\services\levelUpSound.ts
+  18:8  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\J\Desktop\arch\src\services\voiceCoach.ts
+  10:10  warning  'TempoPhase' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\src\utils\doubleProgression.ts
+  243:12  warning  'low' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\src\utils\exercisePresets.ts
+  15:31  warning  'FitnessGoal' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\src\utils\muscleXp.ts
+  3:10  warning  'MuscleGroup' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\J\Desktop\arch\src\utils\skillUnlocks.ts
+  8:55  warning  'NodeState' is defined but never used        @typescript-eslint/no-unused-vars
+  9:49  warning  'WORKOUT_CLASSES' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 168 problems (23 errors, 145 warnings)
+  4 errors and 0 warnings potentially fixable with the `--fix` option.
+

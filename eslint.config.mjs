@@ -10,7 +10,15 @@ export default [
   // ── Global ignores ──────────────────────────────────
   // Must be a standalone config object for flat config format
   {
-    ignores: ["dist/*", "web-build/*", "node_modules/*", "expo-env.d.ts", "nativewind-env.d.ts", "scripts/*"],
+    ignores: [
+      "dist/*",
+      "web-build/*",
+      "node_modules/*",
+      "expo-env.d.ts",
+      "nativewind-env.d.ts",
+      "scripts/*",
+      "supabase/functions/*",
+    ],
   },
 
   ...expoConfig,
