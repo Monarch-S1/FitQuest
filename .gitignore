@@ -78,6 +78,5 @@ scripts/
 docs/
 .claude/
 .vscode/
-.prettierignore
-.prettierrc
+# .prettierignore and .prettierrc intentionally TRACKED (needed by CI for correct prettier config)
 nativewind-env.d.ts
