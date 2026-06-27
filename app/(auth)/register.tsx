@@ -2,7 +2,6 @@ import { useState, useCallback } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
@@ -12,6 +11,9 @@ import { useRouter } from "expo-router";
 import { useColors, typography, spacing, fonts } from "../../src/tokens";
 import { useUserStore, waitForAuthSync } from "../../src/stores/useUserStore";
 import { signUpWithEmail } from "../../src/services/supabase";
+import { TextInputField } from "../../src/components/form/TextInputField";
+import { FormGroup } from "../../src/components/form/FormGroup";
+import { ValidationBadge } from "../../src/components/form/ValidationBadge";
 
 export default function RegisterScreen() {
   const colors = useColors();
@@ -23,6 +25,40 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Validation functions
+  const validateEmail = useCallback((value: string): boolean | string => {
+    if (!value.trim()) {
+      return "Email is required";
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
+      return "Enter a valid email address";
+    }
+    return true;
+  }, []);
+
+  const validatePassword = useCallback((value: string): boolean | string => {
+    if (!value) {
+      return "Password is required";
+    }
+    if (value.length < 6) {
+      return "Password must be at least 6 characters";
+    }
+    return true;
+  }, []);
+
+  const validateConfirmPassword = useCallback(
+    (value: string): boolean | string => {
+      if (!value) {
+        return "Confirm your password";
+      }
+      if (value !== password) {
+        return "Passwords do not match";
+      }
+      return true;
+    },
+    [password]
+  );
 
   const handleEmailRegister = useCallback(async () => {
     if (!email.trim()) {
@@ -104,125 +140,53 @@ export default function RegisterScreen() {
           </Text>
         </View>
 
-        {/* Error */}
-        {error ? (
-          <View
-            style={{
-              backgroundColor: `${colors.error}15`,
-              borderWidth: 1,
-              borderColor: colors.error,
-              borderRadius: 4,
-              padding: spacing.md,
-              marginBottom: spacing.lg,
-            }}
-          >
-            <Text
-              style={{
-                ...typography.bodySmall,
-                color: colors.error,
-                fontSize: 11,
-                textAlign: "center",
-              }}
-            >
-              {error}
-            </Text>
-          </View>
-        ) : null}
+        {/* Error Banner */}
+        {error && (
+          <ValidationBadge
+            type="error"
+            message={error}
+            visible={!!error}
+            onDismiss={() => setError("")}
+          />
+        )}
 
-        {/* Email */}
-        <View style={{ marginBottom: spacing.md }}>
-          <Text
-            style={{
-              ...typography.label,
-              color: colors.text.secondary,
-              fontSize: 9,
-              marginBottom: spacing.xs,
-            }}
-          >
-            EMAIL
-          </Text>
-          <TextInput
+        {/* Form Inputs */}
+        <FormGroup gap={spacing.md} containerStyle={{ marginBottom: spacing.xl }}>
+          <TextInputField
+            label="EMAIL"
+            placeholder="you@example.com"
             value={email}
             onChangeText={setEmail}
-            placeholder="you@example.com"
-            placeholderTextColor={colors.text.secondary}
+            onValidate={validateEmail}
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="email-address"
-            style={{
-              backgroundColor: colors.bg.elevated,
-              borderWidth: 1,
-              borderColor: colors.border.subtle,
-              borderRadius: 4,
-              padding: spacing.md,
-              color: colors.text.primary,
-              fontFamily: fonts.body.regular,
-              fontSize: 14,
-            }}
+            size="md"
+            showValidationIcon
           />
-        </View>
 
-        {/* Password */}
-        <View style={{ marginBottom: spacing.md }}>
-          <Text
-            style={{
-              ...typography.label,
-              color: colors.text.secondary,
-              fontSize: 9,
-              marginBottom: spacing.xs,
-            }}
-          >
-            PASSWORD
-          </Text>
-          <TextInput
+          <TextInputField
+            label="PASSWORD"
+            placeholder="At least 6 characters"
             value={password}
             onChangeText={setPassword}
-            placeholder="At least 6 characters"
-            placeholderTextColor={colors.text.secondary}
+            onValidate={validatePassword}
             secureTextEntry
-            style={{
-              backgroundColor: colors.bg.elevated,
-              borderWidth: 1,
-              borderColor: colors.border.subtle,
-              borderRadius: 4,
-              padding: spacing.md,
-              color: colors.text.primary,
-              fontFamily: fonts.body.regular,
-              fontSize: 14,
-            }}
+            size="md"
+            showValidationIcon
           />
-        </View>
 
-        {/* Confirm Password */}
-        <View style={{ marginBottom: spacing[5] }}>
-          <Text
-            style={{
-              ...typography.label,
-              color: colors.text.secondary,
-              fontSize: 9,
-              marginBottom: spacing.xs,
-            }}
-          >
-            CONFIRM PASSWORD
-          </Text>
-          <TextInput
+          <TextInputField
+            label="CONFIRM PASSWORD"
+            placeholder="Re-enter your password"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
-            placeholder="Re-enter your password"
-            placeholderTextColor={colors.text.secondary}
+            onValidate={validateConfirmPassword}
             secureTextEntry
-            style={{
-              backgroundColor: colors.bg.elevated,
-              borderWidth: 1,
-              borderColor: colors.border.subtle,
-              borderRadius: 4,
-              padding: spacing.md,
-              color: colors.text.primary,
-              fontFamily: fonts.body.regular,
-              fontSize: 14,
-            }}
+            size="md"
+            showValidationIcon
           />
-        </View>
+        </FormGroup>
 
         {/* Sign Up Button */}
         <TouchableOpacity

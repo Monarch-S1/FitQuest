@@ -1,6 +1,10 @@
 import { View, Text, ViewStyle } from "react-native";
 import { ReactNode } from "react";
-import { useColors, spacing, radii } from "../../tokens";
+import { useColors, spacing, radii, getShadow, glassEffect, glassEffectDeep, glassEffectLight } from "../../tokens";
+import { BlurView } from "expo-blur";
+
+type ElevationLevel = "low" | "medium" | "high";
+type CardVariant = "solid" | "glass" | "gradient";
 
 interface CardProps {
   children: ReactNode;
@@ -11,30 +15,39 @@ interface CardProps {
   /** Accent variant */
   accent?: "amber" | "green" | "red" | "none";
   /** Visual variant */
-  variant?: "default" | "highlight";
+  variant?: CardVariant;
+  /** Elevation level for depth hierarchy */
+  elevation?: ElevationLevel;
   /** Show left accent bar */
   leftAccent?: boolean;
   style?: ViewStyle;
+  /** Blur intensity for glass effect (0-100) */
+  blurIntensity?: number;
 }
 
 /**
  * Unified Card component — replaces SegmentedPanel and HUDModule.
  *
  * Variants:
- * - default: subtle card with bg.card background, no border
- * - accent: colored left accent bar + border color
- * - highlight: brighter background for important info
+ * - solid: Subtle card with bg.card background (default)
+ * - glass: Semi-transparent + backdrop blur (premium feel)
+ * - gradient: With subtle gradient overlay for visual interest
  *
- * No glossy overlays. No corner notches. Minimal borders.
+ * Elevation levels:
+ * - low: Cards, list items
+ * - medium: Containers, featured content
+ * - high: Important alerts, featured sections
  */
 export function Card({
   children,
   title,
   titleRight,
   accent = "none",
-  variant = "default",
+  variant = "solid",
+  elevation = "medium",
   leftAccent = false,
   style,
+  blurIntensity = 8,
 }: CardProps) {
   const colors = useColors();
 
@@ -47,24 +60,43 @@ export function Card({
           ? colors.error
           : colors.border.subtle;
 
-  const bgColor = variant === "highlight" ? colors.bg.highlight : colors.bg.card;
+  // Get background color based on variant
+  const getBgColor = () => {
+    if (variant === "glass") return "rgba(27, 24, 32, 0.7)";
+    if (variant === "gradient") return colors.bg.card;
+    return colors.bg.card;
+  };
+
+  // Get shadow based on elevation
+  const getShadowStyle = () => {
+    if (variant === "glass") {
+      return getShadow(elevation === "high" ? "elevation3" : elevation === "medium" ? "elevation2" : "elevation1");
+    }
+    if (elevation === "high") return getShadow("elevation3");
+    if (elevation === "medium") return getShadow("elevation2");
+    return getShadow("elevation1");
+  };
+
+  // Glass effect background layer
+  const glassBackground = variant === "glass" ? glassEffect : {};
 
   return (
     <View
-      style={{
-        backgroundColor: bgColor,
-        borderRadius: radii.lg,
-        overflow: "hidden",
-        ...(variant === "highlight" && {
-          shadowColor: colors.accent.DEFAULT,
-          shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: 0.15,
-          shadowRadius: 12,
-          elevation: 4,
-        }),
-        ...style,
-      }}
+      style={[
+        {
+          borderRadius: radii.lg,
+          overflow: "hidden",
+          backgroundColor: getBgColor(),
+          ...getShadowStyle(),
+        },
+        style,
+      ]}
     >
+      {/* Blur layer for glass effect */}
+      {variant === "glass" && (
+        <BlurView intensity={blurIntensity} style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }} />
+      )}
+
       {/* Left accent bar */}
       {leftAccent && (
         <View
@@ -77,6 +109,7 @@ export function Card({
             backgroundColor: accentColor,
             borderTopLeftRadius: radii.lg,
             borderBottomLeftRadius: radii.lg,
+            zIndex: 1,
           }}
         />
       )}
@@ -92,6 +125,8 @@ export function Card({
             paddingVertical: spacing.sm,
             borderBottomWidth: titleRight ? 1 : 0,
             borderBottomColor: colors.border.subtle,
+            zIndex: 2,
+            backgroundColor: variant === "glass" ? "rgba(27, 24, 32, 0.3)" : undefined,
           }}
         >
           <TitleText accent={accent === "none" ? "muted" : accent}>{title.toUpperCase()}</TitleText>
@@ -104,6 +139,7 @@ export function Card({
         style={{
           padding: spacing.md,
           paddingLeft: leftAccent ? spacing.md + spacing.xs : spacing.md,
+          zIndex: 2,
         }}
       >
         {children}

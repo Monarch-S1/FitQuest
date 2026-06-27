@@ -3,12 +3,15 @@ import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useColors, typography, spacing, fonts, Label, H4, Body } from "../../src/tokens";
 import { Card } from "../../src/components/ui/Card";
+import { WorkoutSummaryCard } from "../../src/components/ui/WorkoutSummaryCard";
+import { StreakWidget } from "../../src/components/ui/StreakWidget";
 import { StreakCalendar } from "../../src/components/workout/WorkoutChart";
 import { useUserStore } from "../../src/stores/useUserStore";
 import { getPathwayLevels } from "../../src/data/workoutGenerator96";
 import { PATHWAY_LIST } from "../../src/data/pathways";
 import { getStreakCalendar } from "../../src/utils/chartData";
 import { getLevel, getProgressToNextLevel } from "../../src/utils/level";
+import { groupByWeek, getTimePeriodLabel, hasWorkoutToday } from "../../src/utils/analytics";
 
 const DAY_NAMES = ["THE VANGUARD", "THE SHADOW", "THE TEMPEST", "THE COLOSSUS"];
 
@@ -38,6 +41,12 @@ export default function HistoryScreen() {
     if (workoutHistory.length === 0) return null;
     return [...workoutHistory].sort((a, b) => b.date.localeCompare(a.date))[0];
   }, [workoutHistory]);
+
+  // Group workouts by week for better organization
+  const weeklyStats = useMemo(() => groupByWeek(workoutHistory), [workoutHistory]);
+
+  // Check if today has a workout
+  const todayActive = useMemo(() => hasWorkoutToday(workoutHistory), [workoutHistory]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>
@@ -83,6 +92,14 @@ export default function HistoryScreen() {
           </View>
         ) : (
           <>
+            {/* Prominent Streak Widget */}
+            <StreakWidget
+              currentStreak={streakData.currentStreak}
+              longestStreak={streakData.longestStreak}
+              isActiveToday={todayActive}
+              elevation="high"
+            />
+
             {/* Quick Stats Row */}
             <View
               style={{
@@ -91,7 +108,7 @@ export default function HistoryScreen() {
                 marginBottom: spacing.lg,
               }}
             >
-              <Card style={{ flex: 1 }}>
+              <Card style={{ flex: 1 }} elevation="low">
                 <View style={{ alignItems: "center", gap: spacing.xs }}>
                   <Label variant="secondary" style={{ fontSize: 9 }}>
                     WORKOUTS
@@ -99,74 +116,89 @@ export default function HistoryScreen() {
                   <H4 variant="accent">{workoutHistory.length}</H4>
                 </View>
               </Card>
-              <Card style={{ flex: 1 }}>
-                <View style={{ alignItems: "center", gap: spacing.xs }}>
-                  <Label variant="secondary" style={{ fontSize: 9 }}>
-                    STREAK
-                  </Label>
-                  <H4 variant={streakData.currentStreak >= 3 ? "success" : "accent"}>
-                    {streakData.currentStreak}
-                  </H4>
-                  <Body variant="secondary" size="sm" style={{ fontSize: 8 }}>
-                    Best: {streakData.longestStreak}
-                  </Body>
-                </View>
-              </Card>
-              <Card style={{ flex: 1 }}>
+              <Card style={{ flex: 1 }} elevation="low">
                 <View style={{ alignItems: "center", gap: spacing.xs }}>
                   <Label variant="secondary" style={{ fontSize: 9 }}>
                     LEVEL
                   </Label>
                   <H4 variant="accent">{level}</H4>
-                  <Body variant="secondary" size="sm" style={{ fontSize: 8 }}>
-                    {totalXp} XP
-                  </Body>
+                </View>
+              </Card>
+              <Card style={{ flex: 1 }} elevation="low">
+                <View style={{ alignItems: "center", gap: spacing.xs }}>
+                  <Label variant="secondary" style={{ fontSize: 9 }}>
+                    TOTAL XP
+                  </Label>
+                  <H4 variant="accent">{totalXp}</H4>
                 </View>
               </Card>
             </View>
 
-            {/* Last Workout */}
-            {lastWorkout && (
-              <Card style={{ marginBottom: spacing.lg }}>
+            {/* XP Progress */}
+            <Card elevation="low" style={{ marginBottom: spacing.lg }}>
+              <View style={{ gap: spacing.sm }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <Label variant="secondary" style={{ fontSize: 9 }}>
+                    LEVEL {level} → {level + 1}
+                  </Label>
+                  <Label variant="secondary" style={{ fontSize: 9 }}>
+                    {Math.round(xpProgress.progress * 100)}%
+                  </Label>
+                </View>
                 <View
                   style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
+                    height: 6,
+                    backgroundColor: colors.bg.highlight,
+                    borderRadius: 3,
+                    overflow: "hidden",
                   }}
                 >
-                  <View>
-                    <Label variant="secondary" style={{ fontSize: 9 }}>
-                      LAST WORKOUT
-                    </Label>
-                    <Body
-                      variant="primary"
-                      size="sm"
-                      style={{ fontFamily: fonts.body.semiBold, marginTop: 2 }}
-                    >
-                      {getWorkoutDisplayName(lastWorkout.workoutId)}
-                    </Body>
-                    <Body variant="secondary" size="sm" style={{ fontSize: 9, marginTop: 1 }}>
-                      {lastWorkout.date} · {Math.round(lastWorkout.duration / 60)} min ·{" "}
-                      {lastWorkout.setsCompleted} sets
-                    </Body>
-                  </View>
-                  <Text
+                  <View
                     style={{
-                      ...typography.h3,
-                      color: colors.accent.DEFAULT,
-                      fontSize: 20,
+                      width: `${xpProgress.progress * 100}%`,
+                      height: "100%",
+                      backgroundColor: colors.accent.DEFAULT,
+                      borderRadius: 3,
                     }}
-                  >
-                    +{lastWorkout.xpEarned}
-                  </Text>
+                  />
                 </View>
-              </Card>
-            )}
+                <Body variant="secondary" size="sm" style={{ fontSize: 9 }}>
+                  {xpProgress.currentXp} / {xpProgress.requiredXp} XP to Level {level + 1}
+                </Body>
+              </View>
+            </Card>
+
+            {/* Weekly Breakdown */}
+            <View style={{ marginBottom: spacing.lg }}>
+              <Label variant="secondary" style={{ fontSize: 10, marginBottom: spacing.md }}>
+                WEEKLY BREAKDOWN
+              </Label>
+              {weeklyStats.slice(0, 4).map((week) => (
+                <WorkoutSummaryCard
+                  key={week.weekStart}
+                  title={getTimePeriodLabel(week.weekStart)}
+                  days={week.days}
+                  totalWorkouts={week.totalWorkouts}
+                  totalXp={week.totalXp}
+                  elevation="medium"
+                />
+              ))}
+            </View>
+            </Card>
+
+            {/* Streak Calendar - Heatmap visualization */}
+            <Card
+              title={`STREAK HEATMAP · ${streakData.currentStreak}-DAY CHAIN`}
+              accent="green"
+              elevation="medium"
+              style={{ marginBottom: spacing.lg }}
+            >
+              <StreakCalendar data={streakCalendar} />
+            </Card>
 
             {/* Pathway Progression */}
             {pathwayLevels && (
-              <Card title="PROGRESSION" accent="none" style={{ marginBottom: spacing.lg }}>
+              <Card title="SKILL PROGRESSION" accent="none" elevation="medium" style={{ marginBottom: spacing.lg }}>
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }}>
                   {PATHWAY_LIST.map((pw) => {
                     const pl = pathwayLevels[pw.id];
@@ -192,7 +224,7 @@ export default function HistoryScreen() {
                           backgroundColor: colors.bg.elevated,
                           borderWidth: 1,
                           borderColor: colors.border.subtle,
-                          borderRadius: 4,
+                          borderRadius: 8,
                           padding: spacing.sm,
                         }}
                       >
@@ -226,7 +258,7 @@ export default function HistoryScreen() {
                             ...typography.label,
                             color: tierColors[tierLabel],
                             fontSize: 8,
-                            marginTop: 2,
+                            marginTop: 4,
                           }}
                         >
                           {tierLabel}
@@ -234,9 +266,9 @@ export default function HistoryScreen() {
                         {/* Mini level bar */}
                         <View
                           style={{
-                            height: 2,
+                            height: 3,
                             backgroundColor: colors.bg.highlight,
-                            borderRadius: 1,
+                            borderRadius: 2,
                             marginTop: spacing.sm,
                             overflow: "hidden",
                           }}
@@ -246,7 +278,7 @@ export default function HistoryScreen() {
                               width: `${(pl.level / pw.maxLevel) * 100}%`,
                               height: "100%",
                               backgroundColor: colors.accent.DEFAULT,
-                              borderRadius: 1,
+                              borderRadius: 2,
                             }}
                           />
                         </View>
@@ -257,54 +289,11 @@ export default function HistoryScreen() {
               </Card>
             )}
 
-            {/* XP Progress */}
-            <Card style={{ marginBottom: spacing.lg }}>
-              <View style={{ gap: spacing.sm }}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                  <Label variant="secondary" style={{ fontSize: 9 }}>
-                    LEVEL {level} → {level + 1}
-                  </Label>
-                  <Label variant="secondary" style={{ fontSize: 9 }}>
-                    {Math.round(xpProgress.progress * 100)}%
-                  </Label>
-                </View>
-                <View
-                  style={{
-                    height: 4,
-                    backgroundColor: colors.bg.highlight,
-                    borderRadius: 2,
-                    overflow: "hidden",
-                  }}
-                >
-                  <View
-                    style={{
-                      width: `${xpProgress.progress * 100}%`,
-                      height: "100%",
-                      backgroundColor: colors.accent.DEFAULT,
-                      borderRadius: 2,
-                    }}
-                  />
-                </View>
-                <Body variant="secondary" size="sm" style={{ fontSize: 9 }}>
-                  {xpProgress.currentXp} / {xpProgress.requiredXp} XP
-                </Body>
-              </View>
-            </Card>
-
-            {/* Streak Calendar */}
-            <Card
-              title={`STREAK · ${streakData.currentStreak}-DAY CHAIN`}
-              accent="green"
-              style={{ marginBottom: spacing.lg }}
-            >
-              <StreakCalendar data={streakCalendar} />
-            </Card>
-
             {/* Recent Sessions */}
-            <Card title="RECENT WORKOUTS" accent="none">
+            <Card title="RECENT WORKOUTS" accent="none" elevation="low">
               {[...workoutHistory]
                 .reverse()
-                .slice(0, 20)
+                .slice(0, 15)
                 .map((session) => (
                   <View
                     key={session.id}
@@ -333,7 +322,7 @@ export default function HistoryScreen() {
                           ...typography.bodySmall,
                           color: colors.text.secondary,
                           fontSize: 9,
-                          marginTop: 1,
+                          marginTop: 2,
                         }}
                       >
                         {session.date} · {Math.round(session.duration / 60)} min ·{" "}
@@ -348,7 +337,7 @@ export default function HistoryScreen() {
                         fontFamily: fonts.body.semiBold,
                       }}
                     >
-                      +{session.xpEarned} XP
+                      +{session.xpEarned}
                     </Text>
                   </View>
                 ))}

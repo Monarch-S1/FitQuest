@@ -42,4 +42,21 @@ export const colors = {
     subtle: "#2A2730",
     accent: "#C9954A",
   },
+  /**
+   * Gradient presets for use with expo-linear-gradient
+   * Each gradient is defined as [startColor, midColor?, endColor]
+   */
+  gradients: {
+    // Accent bronzes
+    accentWarm: ["#C9954A", "#D4A853", "#E0BC6A"] as const,
+    accentCool: ["#A67B32", "#C9954A", "#D4A853"] as const,
+    // Status gradients
+    successGradient: ["#7A9A6D", "#8BAD7C", "#9CBF8B"] as const,
+    errorGradient: ["#C4715A", "#D08665", "#DA9F70"] as const,
+    // Neutral gradients for backgrounds
+    backgroundFade: ["#100E13", "#1B1820", "#26222E"] as const,
+    // Overlay gradients
+    overlayGold: ["rgba(201, 149, 74, 0.15)", "rgba(201, 149, 74, 0)"] as const,
+    overlayDark: ["rgba(0, 0, 0, 0.3)", "rgba(0, 0, 0, 0)"] as const,
+  },
 } as const;

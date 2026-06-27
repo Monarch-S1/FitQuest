@@ -10,6 +10,7 @@ export default function AuthLayout() {
         headerShown: false,
         contentStyle: { backgroundColor: colors.bg.primary },
         animation: "fade",
+        gestureEnabled: false, // Prevent back navigation from auth screens
       }}
     >
       <Stack.Screen name="login" />
