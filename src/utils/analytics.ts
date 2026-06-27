@@ -86,7 +86,9 @@ export function groupByWeek(sessions: WorkoutSession[]): WeekStats[] {
     if (!weeks[weekStartStr]) {
       weeks[weekStartStr] = {
         weekStart: weekStartStr,
-        weekEnd: new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+        weekEnd: new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0],
         days: generateDayStubs(weekStartStr),
         totalWorkouts: 0,
         totalXp: 0,
@@ -158,7 +160,10 @@ export function getTimePeriodLabel(weekStart: string): string {
     return "LAST WEEK";
   }
 
-  return formatWeekLabel(weekStart, new Date(new Date(weekStart).getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]);
+  return formatWeekLabel(
+    weekStart,
+    new Date(new Date(weekStart).getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+  );
 }
 
 /**

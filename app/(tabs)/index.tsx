@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, useEffect, useRef } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { View, Text, Animated, Easing } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -100,7 +100,7 @@ export default function HomeScreen() {
   }, [milestoneTier, setLastShownMilestone]);
 
   // Fade-in animation when content loads
-  const fadeIn = useRef(new Animated.Value(0)).current;
+  const fadeIn = useMemo(() => new Animated.Value(0), []);
   useEffect(() => {
     if (isHydrated) {
       Animated.timing(fadeIn, {
@@ -340,8 +340,6 @@ export default function HomeScreen() {
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {
-  const colors = useColors();
-
   return (
     <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
       <Label variant="secondary">{label}</Label>

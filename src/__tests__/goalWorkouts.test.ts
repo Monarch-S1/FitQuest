@@ -17,7 +17,7 @@ import {
   getGoalConfig,
   getGoalWorkoutDescription,
 } from "../data/goalWorkouts";
-import { getExercise96ById, getAllExercises96, Exercise96 } from "../data/exercises96";
+import { getExercise96ById, getAllExercises96 } from "../data/exercises96";
 import type { Exercise } from "../data/exercises";
 import type { FitnessGoal } from "../stores/useUserStore";
 

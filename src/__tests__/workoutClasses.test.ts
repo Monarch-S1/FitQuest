@@ -16,7 +16,6 @@ import {
   getNewlyUnlockedClasses,
   getClassUnlockProgress,
   getClassWorkout,
-  WorkoutClass,
 } from "../data/workoutClasses";
 
 // ─── Constants ────────────────────────────────────

@@ -8,19 +8,16 @@ export default function Index() {
   const colors = useColors();
 
   const { isAuthenticated, onboardingComplete } = useUserStore();
-  const [hydrated, setHydrated] = useState(false);
+  const [hydrated, setHydrated] = useState(() => useUserStore.persist.hasHydrated());
 
   useEffect(() => {
-    // Wait for Zustand persist to rehydrate from AsyncStorage
-    if (useUserStore.persist.hasHydrated()) {
-      setHydrated(true);
-    } else {
+    if (!hydrated) {
       const unsub = useUserStore.persist.onFinishHydration(() => {
         setHydrated(true);
       });
       return unsub;
     }
-  }, []);
+  }, [hydrated]);
 
   if (!hydrated) {
     return (

@@ -54,8 +54,6 @@ describe("SkeletonBone", () => {
 
   it("renders with importantForAccessibility no", () => {
     const tree = renderInAct(<SkeletonBone />);
-    const view = tree.root.findByType(View);
-    // At least one View should have importantForAccessibility="no"
     const hiddenViews = tree.root.findAll((n) => n.props.importantForAccessibility === "no");
     expect(hiddenViews.length).toBeGreaterThanOrEqual(1);
   });

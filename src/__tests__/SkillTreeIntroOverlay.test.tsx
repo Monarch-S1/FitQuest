@@ -1,5 +1,4 @@
 import React, { act } from "react";
-import { Text, Pressable } from "react-native";
 import renderer from "react-test-renderer";
 import { SkillTreeIntroOverlay } from "../components/skill-tree/SkillTreeIntroOverlay";
 

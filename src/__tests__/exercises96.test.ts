@@ -15,7 +15,6 @@ import {
   getExercisesByParentFamily,
   LEGACY_TO_PATHWAY,
   PATHWAY_TO_LEGACY,
-  Exercise96,
 } from "../data/exercises96";
 import { PathwayId } from "../data/pathways";
 
@@ -306,7 +305,7 @@ describe("family grouping", () => {
 
 describe("legacy ID mapping", () => {
   it("all LEGACY_TO_PATHWAY values are valid exercise IDs", () => {
-    for (const [_legacy, pathwayId] of Object.entries(LEGACY_TO_PATHWAY)) {
+    for (const [, pathwayId] of Object.entries(LEGACY_TO_PATHWAY)) {
       if (pathwayId === "supplementary") continue; // not part of 96 system
       const ex = getExercise96ById(pathwayId);
       expect(ex).toBeDefined();

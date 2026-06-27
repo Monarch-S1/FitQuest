@@ -147,10 +147,6 @@ jest.mock("../data/exercises96", () => ({
 
 // ── Imports under test ────────────────────────────────────────────────────
 
-const { toExercise, isPathwayId, getPathwayLabel } = jest.requireActual(
-  "../data/exercises96",
-) as any;
-
 // Since toExercise, isPathwayId, getPathwayLabel are module-scoped helpers
 // in catalog.tsx, we re-implement them here for testing:
 

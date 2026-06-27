@@ -1,4 +1,4 @@
-import { calculateStreak, StreakData } from "../utils/streak";
+import { calculateStreak } from "../utils/streak";
 
 describe("calculateStreak", () => {
   it("returns zeros for empty history", () => {

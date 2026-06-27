@@ -43,7 +43,13 @@ export function GradientCard({
         {
           borderRadius: radii.lg,
           overflow: "hidden",
-          ...getShadow(elevation === "high" ? "elevation3" : elevation === "medium" ? "elevation2" : "elevation1"),
+          ...getShadow(
+            elevation === "high"
+              ? "elevation3"
+              : elevation === "medium"
+                ? "elevation2"
+                : "elevation1",
+          ),
         },
         style,
       ]}

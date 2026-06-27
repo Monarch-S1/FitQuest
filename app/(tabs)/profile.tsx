@@ -1,7 +1,6 @@
 import { useMemo, useCallback, useState, useEffect, useRef } from "react";
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Image, Platform } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useColors, typography, spacing, fonts, Label, H4, Body } from "../../src/tokens";
@@ -134,6 +133,9 @@ export default function ProfileScreen() {
   const [cachedVideoCount, setCachedVideoCount] = useState(0);
   const [cachedVideoSize, setCachedVideoSize] = useState(0);
 
+  const router = useRouter();
+  const dialog = useDialog();
+
   // Sync editName when displayName changes externally (e.g., onboarding completion)
   const prevDisplayNameRef = useRef(displayName);
   useEffect(() => {
@@ -186,7 +188,7 @@ export default function ProfileScreen() {
     if (!result.canceled && result.assets[0]) {
       updateProfile({ avatarUri: result.assets[0].uri });
     }
-  }, [updateProfile]);
+  }, [dialog, updateProfile]);
 
   const handleChangeGoal = useCallback(() => {
     const goalNames = GOAL_OPTIONS.map((g) => ({
@@ -204,7 +206,7 @@ export default function ProfileScreen() {
       title: "Change Goal",
       options: goalNames.map((g) => ({ label: g.text, onPress: g.onPress })),
     });
-  }, [updateProfile]);
+  }, [dialog, updateProfile]);
 
   const handleChangeLevel = useCallback(() => {
     const levelNames = LEVEL_OPTIONS.map((l) => ({
@@ -220,9 +222,9 @@ export default function ProfileScreen() {
     }));
     dialog.select({
       title: "Change Level",
-      options: levelNames.map((l) => ({ label: l.text, onPress: l.onPress })),
+      options: levelNames.map((g) => ({ label: g.text, onPress: g.onPress })),
     });
-  }, [updateProfile]);
+  }, [dialog, updateProfile]);
 
   // Load cache info on mount with unmount guard
   const cacheMountedRef = useRef(true);
@@ -250,7 +252,7 @@ export default function ProfileScreen() {
         setCachedVideoSize(0);
       },
     });
-  }, [cachedVideoCount, cachedVideoSize]);
+  }, [dialog, cachedVideoCount, cachedVideoSize]);
 
   const handleOpenFeedback = useCallback(() => {
     setShowFeedback(true);
@@ -267,10 +269,7 @@ export default function ProfileScreen() {
         clearAuth();
       },
     });
-  }, [clearAuth]);
-
-  const router = useRouter();
-  const dialog = useDialog();
+  }, [dialog, clearAuth]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg.primary }}>

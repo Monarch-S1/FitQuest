@@ -1,6 +1,6 @@
-import { TouchableOpacity, Text, ViewStyle, TextStyle } from "react-native";
+import { TouchableOpacity, Text, ViewStyle, TextStyle, Animated } from "react-native";
 import { useRef, useEffect } from "react";
-import { Animated } from "react-native";
+
 import * as Haptics from "expo-haptics";
 import { useColors, spacing, radii } from "../../tokens";
 

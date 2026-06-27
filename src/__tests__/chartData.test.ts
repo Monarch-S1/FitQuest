@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 
-import { getStreakCalendar, StreakDay } from "../utils/chartData";
+import { getStreakCalendar } from "../utils/chartData";
 import { WorkoutSession } from "../stores/useUserStore";
 
 function createSession(overrides: Partial<WorkoutSession> & { id?: string }): WorkoutSession {

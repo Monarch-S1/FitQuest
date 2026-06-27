@@ -37,11 +37,6 @@ export default function HistoryScreen() {
 
   const streakCalendar = useMemo(() => getStreakCalendar(workoutHistory), [workoutHistory]);
 
-  const lastWorkout = useMemo(() => {
-    if (workoutHistory.length === 0) return null;
-    return [...workoutHistory].sort((a, b) => b.date.localeCompare(a.date))[0];
-  }, [workoutHistory]);
-
   // Group workouts by week for better organization
   const weeklyStats = useMemo(() => groupByWeek(workoutHistory), [workoutHistory]);
 

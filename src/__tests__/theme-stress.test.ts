@@ -5,7 +5,7 @@
 
 // Mock AsyncStorage before importing the store
 import { useUserStore } from "../stores/useUserStore";
-import { getColors, accentOptions, AccentKey, ThemeMode } from "../tokens/themes";
+import { getColors, AccentKey, ThemeMode } from "../tokens/themes";
 
 jest.mock("@react-native-async-storage/async-storage", () =>
   require("@react-native-async-storage/async-storage/jest/async-storage-mock"),

@@ -5,7 +5,7 @@ import { useUserStore } from "../stores/useUserStore";
 /**
  * Monitor user inactivity and clear auth after timeout.
  * Tracks app foreground time and resets on user interaction.
- * 
+ *
  * Timeout: 15 minutes of background/inactivity
  */
 export function useSessionTimeout(timeoutMs: number = 15 * 60 * 1000) {

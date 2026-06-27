@@ -58,7 +58,7 @@ export function LevelBadge({ level, size = "md" }: LevelBadgeProps) {
   const chevronCount = getChevrons(level);
   const rankColor = getRankColor(level, colors.accent.DEFAULT);
 
-  const glowAnim = useRef(new Animated.Value(0.3)).current;
+  const glowAnim = useMemo(() => new Animated.Value(0.3), []);
   useEffect(() => {
     if (reduceMotion) return;
     Animated.loop(

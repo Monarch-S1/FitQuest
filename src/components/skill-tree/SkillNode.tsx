@@ -11,7 +11,7 @@
  * Final Fantasy X Sphere Grid (physical progression distinction).
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { View, Text, TouchableOpacity, Animated } from "react-native";
 import { MotiView } from "moti";
 import { useColors } from "../../tokens";
@@ -90,7 +90,7 @@ export function SkillNode({
   // ── State transition "pop" animation ──────────────
 
   const prevStateRef = useRef(state);
-  const popScale = useRef(new Animated.Value(1)).current;
+  const popScale = useMemo(() => new Animated.Value(1), []);
 
   useEffect(() => {
     const prev = prevStateRef.current;

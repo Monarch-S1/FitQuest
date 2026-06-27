@@ -1,6 +1,6 @@
 import React, { act } from "react";
 import renderer from "react-test-renderer";
-// eslint-disable-next-line import/no-unresolved -- parens in path confuse resolver, valid at runtime
+
 import HomeScreen from "../../app/(tabs)/index";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────

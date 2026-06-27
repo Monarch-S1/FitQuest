@@ -1,6 +1,14 @@
 import { View, Text, ViewStyle } from "react-native";
 import { ReactNode } from "react";
-import { useColors, spacing, radii, getShadow, glassEffect, glassEffectDeep, glassEffectLight } from "../../tokens";
+import {
+  useColors,
+  spacing,
+  radii,
+  getShadow,
+  glassEffect,
+  glassEffectDeep,
+  glassEffectLight,
+} from "../../tokens";
 import { BlurView } from "expo-blur";
 
 type ElevationLevel = "low" | "medium" | "high";
@@ -70,7 +78,9 @@ export function Card({
   // Get shadow based on elevation
   const getShadowStyle = () => {
     if (variant === "glass") {
-      return getShadow(elevation === "high" ? "elevation3" : elevation === "medium" ? "elevation2" : "elevation1");
+      return getShadow(
+        elevation === "high" ? "elevation3" : elevation === "medium" ? "elevation2" : "elevation1",
+      );
     }
     if (elevation === "high") return getShadow("elevation3");
     if (elevation === "medium") return getShadow("elevation2");
@@ -94,7 +104,10 @@ export function Card({
     >
       {/* Blur layer for glass effect */}
       {variant === "glass" && (
-        <BlurView intensity={blurIntensity} style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }} />
+        <BlurView
+          intensity={blurIntensity}
+          style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+        />
       )}
 
       {/* Left accent bar */}

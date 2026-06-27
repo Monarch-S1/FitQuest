@@ -62,7 +62,9 @@ export function WorkoutSummaryCard({
           <Label variant="secondary" style={{ fontSize: 9, marginBottom: spacing.xs }}>
             COMPLETION
           </Label>
-          <H3 style={{ color: colors.success }}>{Math.round((totalWorkouts / days.length) * 100)}%</H3>
+          <H3 style={{ color: colors.success }}>
+            {Math.round((totalWorkouts / days.length) * 100)}%
+          </H3>
         </View>
       </View>
 

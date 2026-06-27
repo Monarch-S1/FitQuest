@@ -1,13 +1,13 @@
 import "../global.css";
 import { useEffect, useState, useRef } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as Font from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import * as Updates from "expo-updates";
-import { useColors, useThemeMode } from "../src/tokens";
+import { useThemeMode } from "../src/tokens";
 import { ErrorBoundary } from "../src/components/ui/ErrorBoundary";
 import { NetworkStatusBanner } from "../src/components/ui/NetworkStatusBanner";
 import { initRestNotifications } from "../src/hooks/useRestNotifications";
@@ -21,8 +21,6 @@ SplashScreen.preventAutoHideAsync();
 initSentry();
 
 export default function RootLayout() {
-  const colors = useColors();
-
   const themeMode = useThemeMode();
   const [fontsLoaded, setFontsLoaded] = useState(false);
 

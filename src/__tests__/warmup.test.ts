@@ -10,7 +10,7 @@ import {
   WarmUpExercise,
 } from "../utils/warmup";
 import { WorkoutDay } from "../data/exercises";
-import { getExercise96ById, getAllExercises96, Exercise96 } from "../data/exercises96";
+import { getExercise96ById, getAllExercises96 } from "../data/exercises96";
 
 // ─── Test fixtures: WorkoutDay objects built from 96-exercise database ───────────
 

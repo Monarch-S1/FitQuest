@@ -1,11 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useColors, typography, spacing, fonts } from "../../src/tokens";
@@ -26,7 +20,6 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [emailError, setEmailError] = useState<string | null>(null);
 
   // Email validation
   const validateEmail = useCallback((value: string): boolean | string => {

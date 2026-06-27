@@ -43,7 +43,7 @@ export default function AuthCallback() {
         setTimeout(() => router.replace("/(auth)/login"), 2000);
       }
     })();
-  }, []);
+  }, [router, params, setAuth]);
 
   if (error) {
     return (

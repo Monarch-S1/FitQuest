@@ -6,7 +6,7 @@ import { useColors, typography, spacing, fonts } from "../../src/tokens";
 import { Exercise, Tempo, MuscleGroup } from "../../src/data/exercises";
 import { getAllExercises96 } from "../../src/data/exercises96";
 import { PATHWAYS, PathwayId } from "../../src/data/pathways";
-import { useUserStore, ExercisePreset } from "../../src/stores/useUserStore";
+import { useUserStore } from "../../src/stores/useUserStore";
 import { hasPreset, createPresetFromExercise } from "../../src/utils/exercisePresets";
 
 /** Strip Exercise96 fields to plain Exercise */

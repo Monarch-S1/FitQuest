@@ -63,21 +63,23 @@ export function StreakMilestone({ tier, onDismiss }: StreakMilestoneProps) {
     return () => clearTimeout(timer);
   }, []);
 
-  // Confetti particles
-  const particles = useMemo(
-    () =>
-      Array.from({ length: 20 }, (_, i) => ({
-        translateY: -500 - Math.random() * 400,
-        translateX: (Math.random() - 0.5) * 120,
-        duration: 1500 + Math.random() * 2000,
-        left: `${5 + Math.random() * 90}%`,
-        size: 3 + Math.random() * 8,
-        color: tier.particleColors[i % tier.particleColors.length],
-        rotation: Math.random() * 360,
-        delay: i * 60,
-      })),
-    [tier.particleColors],
-  );
+  // Confetti particles — seeded from index to avoid impure calls during render
+  const particles = useMemo(() => {
+    const seeded = (i: number, offset: number) => {
+      const x = Math.sin(i * 12.9898 + offset * 78.233) * 43758.5453;
+      return x - Math.floor(x);
+    };
+    return Array.from({ length: 20 }, (_, i) => ({
+      translateY: -500 - seeded(i, 1) * 400,
+      translateX: (seeded(i, 2) - 0.5) * 120,
+      duration: 1500 + seeded(i, 3) * 2000,
+      left: `${5 + seeded(i, 4) * 90}%`,
+      size: 3 + seeded(i, 5) * 8,
+      color: tier.particleColors[i % tier.particleColors.length],
+      rotation: seeded(i, 6) * 360,
+      delay: i * 60,
+    }));
+  }, [tier.particleColors]);
 
   return (
     <Pressable

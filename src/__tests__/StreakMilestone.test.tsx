@@ -1,5 +1,4 @@
 import React, { act } from "react";
-import { Text } from "react-native";
 import renderer from "react-test-renderer";
 import { StreakMilestone, getStreakMilestone } from "../components/home/StreakMilestone";
 import type { StreakMilestoneTier } from "../components/home/StreakMilestone";

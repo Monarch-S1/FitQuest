@@ -4,13 +4,13 @@
 
 // ── Mock Supabase (fns created INSIDE factory to avoid hoisting issues) ────
 
+import { supabase, isSupabaseConfigured } from "../services/supabase";
+import type { WorkoutSession } from "../stores/useUserStore";
+
 jest.mock("../services/supabase", () => ({
   supabase: { from: jest.fn() },
   isSupabaseConfigured: jest.fn(),
 }));
-
-import { supabase, isSupabaseConfigured } from "../services/supabase";
-import type { WorkoutSession } from "../stores/useUserStore";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 

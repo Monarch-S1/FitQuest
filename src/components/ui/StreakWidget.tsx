@@ -21,7 +21,8 @@ export function StreakWidget({
 }: StreakWidgetProps) {
   const colors = useColors();
 
-  const streakStatus = currentStreak >= longestStreak && currentStreak > 0 ? "🔥 ON FIRE!" : "🔥 ACTIVE";
+  const streakStatus =
+    currentStreak >= longestStreak && currentStreak > 0 ? "🔥 ON FIRE!" : "🔥 ACTIVE";
 
   return (
     <Card

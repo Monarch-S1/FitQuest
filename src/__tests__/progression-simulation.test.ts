@@ -1,4 +1,4 @@
-import { getWorkout96, getWorkouts96, getPathwayLevels } from "../data/workoutGenerator96";
+import { getWorkout96, getPathwayLevels } from "../data/workoutGenerator96";
 import { getAllExercises96 } from "../data/exercises96";
 import type { PathwayId } from "../data/pathways";
 
@@ -209,17 +209,3 @@ describe("Progression Simulation — 12 weeks", () => {
 });
 
 let masteredIds = new Set<string>();
-
-function getParentFamily(pathway: string): string {
-  const map: Record<string, string> = {
-    hp: "push",
-    vp: "push",
-    hpll: "pull",
-    vpll: "pull",
-    aql: "legs",
-    hpl: "legs",
-    ac: "core",
-    plc: "core",
-  };
-  return map[pathway] || "unknown";
-}

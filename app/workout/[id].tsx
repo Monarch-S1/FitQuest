@@ -1,8 +1,8 @@
-import { useEffect, useCallback, useState, useRef, useMemo } from "react";
+import { useEffect, useCallback, useState, useRef, useMemo, startTransition } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useColors, typography, spacing, fonts } from "../../src/tokens";
+import { useColors, typography, spacing } from "../../src/tokens";
 import type { Exercise } from "../../src/data/exercises";
 import { Card } from "../../src/components/ui/Card";
 import { Button } from "../../src/components/ui/Button";
@@ -43,7 +43,6 @@ export default function WorkoutPlayerScreen() {
     addWorkoutSession,
     workoutHistory,
     streakData,
-    level,
     totalXp,
     fitnessGoal,
     masteredExerciseIds,
@@ -60,18 +59,11 @@ export default function WorkoutPlayerScreen() {
   }, [id, fitnessGoal, masteredExerciseIds]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const holdIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const hasStartedWorkout = useRef(false);
   const prevPhaseRef = useRef<string | null>(null);
 
   // ── Preview / Active state ──
   const [hasStarted, setHasStarted] = useState(false);
   const [previewExercise, setPreviewExercise] = useState<Exercise | null>(null);
-
-  // Reset any stale workout store state on mount so a previous completed
-  // workout doesn't auto-trigger handleCompleteWorkout in the preview.
-  useEffect(() => {
-    resetWorkoutStore();
-  }, []);
 
   const {
     phase,
@@ -89,6 +81,12 @@ export default function WorkoutPlayerScreen() {
     reset: resetWorkoutStore,
   } = useWorkoutStore();
 
+  // Reset any stale workout store state on mount so a previous completed
+  // workout doesn't auto-trigger handleCompleteWorkout in the preview.
+  useEffect(() => {
+    resetWorkoutStore();
+  }, [resetWorkoutStore]);
+
   const [workoutComplete, setWorkoutComplete] = useState(false);
   const [xpBreakdown, setXpBreakdown] = useState(calculateWorkoutXp(0, 0));
   const [newSkillUnlocks, setNewSkillUnlocks] = useState<
@@ -100,8 +98,8 @@ export default function WorkoutPlayerScreen() {
 
   // Warm-up generation
   const warmUpRef = useRef<import("../../src/utils/warmup").WarmUpExercise[]>([]);
-  const warmUpCountRef = useRef(0);
-  const preWorkoutLevelRef = useRef(1);
+  const [warmUpCount, setWarmUpCount] = useState(0);
+  const [cachedPreWorkoutLevel, setCachedPreWorkoutLevel] = useState(1);
   const preWorkoutCompletedRef = useRef<Set<string>>(new Set());
 
   // Time-based hold state
@@ -116,9 +114,11 @@ export default function WorkoutPlayerScreen() {
 
   useEffect(() => {
     if (currentExercise) {
-      setIsHolding(false);
-      setHoldElapsed(0);
-      setHoldCompleted(false);
+      startTransition(() => {
+        setIsHolding(false);
+        setHoldElapsed(0);
+        setHoldCompleted(false);
+      });
       holdCompletedRef.current = false;
     }
   }, [currentExerciseIndex, currentExercise]);
@@ -159,7 +159,7 @@ export default function WorkoutPlayerScreen() {
 
     const warmUps = generateWarmUp(workout);
     warmUpRef.current = warmUps;
-    warmUpCountRef.current = warmUps.length;
+    setWarmUpCount(warmUps.length);
     const warmUpExercises: import("../../src/data/exercises").Exercise[] = warmUps.map((wu) => ({
       ...wu.exercise,
       defaultSets: wu.sets,
@@ -227,7 +227,7 @@ export default function WorkoutPlayerScreen() {
     completingRef.current = true;
     try {
       const userStore = useUserStore.getState();
-      preWorkoutLevelRef.current = userStore.level;
+      setCachedPreWorkoutLevel(userStore.level);
       preWorkoutCompletedRef.current = extractCompletedIds(userStore.workoutHistory);
       const result = finishWorkout();
       const streak = userStore.streakData.currentStreak;
@@ -357,7 +357,7 @@ export default function WorkoutPlayerScreen() {
     return (
       <CompletionAnimation
         xpBreakdown={xpBreakdown}
-        level={preWorkoutLevelRef.current}
+        level={cachedPreWorkoutLevel}
         newLevel={freshUserState.level}
         duration={totalDuration}
         workoutName={workout.name}
@@ -853,9 +853,9 @@ export default function WorkoutPlayerScreen() {
               }}
             >
               <Text style={{ ...typography.label, color: colors.text.secondary, fontSize: 8 }}>
-                {currentExerciseIndex < warmUpCountRef.current
-                  ? `WARM-UP ${currentExerciseIndex + 1} OF ${warmUpCountRef.current}`
-                  : `EXERCISE ${currentExerciseIndex + 1 - warmUpCountRef.current} OF ${exerciseProgress.length - warmUpCountRef.current}`}
+                {currentExerciseIndex < warmUpCount
+                  ? `WARM-UP ${currentExerciseIndex + 1} OF ${warmUpCount}`
+                  : `EXERCISE ${currentExerciseIndex + 1 - warmUpCount} OF ${exerciseProgress.length - warmUpCount}`}
               </Text>
               <Text style={{ ...typography.label, color: colors.accent.DEFAULT, fontSize: 8 }}>
                 {!timeBased

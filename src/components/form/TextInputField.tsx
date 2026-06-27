@@ -128,7 +128,7 @@ export function TextInputField({
         setInternalError(null);
       }
     },
-    [onChangeText, onValidate]
+    [onChangeText, onValidate],
   );
 
   const handleFocus = useCallback(() => {

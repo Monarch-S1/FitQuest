@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useEffect } from "react";
+import { useCallback, useMemo, useEffect } from "react";
 import { View, Text, TouchableOpacity, Animated, Easing } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -82,7 +82,7 @@ export default function TrainScreen() {
   }, []);
 
   // Fade-in animation when content loads
-  const fadeIn = useRef(new Animated.Value(0)).current;
+  const fadeIn = useMemo(() => new Animated.Value(0), []);
   useEffect(() => {
     if (isHydrated) {
       Animated.timing(fadeIn, {

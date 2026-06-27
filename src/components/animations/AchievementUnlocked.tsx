@@ -1,5 +1,5 @@
 import { View, Text, Animated } from "react-native";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo } from "react";
 import { useColors, spacing, typography } from "../../tokens";
 import { ScalePopView } from "./AnimationLibrary";
 
@@ -24,7 +24,7 @@ export function AchievementUnlocked({
   onAnimationComplete,
 }: AchievementUnlockedProps) {
   const colors = useColors();
-  const glowAnim = useRef(new Animated.Value(0)).current;
+  const glowAnim = useMemo(() => new Animated.Value(0), []);
 
   useEffect(() => {
     Animated.loop(
@@ -39,7 +39,7 @@ export function AchievementUnlocked({
           duration: 1000,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
 
     // Auto-hide after 2.5 seconds

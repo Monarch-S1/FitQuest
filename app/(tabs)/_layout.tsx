@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Tabs, useRouter } from "expo-router";
 import { View, Text } from "react-native";
-import { useColors, typography, spacing, fonts } from "../../src/tokens";
+import { useColors, fonts } from "../../src/tokens";
 import { useUserStore } from "../../src/stores/useUserStore";
 
 export default function TabLayout() {

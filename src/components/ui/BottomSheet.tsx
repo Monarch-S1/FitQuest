@@ -3,6 +3,9 @@ import BottomSheetLib, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/bo
 import { useColors, spacing } from "../../tokens";
 import * as Haptics from "expo-haptics";
 
+// Re-export for convenience
+import { Text } from "react-native";
+
 interface BottomSheetProps {
   visible: boolean;
   onDismiss: () => void;
@@ -16,7 +19,7 @@ interface BottomSheetProps {
 /**
  * Enhanced BottomSheet component with gesture support.
  * Replaces basic Modal for richer interactions.
- * 
+ *
  * Supports:
  * - Drag to dismiss (swipe down)
  * - Backdrop tap to dismiss
@@ -53,7 +56,7 @@ export function BottomSheet({
         pressBehavior="close"
       />
     ),
-    [enableBackdropPress, handleDismiss]
+    [enableBackdropPress, handleDismiss],
   );
 
   if (!visible) return null;
@@ -95,7 +98,4 @@ export function BottomSheet({
     </BottomSheetLib>
   );
 }
-
-// Re-export for convenience
-import { Text } from "react-native";
 export { BottomSheetView };

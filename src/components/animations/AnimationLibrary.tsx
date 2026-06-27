@@ -3,8 +3,8 @@
  * Provides reusable animated effects for enhanced UX
  */
 
-import { Animated, View, Text, ViewStyle } from "react-native";
-import { useEffect, useRef } from "react";
+import { Animated, View, ViewStyle } from "react-native";
+import { useEffect, useRef, useMemo, useState } from "react";
 import { useColors } from "../../tokens";
 
 /**
@@ -20,8 +20,8 @@ interface CountUpNumberProps {
 }
 
 export function CountUpNumber({ from, to, duration = 600, style, onComplete }: CountUpNumberProps) {
-  const animValue = useRef(new Animated.Value(from)).current;
-  const displayValue = useRef(from);
+  const animValue = useMemo(() => new Animated.Value(from), [from]);
+  const [displayText, setDisplayText] = useState(from);
 
   useEffect(() => {
     animValue.resetAnimation();
@@ -34,7 +34,7 @@ export function CountUpNumber({ from, to, duration = 600, style, onComplete }: C
     });
 
     const listener = animValue.addListener(({ value }) => {
-      displayValue.current = Math.floor(value);
+      setDisplayText(Math.floor(value));
     });
 
     return () => animValue.removeListener(listener);
@@ -50,7 +50,7 @@ export function CountUpNumber({ from, to, duration = 600, style, onComplete }: C
         },
       ]}
     >
-      {displayValue.current}
+      {displayText}
     </Animated.Text>
   );
 }
@@ -141,7 +141,13 @@ interface ShakeViewProps {
   trigger?: boolean;
 }
 
-export function ShakeView({ intensity = 5, duration = 500, children, style, trigger = true }: ShakeViewProps) {
+export function ShakeView({
+  intensity = 5,
+  duration = 500,
+  children,
+  style,
+  trigger = true,
+}: ShakeViewProps) {
   const shakeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -157,7 +163,7 @@ export function ShakeView({ intensity = 5, duration = 500, children, style, trig
           toValue: i % 2 === 0 ? shakeDistance : -shakeDistance,
           duration: duration / shakes,
           useNativeDriver: true,
-        })
+        }),
       );
     }
 
@@ -166,7 +172,7 @@ export function ShakeView({ intensity = 5, duration = 500, children, style, trig
         toValue: 0,
         duration: duration / 5,
         useNativeDriver: true,
-      })
+      }),
     );
 
     Animated.sequence(timings).start();
@@ -198,7 +204,13 @@ interface PulseViewProps {
   delay?: number;
 }
 
-export function PulseView({ children, style, intensity = 0.7, duration = 1200, delay = 0 }: PulseViewProps) {
+export function PulseView({
+  children,
+  style,
+  intensity = 0.7,
+  duration = 1200,
+  delay = 0,
+}: PulseViewProps) {
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -215,7 +227,7 @@ export function PulseView({ children, style, intensity = 0.7, duration = 1200, d
           duration: duration / 2,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
   }, [pulseAnim, intensity, duration, delay]);
 
@@ -318,14 +330,22 @@ export function SlideInView({
   const getTransform = () => {
     switch (direction) {
       case "left":
-        return { translateX: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [-distance, 0] }) };
+        return {
+          translateX: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [-distance, 0] }),
+        };
       case "right":
-        return { translateX: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [distance, 0] }) };
+        return {
+          translateX: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [distance, 0] }),
+        };
       case "down":
-        return { translateY: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [-distance, 0] }) };
+        return {
+          translateY: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [-distance, 0] }),
+        };
       case "up":
       default:
-        return { translateY: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [distance, 0] }) };
+        return {
+          translateY: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [distance, 0] }),
+        };
     }
   };
 

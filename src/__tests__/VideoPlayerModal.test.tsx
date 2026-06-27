@@ -63,14 +63,6 @@ function createTree(exerciseId: string = "decline-push-up", visible: boolean = t
   return tree!;
 }
 
-function renderInAct(element: React.ReactElement) {
-  let tree: renderer.ReactTestRenderer;
-  act(() => {
-    tree = renderer.create(element);
-  });
-  return tree!;
-}
-
 function extractText(node: renderer.ReactTestRendererNode): string {
   if (typeof node === "string") return node;
   if (node.children) return node.children.map(extractText).join("");
