@@ -184,7 +184,6 @@ export default function HistoryScreen() {
                 />
               ))}
             </View>
-            </Card>
 
             {/* Streak Calendar - Heatmap visualization */}
             <Card
@@ -198,7 +197,12 @@ export default function HistoryScreen() {
 
             {/* Pathway Progression */}
             {pathwayLevels && (
-              <Card title="SKILL PROGRESSION" accent="none" elevation="medium" style={{ marginBottom: spacing.lg }}>
+              <Card
+                title="SKILL PROGRESSION"
+                accent="none"
+                elevation="medium"
+                style={{ marginBottom: spacing.lg }}
+              >
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }}>
                   {PATHWAY_LIST.map((pw) => {
                     const pl = pathwayLevels[pw.id];

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Modal, View, Text, TouchableOpacity } from "react-native";
-import { useColors, typography, spacing } from "../tokens";
+import { useColors, typography, spacing } from "../../tokens";
 
 interface SaveCredentialsModalProps {
   visible: boolean;
@@ -64,7 +64,8 @@ export function SaveCredentialsModal({
               lineHeight: 20,
             }}
           >
-            Sign in faster next time with {biometricType}. Your credentials are securely stored on your device.
+            Sign in faster next time with {biometricType}. Your credentials are securely stored on
+            your device.
           </Text>
 
           <View

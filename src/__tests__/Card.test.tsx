@@ -16,6 +16,16 @@ jest.mock("../tokens", () => ({
   }),
   spacing: { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 },
   radii: { lg: 8 },
+  getShadow: () => ({
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+  }),
+  glassEffect: {},
+  glassEffectDeep: {},
+  glassEffectLight: {},
 }));
 
 // Helper: render inside act() and return the tree

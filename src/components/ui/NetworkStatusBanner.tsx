@@ -1,7 +1,7 @@
 import { Animated, View, Text } from "react-native";
 import { useEffect, useRef } from "react";
-import { useNetworkStatus } from "../hooks/useNetworkStatus";
-import { useColors, typography, spacing } from "../tokens";
+import { useNetworkStatus } from "../../hooks/useNetworkStatus";
+import { useColors, typography, spacing } from "../../tokens";
 
 /**
  * Network status banner that slides in when device goes offline.

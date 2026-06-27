@@ -108,37 +108,38 @@ export default function RootLayout() {
               <Stack.Screen name="(tabs)" />
               {/* Workout player */}
               <Stack.Screen
-              name="workout/[id]"
-              options={{
-                animation: "slide_from_right",
-                presentation: "fullScreenModal",
-              }}
-            />
-            {/* Exercise catalog */}
-            <Stack.Screen
-              name="exercises/catalog"
-              options={{
-                animation: "slide_from_right",
-                presentation: "fullScreenModal",
-              }}
-            />
-            {/* Privacy Policy */}
-            <Stack.Screen
-              name="privacy-policy"
-              options={{
-                animation: "slide_from_right",
-                presentation: "fullScreenModal",
-              }}
-            />
-            {/* Skill Tree */}
-            <Stack.Screen
-              name="skills/skill-tree"
-              options={{
-                animation: "slide_from_right",
-                presentation: "fullScreenModal",
-              }}
-            />
-          </Stack>
+                name="workout/[id]"
+                options={{
+                  animation: "slide_from_right",
+                  presentation: "fullScreenModal",
+                }}
+              />
+              {/* Exercise catalog */}
+              <Stack.Screen
+                name="exercises/catalog"
+                options={{
+                  animation: "slide_from_right",
+                  presentation: "fullScreenModal",
+                }}
+              />
+              {/* Privacy Policy */}
+              <Stack.Screen
+                name="privacy-policy"
+                options={{
+                  animation: "slide_from_right",
+                  presentation: "fullScreenModal",
+                }}
+              />
+              {/* Skill Tree */}
+              <Stack.Screen
+                name="skills/skill-tree"
+                options={{
+                  animation: "slide_from_right",
+                  presentation: "fullScreenModal",
+                }}
+              />
+            </Stack>
+          </View>
         </ErrorBoundary>
       </>
     </GestureHandlerRootView>
